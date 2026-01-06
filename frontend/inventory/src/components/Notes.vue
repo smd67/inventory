@@ -1,5 +1,6 @@
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 120px;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 150px;">
+    <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Notes
   </div>
   <div class="my-division">
@@ -12,7 +13,7 @@
         :headers="headers"
         :items="notesTable"
         :search="search"
-        item-value="id"
+        item-value="date"
         class="elevation-1"
       >
         <!-- If you still want the default pagination controls alongside the search -->
@@ -46,32 +47,34 @@
   import axios from 'axios';
   import { VDataTable } from 'vuetify/components';
   import { useRouter } from 'vue-router';
-  import { isNavigationFailure, NavigationFailureType } from 'vue-router';
 
   const search = ref('')
   const notesTable = ref([]);
   const error = ref(null);
   const loading = ref(true);
-  const id = ref(null);
+  const item_type = ref(null);
+  const item_ref = ref(0);
   const router = useRouter();
   const headers = ref([
-    {title: 'ID', align: 'start', sortable: true, value: 'id', class: 'blue lighten-5'},
-    {title: 'Device', value: 'device', sortable: true },
-    {title: 'Location', value: 'location', sortable: true},
-    {title: 'Date', value: 'date', sortable: true},
-    {title: 'Note', value: 'note' , sortable: true}
+    {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
+    {title: 'Description', value: 'description' , sortable: true}
   ]);
 
   const props = defineProps({
-    id: {
+    item_type: {
       type: String,
       default: "",
+    },
+    item_ref: {
+      type: Number,
+      default: 0,
     },
   });
 
   onMounted(async () => {
     console.log('IN onMounted');
-    id.value = props.id;
+    item_type.value = props.item_type;
+    item_ref.value = props.item_ref;
     fetchNotes();
     console.log('OUT onMounted');
   });
@@ -92,15 +95,18 @@
         }
     };
     const requestBody = {
-      id: id.value
+      item_type: item_type.value,
+      item_ref: item_ref.value,
     };
+    console.log("body=" + JSON.stringify(requestBody));
     try {
         const response = await axios.post(apiUrl, requestBody, config);
         notesTable.value = response.data;
-        console.log("table=" + JSON.stringify(notesTable))
         loading.value = false;
     } catch (e) {
         loading.value = false;
+        console.log("error=" + e)
+        error.value = 'Error fetching data:' + e;
     }
   };
 

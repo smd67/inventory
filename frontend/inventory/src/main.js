@@ -12,6 +12,7 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import App from './App.vue'
 import Notes from './components/Notes.vue'
 import Prototype from './components/Prototype.vue'
+import Create from './components/Create.vue'
 
 // Composables
 import { createApp } from 'vue'
@@ -21,8 +22,9 @@ import 'unfonts.css'
 
 
 const routes = [
-  { path: '/notes:id', name: 'notes', component: Notes, props: true },
-  { path: '/prototype', name: 'prototype', component: Prototype }
+  { path: '/notes:item_type:item_ref', name: 'notes', component: Notes, props: true },
+  { path: '/prototype', name: 'prototype', component: Prototype },
+  { path: '/create', name: 'create', component: Create }
 ];
 
 // 2. Create the router instance
