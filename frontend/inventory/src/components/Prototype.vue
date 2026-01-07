@@ -12,14 +12,15 @@
       <v-data-table
         :headers="headers"
         :items="baseUnitsTable"
-        :search="search"
+        :search="baseUnitSearch"
         item-value="name"
         class="elevation-1"
+        @dblclick:row="navigateToDetails"
       >
         <!-- If you still want the default pagination controls alongside the search -->
         <template v-slot:footer.prepend>
           <v-text-field
-            v-model="search"
+            v-model="baseUnitSearch"
             label="Search"
             prepend-inner-icon="mdi-magnify"
             density="compact"
@@ -62,14 +63,15 @@
       <v-data-table
         :headers="camerasHeaders"
         :items="camerasTable"
-        :search="search"
+        :search="cameraSearch"
         item-value="name"
         class="elevation-1"
+        @dblclick:row="navigateToCameraDetails"
       >
         <!-- If you still want the default pagination controls alongside the search -->
         <template v-slot:footer.prepend>
           <v-text-field
-            v-model="search"
+            v-model="cameraSearch"
             label="Search"
             prepend-inner-icon="mdi-magnify"
             density="compact"
@@ -112,14 +114,15 @@
       <v-data-table
         :headers="otherItemsHeaders"
         :items="otherItemsTable"
-        :search="search"
+        :search="otherSearch"
         item-value="name"
         class="elevation-1"
+        @dblclick:row="navigateToOtherItemsDetails"
       >
         <!-- If you still want the default pagination controls alongside the search -->
         <template v-slot:footer.prepend>
           <v-text-field
-            v-model="search"
+            v-model="otherSearch"
             label="Search"
             prepend-inner-icon="mdi-magnify"
             density="compact"
@@ -166,7 +169,9 @@
   import { VDataTable } from 'vuetify/components';
   import { useRouter } from 'vue-router';
 
-  const search = ref('')
+  const baseUnitSearch = ref('');
+  const cameraSearch = ref('');
+  const otherSearch = ref('');
   const baseUnitsTable = ref([]);
   const camerasTable = ref([]);
   const otherItemsTable = ref([]);
@@ -212,6 +217,40 @@
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT showNotes");
+  }
+
+
+  const navigateToDetails = (event, { item }) => {
+    // Prevent the default browser double-click behavior (e.g., text selection)
+    console.log("IN navigateToDetails: " + JSON.stringify(item));
+
+    event.preventDefault();
+    router.push({name: 'base-unit', params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet, face_camera: item.face_camera, license_plate_camera: item.license_plate_camera, widescreen_camera: item.widescreen_camera}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT navigateToDetails");
+  }
+
+  const navigateToCameraDetails = (event, { item }) => {
+    // Prevent the default browser double-click behavior (e.g., text selection)
+    console.log("IN navigateToCameraDetails: " + JSON.stringify(item));
+
+    event.preventDefault();
+    router.push({name: 'camera', params: {id: item.id, name: item.name, location: item.location, base_unit: item.base_unit, camera_type: item.type}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT navigateToCameraDetails");
+  }
+
+  const navigateToOtherItemsDetails = (event, { item }) => {
+    // Prevent the default browser double-click behavior (e.g., text selection)
+    console.log("IN navigateToOtherItemsDetails: " + JSON.stringify(item));
+
+    event.preventDefault();
+    router.push({name: 'other-items', params: {id: item.id, name: item.name, location: item.location, base_unit: item.base_unit}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT navigateToOtherItemsDetails");
   }
 
   const createNewItem = () => {

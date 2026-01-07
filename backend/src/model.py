@@ -3,15 +3,25 @@ from pydantic import BaseModel
 from enum import Enum
 from typing import List, Optional
 
-class Status(Enum):
+class Status(str, Enum):
     """
     Status for maintenance items (just a first pass)
     """
-    PENDING = 1
-    IN_PROGRESS = 2
-    DONE = 3
-    FAILED = 4
-
+    PENDING = "Pending"
+    IN_PROGRESS = "In Progress"
+    DONE = "Done"
+    FAILED = "Failed"
+    @staticmethod
+    def from_str(label: str):
+        if label == Status.PENDING.name:
+            return Status.PENDING
+        elif label == Status.IN_PROGRESS.name:
+            return Status.IN_PROGRESS
+        elif label == Status.DONE.name:
+            return Status.DONE
+        elif label == Status.FAILED.name:
+            return Status.FAILED
+        
 class ItemType(Enum):
     """
     Type of item associated with a note or maintenance task
@@ -99,12 +109,6 @@ class MaintenanceTask(BaseModel):
     item_type: ItemType
     item_ref: int
 
-class NotesQuery(BaseModel):
-    """
-    Return all notes for a base_unit, camera, or other item
-    """
-    item_type: str
-    item_ref: int
 
 class MaintenanceTaskQuery(BaseModel):
     """
@@ -118,6 +122,8 @@ class BaseUnitQueryResult(BaseModel):
     id: int
     name: str
     location: int
+    has_new_mast_bearing: Optional[bool] = False
+    has_new_feet: Optional[bool] = False
     face_camera: Optional[str] = None
     license_plate_camera: Optional[str] = None
     widescreen_camera: Optional[str] = None
@@ -127,8 +133,24 @@ class CameraQueryResult(BaseModel):
     name: str
     type: str
     base_unit: str
+    location: str
 
 class OtherQueryResult(BaseModel):
     id: int
     name: str
     base_unit: str
+    location: str
+
+class NotesQuery(BaseModel):
+    """
+    Return all notes for a base_unit, camera, or other item
+    """
+    item_type: str
+    item_ref: int
+
+class CameraQuery(BaseModel):
+    base_unit_ref: int
+
+class OtherItemQuery(BaseModel):
+    base_unit_ref: int
+

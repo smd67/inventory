@@ -13,6 +13,9 @@ import App from './App.vue'
 import Notes from './components/Notes.vue'
 import Prototype from './components/Prototype.vue'
 import Create from './components/Create.vue'
+import BaseUnit from './components/BaseUnit.vue'
+import Camera from './components/Camera.vue'
+import OtherItems from './components/OtherItems.vue'
 
 // Composables
 import { createApp } from 'vue'
@@ -20,11 +23,13 @@ import { createApp } from 'vue'
 // Styles
 import 'unfonts.css'
 
-
 const routes = [
   { path: '/notes:item_type:item_ref', name: 'notes', component: Notes, props: true },
   { path: '/prototype', name: 'prototype', component: Prototype },
-  { path: '/create', name: 'create', component: Create }
+  { path: '/create', name: 'create', component: Create },
+  { path: '/base-unit:id:name:location:has_new_mast_bearing:has_new_feet:face_camera:license_plate_camera:widescreen_camera', name: 'base-unit', component: BaseUnit, props: true },
+  { path: '/camera:id:name:camera_type:location:base_unit', name: 'camera', component: Camera, props: true },
+  { path: '/other-items:id:name:location:base_unit', name: 'other-items', component: OtherItems, props: true },
 ];
 
 // 2. Create the router instance

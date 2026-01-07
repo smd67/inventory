@@ -5,7 +5,7 @@ from psycopg.rows import class_row
 from typing import List, Any, Dict, Generator, Tuple
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from model import BaseUnitQueryResult, Notes, NotesQuery, CameraQueryResult, OtherQueryResult
+from model import BaseUnitQueryResult, Notes, NotesQuery, CameraQueryResult, OtherQueryResult, MaintenanceTask, MaintenanceTaskQuery, CameraQuery, OtherItemQuery
 from common import get_secret
 from db import Database
 
@@ -36,6 +36,14 @@ def get_notes(query: NotesQuery) -> List[Notes]:
     print(f"OUT Endpoint.get_notes. note_list={note_list}")
     return note_list
 
+@app.post("/get-maint-tasks")
+def get_maint_tasks(query: MaintenanceTaskQuery) -> List[MaintenanceTask]:
+    print("IN Endpoint.get_maint_tasks")
+    db = Database()
+    maint_list = db.get_maintenance_tasks(query.item_type, query.item_ref)
+    print(f"OUT Endpoint.get_maint_tasks. maint_list={maint_list}")
+    return maint_list
+
 @app.get("/get-cameras")
 def get_cameras() -> List[CameraQueryResult]:
     print("IN Endpoint.get_cameras")
@@ -44,12 +52,28 @@ def get_cameras() -> List[CameraQueryResult]:
     print(f"OUT Endpoint.get_cameras. note_list={camera_list}")
     return camera_list
 
+@app.post("/get-cameras-for-bu")
+def get_cameras_for_bu(query: CameraQuery) -> List[CameraQueryResult]:
+    print("IN Endpoint.get_cameras_for_bu")
+    db = Database()
+    camera_list = db.get_cameras_for_bu(query.base_unit_ref)
+    print(f"OUT Endpoint.get_cameras_for_bu. camera_list={camera_list}")
+    return camera_list
+
 @app.get("/get-other-items")
 def get_other_items() -> List[OtherQueryResult]:
     print("IN Endpoint.get_other_items")
     db = Database()
     other_items_list = db.get_other_items()
     print(f"OUT Endpoint.get_other_items. note_list={other_items_list}")
+    return other_items_list
+
+@app.post("/get-other-items-for-bu")
+def get_other_items_for_bu(query: OtherItemQuery) -> List[OtherQueryResult]:
+    print("IN Endpoint.get_other_items_for_bu")
+    db = Database()
+    other_items_list = db.get_other_items_for_bu(query.base_unit_ref)
+    print(f"OUT Endpoint.get_other_items_for_bu. other_items_list={other_items_list}")
     return other_items_list
 
 # @app.post("/create-asset")
