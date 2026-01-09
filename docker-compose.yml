@@ -17,6 +17,8 @@ services:
 
   inventory-frontend: # Name of the frontend service
       build: frontend/inventory
+      environment:
+        VUE_APP_API_URL: http://localhost:8001
       ports: 
         - "10001:80"
 volumes:

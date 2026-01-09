@@ -1,7 +1,7 @@
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 225px;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Create a Base Unit
+    Create a Camera
   </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
@@ -14,31 +14,16 @@
             v-model="name"
             label="Name"
           ></v-text-field>
+          <v-select
+            v-model="cameraType"
+            :items="cameraTypes"
+            label="Camera Type"
+          ></v-select>
           <v-text-field
-            v-model="location"
-            label="Location"
+            v-model="baseUnit"
+            label="Base Unit (optional)"
           ></v-text-field>
-          <v-checkbox
-            v-model="has_new_feet"
-            label="Has new feet?"
-          ></v-checkbox>
-          <v-checkbox
-            v-model="has_new_mast_bearing"
-            label="Has new mast bearing?"
-          ></v-checkbox>
-          <v-text-field
-            v-model="face_camera"
-            label="Face Camera (optional)"
-          ></v-text-field>
-          <v-text-field
-            v-model="license_plate_camera"
-            label="License Plate Camera (optional)"
-          ></v-text-field>
-           <v-text-field
-            v-model="widescreen_camera"
-            label="Widescreen Camera (optional)"
-          ></v-text-field>
-          <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
+          <div class="d-flex justify-center align-center" style="padding-top: 20px; ; gap: 16px;">
             <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
             <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
           </div>
@@ -54,19 +39,15 @@
 
 <script setup>
   import { ref, onMounted } from 'vue';
-  import axios from 'axios';
   import { useRouter } from 'vue-router';
   import api from "../api";
 
   const error = ref(null);
   const loading = ref(true);
   const name = ref(null);
-  const location = ref(null);
-  const has_new_feet = ref(false);
-  const has_new_mast_bearing = ref(false);
-  const face_camera = ref(null);
-  const license_plate_camera = ref(null);
-  const widescreen_camera = ref(null);
+  const baseUnit = ref(null);
+  const cameraType = ref(null)
+  const cameraTypes = ref(['Face Camera', 'License Plate Camera', 'Wide Screen Camera', 'Other']);
   const router = useRouter();
 
   onMounted(async () => {
@@ -89,16 +70,12 @@
     };
     const requestBody = {
         name: name.value,
-        location: location.value,
-        has_new_mast_bearing: has_new_mast_bearing.value,
-        has_new_feet: has_new_feet.value,
-        face_camera: face_camera.value,
-        license_plate_camera: license_plate_camera.value,
-        widescreen_camera: widescreen_camera.value
+        camera_type: cameraType.value,
+        base_unit: baseUnit.value
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
-        const response = await api.post('/create-base-unit/', requestBody, config);
+        const response = await api.post('/create-camera/', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
     } catch (e) {

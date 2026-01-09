@@ -30,7 +30,7 @@
             class="flex-grow-1 mr-4"
           ></v-text-field>
           <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="createNewItem">
+          <v-btn color="primary" dark small class="ma-2" @click="createBaseUnit">
             <v-icon left>mdi-plus</v-icon>
             Add
           </v-btn>
@@ -81,7 +81,7 @@
             class="flex-grow-1 mr-4"
           ></v-text-field>
           <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="createNewItem">
+          <v-btn color="primary" dark small class="ma-2" @click="createCamera">
             <v-icon left>mdi-plus</v-icon>
             Add
           </v-btn>
@@ -132,7 +132,7 @@
             class="flex-grow-1 mr-4"
           ></v-text-field>
           <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="createNewItem">
+          <v-btn color="primary" dark small class="ma-2" @click="createOtherItem">
             <v-icon left>mdi-plus</v-icon>
             Add
           </v-btn>
@@ -164,10 +164,10 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
-  import axios from 'axios';
+  import { ref, onMounted, watch } from 'vue';
   import { VDataTable } from 'vuetify/components';
-  import { useRouter } from 'vue-router';
+  import { useRouter, useRoute } from 'vue-router';
+  import api from "../api";
 
   const baseUnitSearch = ref('');
   const cameraSearch = ref('');
@@ -178,6 +178,8 @@
   const error = ref(null);
   const loading = ref(true);
   const router = useRouter();
+  const route = useRoute();
+
   const headers = ref([
     {title: 'Name', align: 'start', sortable: true, value: 'name', class: 'blue lighten-5'},
     {title: 'Location', value: 'location', sortable: true },
@@ -203,6 +205,16 @@
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
 
+  // fetch the user information when params change
+  watch(
+    () => route.params.id,
+    async refresh => {
+      fetchBaseUnits();
+      fetchCameras();
+      fetchOtherItems();
+    }
+  );
+
   onMounted(async () => {
     console.log('IN onMounted');
     fetchBaseUnits();
@@ -225,7 +237,21 @@
     console.log("IN navigateToDetails: " + JSON.stringify(item));
 
     event.preventDefault();
-    router.push({name: 'base-unit', params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet, face_camera: item.face_camera, license_plate_camera: item.license_plate_camera, widescreen_camera: item.widescreen_camera}}).catch(failure => {
+
+    let face_camera = "NONE";
+    if ('face_camera' in item && item.face_camera != null) {
+      face_camera = item.face_camera;
+    }
+    let license_plate_camera = "NONE";
+    if ('license_plate_camera' in item && item.license_plate_camera != null) {
+      license_plate_camera = item.license_plate_camera;
+    }
+    let widescreen_camera = "NONE";
+    if ('widescreen_camera' in item && item.widescreen_camera != null) {
+      widescreen_camera = item.widescreen_camera;
+    }
+
+    router.push({name: 'base-unit', params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet, face_camera: face_camera, license_plate_camera: license_plate_camera, widescreen_camera: widescreen_camera}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT navigateToDetails");
@@ -236,7 +262,17 @@
     console.log("IN navigateToCameraDetails: " + JSON.stringify(item));
 
     event.preventDefault();
-    router.push({name: 'camera', params: {id: item.id, name: item.name, location: item.location, base_unit: item.base_unit, camera_type: item.type}}).catch(failure => {
+    let camera_location = -1;
+    if ('location' in item && item.location != null) {
+      camera_location = item.location;
+    }
+    let camera_bu = "NONE";
+    if ('base_unit' in item && item.base_unit != null) {
+      camera_bu = item.base_unit;
+    }
+
+    console.log("camera_location=" + camera_location + "; camera_bu=" + camera_bu);
+    router.push({name: 'camera', params: {id: item.id, name: item.name, location: camera_location, base_unit: camera_bu, camera_type: item.type}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT navigateToCameraDetails");
@@ -247,22 +283,46 @@
     console.log("IN navigateToOtherItemsDetails: " + JSON.stringify(item));
 
     event.preventDefault();
-    router.push({name: 'other-items', params: {id: item.id, name: item.name, location: item.location, base_unit: item.base_unit}}).catch(failure => {
+    let other_location = -1;
+    if ('location' in item && item.location != null) {
+      other_location = item.location;
+    }
+    let other_bu = "NONE";
+    if ('base_unit' in item && item.base_unit != null) {
+      other_bu = item.base_unit;
+    }
+
+    router.push({name: 'other-items', params: {id: item.id, name: item.name, location: other_location, base_unit: other_bu}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT navigateToOtherItemsDetails");
   }
 
-  const createNewItem = () => {
-    console.log("IN createNewItem");
+  const createBaseUnit = () => {
+    console.log("IN createBaseUnit");
     router.push({name: 'create'}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
-    console.log("OUT createNewItem");
+    console.log("OUT createBaseUnit");
+  }
+
+  const createCamera = () => {
+    console.log("IN createCamera");
+    router.push({name: 'create-camera'}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT createCamera");
+  }
+
+  const createOtherItem = () => {
+    console.log("IN createOtherItem");
+    router.push({name: 'create-other-item'}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT createOtherItem");
   }
 
   const fetchBaseUnits = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-base-units/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -270,7 +330,7 @@
     };
 
     try {
-        const response = await axios.get(apiUrl, config);
+        const response = await api.get('/get-base-units/', config);
         baseUnitsTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -280,7 +340,6 @@
   };
 
 const fetchCameras = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-cameras/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -288,7 +347,7 @@ const fetchCameras = async () => {
     };
 
     try {
-        const response = await axios.get(apiUrl, config);
+        const response = await api.get('/get-cameras/', config);
         camerasTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -297,7 +356,6 @@ const fetchCameras = async () => {
     }
   };
   const fetchOtherItems = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-other-items/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -305,7 +363,7 @@ const fetchCameras = async () => {
     };
 
     try {
-        const response = await axios.get(apiUrl, config);
+        const response = await api.get('/get-other-items/', config);
         otherItemsTable.value = response.data;
         loading.value = false;
     } catch (e) {

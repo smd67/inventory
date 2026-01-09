@@ -134,6 +134,10 @@
           ></v-text-field>
           <!-- Add a v-spacer if needed to align items correctly with default footer content -->
           <v-spacer></v-spacer>
+          <v-btn color="primary" dark small class="ma-2" @click="addNote">
+            <v-icon left>mdi-plus</v-icon>
+            Add
+          </v-btn>
         </template>
       </v-data-table>
     </v-container>
@@ -162,6 +166,10 @@
           ></v-text-field>
           <!-- Add a v-spacer if needed to align items correctly with default footer content -->
           <v-spacer></v-spacer>
+          <v-btn color="primary" dark small class="ma-2" @click="addMaintenanceTask">
+            <v-icon left>mdi-plus</v-icon>
+            Add
+          </v-btn>
         </template>
       </v-data-table>
     </v-container>
@@ -173,9 +181,9 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, defineProps } from 'vue';
-  import axios from 'axios';
-  import { useRouter } from 'vue-router';
+  import { ref, onMounted, defineProps, watch } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
+  import api from "../api";
 
   const error = ref(null);
   const loading = ref(true);
@@ -188,6 +196,7 @@
   const license_plate_camera = ref(null);
   const widescreen_camera = ref(null);
   const router = useRouter();
+  const route = useRoute()
   const notesTable = ref([]);
   const maintTable = ref([]);
   const cameraTable = ref([]);
@@ -252,6 +261,16 @@
     },
   });
 
+  // fetch the user information when params change
+  watch(
+    () => route.params.id,
+    async refresh => {
+      fetchCameras();
+      fetchNotes();
+      fetchMaintTasks();
+      fetchOther();
+    }
+  )
   onMounted(async () => {
     console.log('IN onMounted');
     id.value = props.id;
@@ -272,9 +291,17 @@
   const navigateToCameraDetails = (event, { item }) => {
     // Prevent the default browser double-click behavior (e.g., text selection)
     console.log("IN navigateToCameraDetails: " + JSON.stringify(item));
-
+    
     event.preventDefault();
-    router.push({name: 'camera', params: {id: item.id, name: item.name, location: item.location, base_unit: item.base_unit, camera_type: item.type}}).catch(failure => {
+    let camera_location = -1;
+    if ('location' in item && item.location != null) {
+      camera_location = item.location;
+    }
+    let camera_bu = "NONE";
+    if ('base_unit' in item && item.base_unit != null) {
+      camera_bu = item.base_unit;
+    }
+    router.push({name: 'camera', params: {id: item.id, name: item.name, location: camera_location, base_unit: camera_bu, camera_type: item.type}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT navigateToCameraDetails");
@@ -285,12 +312,20 @@
     console.log("IN navigateToOtherItemsDetails: " + JSON.stringify(item));
 
     event.preventDefault();
-    router.push({name: 'other-items', params: {id: item.id, name: item.name, location: item.location, base_unit: item.base_unit}}).catch(failure => {
+    let other_location = -1;
+    if ('location' in item && item.location != null) {
+      other_location = item.location;
+    }
+    let other_bu = "NONE";
+    if ('base_unit' in item && item.base_unit != null) {
+      other_bu = item.base_unit;
+    }
+    router.push({name: 'other-items', params: {id: item.id, name: item.name, location: other_location, base_unit: other_bu}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT navigateToOtherItemsDetails");
   }
-  
+
   const goBack = () => {
     console.log("IN goBack");
     router.push({name: 'prototype'}).catch(failure => {
@@ -299,8 +334,23 @@
     console.log("OUT goBack");
   };
 
+  const addMaintenanceTask = () => {
+    console.log("IN addMaintenanceTask");
+    router.push({name: 'add-maintenance-task', params: {item_type: 'BASE_UNIT', item_ref: id.value}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT addMaintenanceTask");
+  }
+
+  const addNote = () => {
+    console.log("IN addNote");
+    router.push({name: 'add-note', params: {item_type: 'BASE_UNIT', item_ref: id.value}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT addNote");
+  }
+
   const fetchNotes = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-notes/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -311,7 +361,7 @@
       item_ref: id.value,
     };
     try {
-        const response = await axios.post(apiUrl, requestBody, config);
+        const response = await api.post('/get-notes/', requestBody, config);
         notesTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -322,7 +372,6 @@
   };
 
   const fetchMaintTasks = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-maint-tasks/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -333,7 +382,7 @@
       item_ref: id.value,
     };
     try {
-        const response = await axios.post(apiUrl, requestBody, config);
+        const response = await api.post('/get-maint-tasks/', requestBody, config);
         maintTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -344,7 +393,6 @@
   };
 
   const fetchCameras = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-cameras-for-bu/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -354,7 +402,7 @@
       base_unit_ref: id.value,
     };
     try {
-        const response = await axios.post(apiUrl, requestBody, config);
+        const response = await api.post('/get-cameras-for-bu/', requestBody, config);
         cameraTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -365,7 +413,6 @@
   };
 
   const fetchOther = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-other-items-for-bu/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -375,7 +422,7 @@
       base_unit_ref: id.value,
     };
     try {
-        const response = await axios.post(apiUrl, requestBody, config);
+        const response = await api.post('/get-other-items-for-bu/', requestBody, config);
         otherTable.value = response.data;
         loading.value = false;
     } catch (e) {

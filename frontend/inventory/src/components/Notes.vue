@@ -47,6 +47,7 @@
   import axios from 'axios';
   import { VDataTable } from 'vuetify/components';
   import { useRouter } from 'vue-router';
+  import api from "../api";
 
   const search = ref('')
   const notesTable = ref([]);
@@ -88,7 +89,6 @@
   }
 
   const fetchNotes = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-notes/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -100,7 +100,7 @@
     };
     console.log("body=" + JSON.stringify(requestBody));
     try {
-        const response = await axios.post(apiUrl, requestBody, config);
+        const response = await api.post('/get-notes/', requestBody, config);
         notesTable.value = response.data;
         loading.value = false;
     } catch (e) {

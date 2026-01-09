@@ -41,6 +41,7 @@
         :search="notesSearch"
         item-value="date"
         class="elevation-1"
+        :key="notesKey"
       >
         <!-- If you still want the default pagination controls alongside the search -->
         <template v-slot:footer.prepend>
@@ -56,6 +57,10 @@
           ></v-text-field>
           <!-- Add a v-spacer if needed to align items correctly with default footer content -->
           <v-spacer></v-spacer>
+          <v-btn color="primary" dark small class="ma-2" @click="addNote">
+            <v-icon left>mdi-plus</v-icon>
+            Add
+          </v-btn>
         </template>
       </v-data-table>
     </v-container>
@@ -69,6 +74,7 @@
         :search="maintSearch"
         item-value="status"
         class="elevation-1"
+        :key="maintKey"
       >
         <!-- If you still want the default pagination controls alongside the search -->
         <template v-slot:footer.prepend>
@@ -84,6 +90,10 @@
           ></v-text-field>
           <!-- Add a v-spacer if needed to align items correctly with default footer content -->
           <v-spacer></v-spacer>
+          <v-btn color="primary" dark small class="ma-2" @click="addMaintenanceTask">
+            <v-icon left>mdi-plus</v-icon>
+            Add
+          </v-btn>
         </template>
       </v-data-table>
     </v-container>
@@ -95,22 +105,24 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, defineProps } from 'vue';
-  import axios from 'axios';
-  import { useRouter } from 'vue-router';
+  import { ref, onMounted, defineProps, watch } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
+  import api from "../api";
 
   const error = ref(null);
   const loading = ref(true);
   const id = ref(null);
   const name = ref(null);
-  const cameraType = ref(null);
   const baseUnit = ref(null);
   const location = ref(null);
   const router = useRouter();
+  const route = useRoute();
   const notesTable = ref([]);
   const maintTable = ref([]);
   const notesSearch = ref('');
   const maintSearch = ref('');
+  const notesKey = ref(0);
+  const maintKey = ref(0);
   
   const notesHeaders = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
@@ -141,6 +153,18 @@
       default: "",
     },
   });
+  
+  // fetch the user information when params change
+  watch(
+    () => route.params.id,
+    async refresh => {
+      console.log("IN watch.refresh");
+      fetchNotes();
+      notesKey.value += 1;
+      fetchMaintTasks();
+      maintKey.value += 1;
+    }
+  );
 
   onMounted(async () => {
     console.log('IN onMounted');
@@ -149,7 +173,9 @@
     location.value = props.location;
     baseUnit.value = props.base_unit;
     fetchNotes();
+    notesKey.value += 1;
     fetchMaintTasks();
+    maintKey.value += 1;
     console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; base_unit=' + baseUnit.value);
   });
 
@@ -159,19 +185,33 @@
     console.log("OUT goBack");
   };
 
+  const addMaintenanceTask = () => {
+    console.log("IN addMaintenanceTask");
+    router.push({name: 'add-maintenance-task', params: {item_type: 'OTHER', item_ref: id.value}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT addMaintenanceTask");
+  }
+
+  const addNote = () => {
+    console.log("IN addNote");
+    router.push({name: 'add-note', params: {item_type: 'OTHER', item_ref: id.value}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT addNote");
+  }
   const fetchNotes = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-notes/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
         }
     };
     const requestBody = {
-      item_type: 'CAMERA',
+      item_type: 'OTHER',
       item_ref: id.value,
     };
     try {
-        const response = await axios.post(apiUrl, requestBody, config);
+        const response = await api.post('/get-notes/', requestBody, config);
         notesTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -182,18 +222,17 @@
   };
 
   const fetchMaintTasks = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-maint-tasks/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
         }
     };
     const requestBody = {
-      item_type: 'CAMERA',
+      item_type: 'OTHER',
       item_ref: id.value,
     };
     try {
-        const response = await axios.post(apiUrl, requestBody, config);
+        const response = await api.post('/get-maint-tasks/', requestBody, config);
         maintTable.value = response.data;
         loading.value = false;
     } catch (e) {

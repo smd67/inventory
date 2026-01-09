@@ -21,6 +21,17 @@ class Status(str, Enum):
             return Status.DONE
         elif label == Status.FAILED.name:
             return Status.FAILED
+     
+    @staticmethod
+    def from_str_value(label: str):
+        if label == Status.PENDING.value:
+            return Status.PENDING
+        elif label == Status.IN_PROGRESS.value:
+            return Status.IN_PROGRESS
+        elif label == Status.DONE.value:
+            return Status.DONE
+        elif label == Status.FAILED.value:
+            return Status.FAILED
         
 class ItemType(Enum):
     """
@@ -56,7 +67,17 @@ class CameraType(str, Enum):
             return CameraType.WIDE_SCREEN_CAMERA
         else:
             return CameraType.OTHER
-        
+    
+    @staticmethod
+    def from_str_value(label: str):
+        if label == CameraType.FACE_CAMERA.value:
+            return CameraType.FACE_CAMERA
+        elif label == CameraType.LICENSE_PLATE_CAMERA.value:
+            return CameraType.LICENSE_PLATE_CAMERA
+        elif label == CameraType.WIDE_SCREEN_CAMERA.value:
+            return CameraType.WIDE_SCREEN_CAMERA
+        else:
+            return CameraType.OTHER
 
 class BaseUnit(BaseModel):
     """
@@ -132,14 +153,14 @@ class CameraQueryResult(BaseModel):
     id: int
     name: str
     type: str
-    base_unit: str
-    location: str
+    base_unit: Optional[str] = None
+    location: Optional[str] = None
 
 class OtherQueryResult(BaseModel):
     id: int
     name: str
-    base_unit: str
-    location: str
+    base_unit: Optional[str] = None
+    location: Optional[str] = None
 
 class NotesQuery(BaseModel):
     """
@@ -154,3 +175,33 @@ class CameraQuery(BaseModel):
 class OtherItemQuery(BaseModel):
     base_unit_ref: int
 
+
+class BaseUnitCreate(BaseModel):
+    name: str
+    location: int
+    has_new_mast_bearing: Optional[bool] = False
+    has_new_feet: Optional[bool] = False
+    face_camera: Optional[str] = None
+    license_plate_camera: Optional[str] = None
+    widescreen_camera: Optional[str] = None
+
+class CameraCreate(BaseModel):
+    name: str
+    camera_type: str
+    base_unit: Optional[str] = None
+
+class OtherItemCreate(BaseModel):
+    name: str
+    base_unit: Optional[str] = None
+
+class MaintenanceTaskCreate(BaseModel):
+    last_done_date: str
+    description: str
+    status: str
+    item_type: str
+    item_ref: int
+
+class NotesCreate(BaseModel):
+    description: str
+    item_type: str
+    item_ref: int

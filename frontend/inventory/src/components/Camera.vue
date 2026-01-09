@@ -61,6 +61,10 @@
           ></v-text-field>
           <!-- Add a v-spacer if needed to align items correctly with default footer content -->
           <v-spacer></v-spacer>
+          <v-btn color="primary" dark small class="ma-2" @click="addNote">
+            <v-icon left>mdi-plus</v-icon>
+            Add
+          </v-btn>
         </template>
       </v-data-table>
     </v-container>
@@ -89,6 +93,10 @@
           ></v-text-field>
           <!-- Add a v-spacer if needed to align items correctly with default footer content -->
           <v-spacer></v-spacer>
+          <v-btn color="primary" dark small class="ma-2" @click="addMaintenanceTask">
+            <v-icon left>mdi-plus</v-icon>
+            Add
+          </v-btn>
         </template>
       </v-data-table>
     </v-container>
@@ -100,9 +108,9 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, defineProps } from 'vue';
-  import axios from 'axios';
-  import { useRouter } from 'vue-router';
+  import { ref, onMounted, defineProps, watch } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
+  import api from "../api";
 
   const error = ref(null);
   const loading = ref(true);
@@ -112,6 +120,7 @@
   const baseUnit = ref(null);
   const location = ref(null);
   const router = useRouter();
+  const route = useRoute();
   const notesTable = ref([]);
   const maintTable = ref([]);
   const notesSearch = ref('');
@@ -151,6 +160,14 @@
     },
   });
 
+  // fetch the user information when params change
+  watch(
+    () => route.params.id,
+    async refresh => {
+      fetchNotes();
+      fetchMaintTasks();
+    }
+  );
   onMounted(async () => {
     console.log('IN onMounted');
     id.value = props.id;
@@ -169,8 +186,23 @@
     console.log("OUT goBack");
   };
 
+  const addMaintenanceTask = () => {
+    console.log("IN addMaintenanceTask");
+    router.push({name: 'add-maintenance-task', params: {item_type: 'CAMERA', item_ref: id.value}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT addMaintenanceTask");
+  }
+
+  const addNote = () => {
+    console.log("IN addNote");
+    router.push({name: 'add-note', params: {item_type: 'CAMERA', item_ref: id.value}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT addNote");
+  }
+
   const fetchNotes = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-notes/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -181,7 +213,7 @@
       item_ref: id.value,
     };
     try {
-        const response = await axios.post(apiUrl, requestBody, config);
+        const response = await api.post('/get-notes/', requestBody, config);
         notesTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -192,7 +224,6 @@
   };
 
   const fetchMaintTasks = async () => {
-    const apiUrl = 'http://127.0.0.1:8001/get-maint-tasks/';
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -203,7 +234,7 @@
       item_ref: id.value,
     };
     try {
-        const response = await axios.post(apiUrl, requestBody, config);
+        const response = await  api.post('/get-maint-tasks/', requestBody, config);
         maintTable.value = response.data;
         loading.value = false;
     } catch (e) {

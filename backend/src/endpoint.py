@@ -3,9 +3,11 @@ import psycopg
 from psycopg.rows import class_row
 
 from typing import List, Any, Dict, Generator, Tuple
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from model import BaseUnitQueryResult, Notes, NotesQuery, CameraQueryResult, OtherQueryResult, MaintenanceTask, MaintenanceTaskQuery, CameraQuery, OtherItemQuery
+from model import BaseUnitQueryResult, Notes, NotesQuery, CameraQueryResult, OtherQueryResult
+from model import MaintenanceTask, MaintenanceTaskQuery, CameraQuery, OtherItemQuery, BaseUnitCreate
+from model import CameraCreate, OtherItemCreate, MaintenanceTaskCreate, NotesCreate
 from common import get_secret
 from db import Database
 
@@ -76,41 +78,79 @@ def get_other_items_for_bu(query: OtherItemQuery) -> List[OtherQueryResult]:
     print(f"OUT Endpoint.get_other_items_for_bu. other_items_list={other_items_list}")
     return other_items_list
 
-# @app.post("/create-asset")
-# def create_asset(item: Item) -> None:
-#     print(f"IN create-asset item={item}")
-#     db_user = os.getenv("DB_USER")
-#     db_password = get_secret(os.getenv("DB_PWD"))
-#     db_host = os.getenv("DB_HOST")
-#     db_port = os.getenv("DB_PORT")
-#     db_name = os.getenv("DB_NAME")
-    
-#     # Define your database connection details
-#     DATABASE_URL = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+@app.post("/create-base-unit")
+def create_base_unit(query: BaseUnitCreate) -> None:
+    print(f"IN create-base-unit query={query}")
+    try:
+        db = Database()
+        db.create_base_unit(query.name, 
+                            query.location, 
+                            query.has_new_mast_bearing, 
+                            query.has_new_feet, 
+                            face_camera=query.face_camera, 
+                            license_plate_camera=query.license_plate_camera, 
+                            widescreen_camera=query.widescreen_camera)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT create-base-unit")
 
-#     # 3. Construct the SQL INSERT query
-#     sql = """
-#         INSERT INTO inventory (id, location, has_new_feet, has_new_mast_bearing, together_with_face_camera, together_with_license_plate_camera, together_with_widescreen_camera)
-#         VALUES (%(id)s, %(location)s, %(has_new_feet)s, %(has_new_mast_bearing)s, %(together_with_face_camera)s, %(together_with_license_plate_camera)s, %(together_with_widescreen_camera)s)
-#     """
+@app.post("/create-camera")
+def create_camera(query: CameraCreate) -> None:
+    print(f"IN create-camera query={query}")
+    try:
+        db = Database()
+        db.create_camera(query.name, query.camera_type, query.base_unit)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT create-camera")
 
-#     values_dict = item.model_dump()
 
-#     print(f"values_dict={values_dict}")
-#     try:
-#         # Use a 'with' statement to ensure the connection is closed automatically
-#         with psycopg.connect(DATABASE_URL) as conn:
-#             # Open a cursor to perform database operations
-#             with conn.cursor() as cur:
-#                 # Execute a command
-#                 cur.execute(sql, values_dict)
-#                 conn.commit()
+@app.post("/create-other-item")
+def create_other_item(query: OtherItemCreate) -> None:
+    print(f"IN create-other-item query={query}")
+    try:
+        db = Database()
+        db.create_other_item(query.name, query.base_unit)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT create-other-item")
 
-#     except psycopg.OperationalError as e:
-#         print(f"Database connection failed: {e}")
-#     except Exception as e:
-#         print(f"An error occurred: {e}")
-    
+@app.post("/add-maintenance-task")
+def add_maintenance_task(query: MaintenanceTaskCreate) -> None:
+    print(f"IN add-maintenance-task query={query}")
+    try:
+        db = Database()
+        db.add_maintenance_task(query.description, query.status, query.last_done_date, query.item_type, query.item_ref)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT add-maintenance-task")
 
-if __name__ == "__main__":
-    get_inventory()
+@app.post("/add-note")
+def add_note(query: NotesCreate) -> None:
+    print(f"IN add-note query={query}")
+    try:
+        db = Database()
+        db.add_note(query.description, query.item_type, query.item_ref)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT add-note")
