@@ -5,9 +5,7 @@ from psycopg.rows import class_row
 from typing import List, Any, Dict, Generator, Tuple
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from model import BaseUnitQueryResult, Notes, NotesQuery, CameraQueryResult, OtherQueryResult
-from model import MaintenanceTask, MaintenanceTaskQuery, CameraQuery, OtherItemQuery, BaseUnitCreate
-from model import CameraCreate, OtherItemCreate, MaintenanceTaskCreate, NotesCreate
+import model
 from common import get_secret
 from db import Database
 
@@ -25,13 +23,13 @@ app.add_middleware(
 )
 
 @app.get("/get-base-units")
-def get_base_units() -> List[BaseUnitQueryResult]:
+def get_base_units() -> List[model.BaseUnitQueryResult]:
     db = Database()
     results = db.get_business_units()
     return results
 
 @app.post("/get-notes")
-def get_notes(query: NotesQuery) -> List[Notes]:
+def get_notes(query: model.NotesQuery) -> List[model.Notes]:
     print("IN Endpoint.get_notes")
     db = Database()
     note_list = db.get_notes(query.item_type, query.item_ref)
@@ -39,7 +37,7 @@ def get_notes(query: NotesQuery) -> List[Notes]:
     return note_list
 
 @app.post("/get-maint-tasks")
-def get_maint_tasks(query: MaintenanceTaskQuery) -> List[MaintenanceTask]:
+def get_maint_tasks(query: model.MaintenanceTaskQuery) -> List[model.MaintenanceTask]:
     print("IN Endpoint.get_maint_tasks")
     db = Database()
     maint_list = db.get_maintenance_tasks(query.item_type, query.item_ref)
@@ -47,7 +45,7 @@ def get_maint_tasks(query: MaintenanceTaskQuery) -> List[MaintenanceTask]:
     return maint_list
 
 @app.get("/get-cameras")
-def get_cameras() -> List[CameraQueryResult]:
+def get_cameras() -> List[model.CameraQueryResult]:
     print("IN Endpoint.get_cameras")
     db = Database()
     camera_list = db.get_cameras()
@@ -55,7 +53,7 @@ def get_cameras() -> List[CameraQueryResult]:
     return camera_list
 
 @app.post("/get-cameras-for-bu")
-def get_cameras_for_bu(query: CameraQuery) -> List[CameraQueryResult]:
+def get_cameras_for_bu(query: model.CameraQuery) -> List[model.CameraQueryResult]:
     print("IN Endpoint.get_cameras_for_bu")
     db = Database()
     camera_list = db.get_cameras_for_bu(query.base_unit_ref)
@@ -63,7 +61,7 @@ def get_cameras_for_bu(query: CameraQuery) -> List[CameraQueryResult]:
     return camera_list
 
 @app.get("/get-other-items")
-def get_other_items() -> List[OtherQueryResult]:
+def get_other_items() -> List[model.OtherItemQueryResult]:
     print("IN Endpoint.get_other_items")
     db = Database()
     other_items_list = db.get_other_items()
@@ -71,7 +69,7 @@ def get_other_items() -> List[OtherQueryResult]:
     return other_items_list
 
 @app.post("/get-other-items-for-bu")
-def get_other_items_for_bu(query: OtherItemQuery) -> List[OtherQueryResult]:
+def get_other_items_for_bu(query: model.OtherItemQuery) -> List[model.OtherItemQueryResult]:
     print("IN Endpoint.get_other_items_for_bu")
     db = Database()
     other_items_list = db.get_other_items_for_bu(query.base_unit_ref)
@@ -79,7 +77,7 @@ def get_other_items_for_bu(query: OtherItemQuery) -> List[OtherQueryResult]:
     return other_items_list
 
 @app.post("/create-base-unit")
-def create_base_unit(query: BaseUnitCreate) -> None:
+def create_base_unit(query: model.BaseUnitCreate) -> None:
     print(f"IN create-base-unit query={query}")
     try:
         db = Database()
@@ -99,7 +97,7 @@ def create_base_unit(query: BaseUnitCreate) -> None:
     print(f"OUT create-base-unit")
 
 @app.post("/create-camera")
-def create_camera(query: CameraCreate) -> None:
+def create_camera(query: model.CameraCreate) -> None:
     print(f"IN create-camera query={query}")
     try:
         db = Database()
@@ -114,7 +112,7 @@ def create_camera(query: CameraCreate) -> None:
 
 
 @app.post("/create-other-item")
-def create_other_item(query: OtherItemCreate) -> None:
+def create_other_item(query: model.OtherItemCreate) -> None:
     print(f"IN create-other-item query={query}")
     try:
         db = Database()
@@ -128,7 +126,7 @@ def create_other_item(query: OtherItemCreate) -> None:
     print(f"OUT create-other-item")
 
 @app.post("/add-maintenance-task")
-def add_maintenance_task(query: MaintenanceTaskCreate) -> None:
+def add_maintenance_task(query: model.MaintenanceTaskCreate) -> None:
     print(f"IN add-maintenance-task query={query}")
     try:
         db = Database()
@@ -141,8 +139,22 @@ def add_maintenance_task(query: MaintenanceTaskCreate) -> None:
         )
     print(f"OUT add-maintenance-task")
 
+@app.post("/delete-maintenance-task")
+def delete_maintenance_task(query: model.MaintenanceTaskDelete) -> None:
+    print(f"IN add-maintenance-task query={query}")
+    try:
+        db = Database()
+        db.delete_maintenance_task(query.id)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT add-maintenance-task")
+
 @app.post("/add-note")
-def add_note(query: NotesCreate) -> None:
+def add_note(query: model.NotesCreate) -> None:
     print(f"IN add-note query={query}")
     try:
         db = Database()
@@ -154,3 +166,73 @@ def add_note(query: NotesCreate) -> None:
             detail=f"An unexpected exception e={e} has occured"
         )
     print(f"OUT add-note")
+
+@app.post("/delete-note")
+def delete_note(query: model.NotesDelete) -> None:
+    print(f"IN delete-note query={query}")
+    try:
+        db = Database()
+        db.delete_note(query.id)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT delete-note")
+
+@app.post("/delete-other-item")
+def delete_other_item(query: model.OtherItemDelete) -> None:
+    print(f"IN delete-other-item query={query}")
+    try:
+        db = Database()
+        db.delete_other_item(query.id)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT delete-other-item")
+
+@app.post("/delete-camera")
+def delete_camera(query: model.CameraDelete) -> None:
+    print(f"IN delete-camera query={query}")
+    try:
+        db = Database()
+        db.delete_camera(query.id, query.name, query.type, query.base_unit)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT delete-camera")
+
+@app.post("/delete-base-unit")
+def delete_base_unit(query: model.BaseUnitDelete) -> None:
+    print(f"IN delete-base-unit query={query}")
+    try:
+        db = Database()
+        db.delete_base_unit(query.id, query.face_camera, query.license_plate_camera, query.widescreen_camera)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT delete-base-unit")
+
+@app.post("/update-other-item")
+def update_other_item(query: model.OtherItemUpdate) -> None:
+    print(f"IN update-other-item query={query}")
+    try:
+        db = Database()
+        db.update_other_item(query.name, query.base_unit)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT update-other-item")

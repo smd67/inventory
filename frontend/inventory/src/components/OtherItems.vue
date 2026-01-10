@@ -31,7 +31,7 @@
         </v-form>
       </v-sheet>
     </v-container>
-    <v-container  width="750">
+    <v-container  width="800">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Notes
       </div>
@@ -62,9 +62,24 @@
             Add
           </v-btn>
         </template>
+        <!-- Use the specific slot name 'item.actions' -->
+        <template v-slot:item.actions="{ item }">
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-btn icon v-bind="props">
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item @click="deleteNote(item)">
+                <v-list-item-title>Delete</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </template>
       </v-data-table>
     </v-container>
-    <v-container  width="750">
+    <v-container  width="800">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Maintenance Tasks
       </div>
@@ -95,8 +110,25 @@
             Add
           </v-btn>
         </template>
+
+        <!-- Use the specific slot name 'item.actions' -->
+        <template v-slot:item.actions="{ item }">
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-btn icon v-bind="props">
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item @click="deleteMaintenanceTask(item)">
+                <v-list-item-title>Delete</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </template>
       </v-data-table>
     </v-container>
+    <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
   </div>
   
   <div v-else class="error-banner" style="color: red;">
@@ -107,6 +139,7 @@
 <script setup>
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
+  import ConfirmDialog from './ConfirmDialog.vue';
   import api from "../api";
 
   const error = ref(null);
@@ -123,16 +156,21 @@
   const maintSearch = ref('');
   const notesKey = ref(0);
   const maintKey = ref(0);
+  const confirmDialog = ref(null);
   
   const notesHeaders = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
-    {title: 'Description', value: 'description' , sortable: true}
+    {title: 'Description', value: 'description' , sortable: true},
+    // ... other headers
+    { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
 
   const maintHeaders = ref([
     {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
     {title: 'Status', value: 'status' , sortable: true},
     {title: 'Last Done', value: 'last_done_date' , sortable: true},
+    // ... other headers
+    { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
 
   const props = defineProps({
@@ -158,7 +196,7 @@
   watch(
     () => route.params.id,
     async refresh => {
-      console.log("IN watch.refresh");
+      console.log("IN watch.refresh. props=" + JSON.stringify(props));
       fetchNotes();
       notesKey.value += 1;
       fetchMaintTasks();
@@ -193,6 +231,41 @@
     console.log("OUT addMaintenanceTask");
   }
 
+  const deleteMaintenanceTask = async (item) => {
+    console.log("IN deleteMaintenanceTask item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this task?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+      };
+      try {
+          const response = await api.post('/delete-maintenance-task/', requestBody, config);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          error.value = 'Error fetching data:' + e;
+      }
+      fetchMaintTasks();
+      console.log('Maintenance Task deleted!');
+      // Perform deletion logic here
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT deleteMaintenanceTask");
+  };
+
   const addNote = () => {
     console.log("IN addNote");
     router.push({name: 'add-note', params: {item_type: 'OTHER', item_ref: id.value}}).catch(failure => {
@@ -200,6 +273,41 @@
     });
     console.log("OUT addNote");
   }
+
+  const deleteNote = async (item) => {
+    console.log("IN deleteNote item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this note?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+      };
+      try {
+          const response = await api.post('/delete-note/', requestBody, config);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          error.value = 'Error fetching data:' + e;
+      }
+      console.log('Note deleted!');
+      fetchNotes();
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT deleteNote");
+  };
+
   const fetchNotes = async () => {
     const config = {
         headers: {

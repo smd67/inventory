@@ -3,7 +3,7 @@ import psycopg
 
 from psycopg.rows import class_row
 from common import get_secret
-from model import BaseUnitQueryResult, Notes, CameraType, ItemType, CameraQueryResult, OtherQueryResult
+import model
 from model import  MaintenanceTask, Status
 from typing import List
 from datetime import datetime
@@ -49,7 +49,7 @@ class Database:
         else:
             self.connection = getattr(self, '_connection')
 
-    def get_business_units(self) -> List[BaseUnitQueryResult]:
+    def get_business_units(self) -> List[model.BaseUnitQueryResult]:
         print("IN Database.get_business_units")
         bu_dict = {}
         # Open a cursor to perform database operations
@@ -65,26 +65,26 @@ class Database:
                 if row[0][1] in bu_dict:
                     bu_results = bu_dict[row[0][1]]
                 else:
-                    bu_results = BaseUnitQueryResult(id=row[0][0], 
-                                                     name=row[0][1], 
-                                                     location=row[0][2],
-                                                     has_new_mast_bearing=row[0][3],
-                                                     has_new_feet=row[0][4])
+                    bu_results = model.BaseUnitQueryResult(id=row[0][0], 
+                                                            name=row[0][1], 
+                                                            location=row[0][2],
+                                                            has_new_mast_bearing=row[0][3],
+                                                            has_new_feet=row[0][4])
                     bu_dict[row[0][1]] = bu_results
-                camera_type = CameraType.from_str(row[0][6])
-                print(f"camera_type={camera_type} {CameraType.FACE_CAMERA.name}")
-                if camera_type == CameraType.FACE_CAMERA:
+                camera_type = model.CameraType.from_str(row[0][6])
+                print(f"camera_type={camera_type} {model.CameraType.FACE_CAMERA.name}")
+                if camera_type == model.CameraType.FACE_CAMERA:
                     bu_results.face_camera = row[0][5]
-                elif camera_type == CameraType.LICENSE_PLATE_CAMERA:
+                elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
                     bu_results.license_plate_camera = row[0][5]
-                elif camera_type == CameraType.WIDE_SCREEN_CAMERA:
+                elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
                     bu_results.widescreen_camera= row[0][5]
 
         print(f"OUT Database.get_business_units: {list(bu_dict.values())}")
         return list(bu_dict.values())
     
 
-    def get_notes(self, item_type: str, item_ref: int) -> List[Notes]:
+    def get_notes(self, item_type: str, item_ref: int) -> List[model.Notes]:
         print(f"IN Database.get_notes. item_type={item_type}; item_ref={item_ref}")
         note_list = []
         # Open a cursor to perform database operations
@@ -93,12 +93,12 @@ class Database:
             cur.execute(f"SELECT * from notes WHERE item_type='{item_type}' AND item_ref='{item_ref}'")
             # Fetch the results
             for row in cur:
-                note = Notes(id=row[0], description=row[1], date=row[2], item_type=ItemType.from_str(row[3]), item_ref=row[4])
+                note = model.Notes(id=row[0], description=row[1], date=row[2], item_type=model.ItemType.from_str(row[3]), item_ref=row[4])
                 note_list.append(note)
         print(f"OUT Database.get_notes. note_list={note_list}")
         return note_list
     
-    def get_maintenance_tasks(self, item_type: str, item_ref: int) -> List[MaintenanceTask]:
+    def get_maintenance_tasks(self, item_type: str, item_ref: int) -> List[model.MaintenanceTask]:
         print("IN Database.get_maintenance_tasks")
         maint_list = []
         # Open a cursor to perform database operations
@@ -107,17 +107,17 @@ class Database:
             cur.execute(f"SELECT * from maintenance WHERE item_type='{item_type}' AND item_ref='{item_ref}'")
             # Fetch the results
             for row in cur:
-                maint_task = MaintenanceTask(id=row[0], 
+                maint_task = model.MaintenanceTask(id=row[0], 
                                              description=row[1], 
                                              status=Status.from_str(row[2]), 
                                              last_done_date=row[3], 
-                                             item_type=ItemType.from_str(row[4]), 
+                                             item_type=model.ItemType.from_str(row[4]), 
                                              item_ref=row[5])
                 maint_list.append(maint_task)
         print("OUT Database.get_maintenance_tasks")
         return maint_list
     
-    def get_cameras(self) -> List[CameraQueryResult]:
+    def get_cameras(self) -> List[model.CameraQueryResult]:
         # Open a cursor to perform database operations
         print("IN get_cameras")
         camera_list = []
@@ -130,14 +130,14 @@ class Database:
             for curr_row in cur:
                 row = curr_row[0]
                 print(f"row={row}")
-                camera_type = CameraType.from_str(row[2])
-                camera = CameraQueryResult(id=row[0], name=row[1], type=camera_type.value, base_unit=row[3], location=row[4])
+                camera_type = model.CameraType.from_str(row[2])
+                camera = model.CameraQueryResult(id=row[0], name=row[1], type=camera_type.value, base_unit=row[3], location=row[4])
                 camera_list.append(camera)        
 
         print("OUT get_cameras")
         return camera_list
     
-    def get_cameras_for_bu(self, base_unit_ref: int) -> List[CameraQueryResult]:
+    def get_cameras_for_bu(self, base_unit_ref: int) -> List[model.CameraQueryResult]:
         # Open a cursor to perform database operations
         camera_list = []
         with self.connection.cursor() as cur:
@@ -149,14 +149,14 @@ class Database:
             camera_list = []
             for curr_row in cur:
                 row = curr_row[0]
-                camera_type = CameraType.from_str(row[2])
-                camera = CameraQueryResult(id=row[0], name=row[1], type=camera_type.value, base_unit=row[3], location=row[4])
+                camera_type = model.CameraType.from_str(row[2])
+                camera = model.CameraQueryResult(id=row[0], name=row[1], type=camera_type.value, base_unit=row[3], location=row[4])
                 camera_list.append(camera)
             return camera_list  
 
         return camera_list
     
-    def get_other_items(self) -> List[OtherQueryResult]:
+    def get_other_items(self) -> List[model.OtherItemQueryResult]:
         # Open a cursor to perform database operations
         other_list = []
         with self.connection.cursor() as cur:
@@ -167,12 +167,12 @@ class Database:
             # Fetch the results
             for curr_row in cur:
                 row = curr_row[0]
-                other = OtherQueryResult(id=row[0], name=row[1], base_unit=row[2], location=row[3])
+                other = model.OtherItemQueryResult(id=row[0], name=row[1], base_unit=row[2], location=row[3])
                 other_list.append(other)
 
         return other_list
     
-    def get_other_items_for_bu(self, base_unit_ref: int) -> List[OtherQueryResult]:
+    def get_other_items_for_bu(self, base_unit_ref: int) -> List[model.OtherItemQueryResult]:
         # Open a cursor to perform database operations
         other_list = []
         with self.connection.cursor() as cur:
@@ -183,7 +183,7 @@ class Database:
             # Fetch the results
             for curr_row in cur:
                 row = curr_row[0]
-                other = OtherQueryResult(id=row[0], name=row[1], base_unit=row[2], location=row[3])
+                other = model.OtherItemQueryResult(id=row[0], name=row[1], base_unit=row[2], location=row[3])
                 other_list.append(other)
 
         return other_list
@@ -235,7 +235,7 @@ class Database:
         print("IN create_camera")
         with self.connection.cursor() as cursor:
             # Execute a command
-            camera_type_enum = CameraType.from_str_value(camera_type)
+            camera_type_enum = model.CameraType.from_str_value(camera_type)
             cursor.execute("insert into cameras (name, type) " + 
                            f"values('{name}', '{camera_type_enum.name}')")
             self.connection.commit()
@@ -252,13 +252,13 @@ class Database:
                 cursor.execute(f"update cameras set base_unit_ref={bu_id} WHERE id={camera_id}")
                 self.connection.commit()
 
-                if camera_type_enum == CameraType.FACE_CAMERA:
+                if camera_type_enum == model.CameraType.FACE_CAMERA:
                     cursor.execute(f"update base_units set face_camera_ref={camera_id} WHERE id={bu_id}")
                     self.connection.commit()
-                elif camera_type_enum == CameraType.LICENSE_PLATE_CAMERA:
+                elif camera_type_enum == model.CameraType.LICENSE_PLATE_CAMERA:
                     cursor.execute(f"update base_units set license_plate_camera_ref={camera_id} WHERE id={bu_id}")
                     self.connection.commit()
-                elif camera_type_enum == CameraType.WIDE_SCREEN_CAMERA:
+                elif camera_type_enum == model.CameraType.WIDE_SCREEN_CAMERA:
                     cursor.execute(f"update base_units set wide_screen_camera_ref={camera_id} WHERE id={bu_id}")
                     self.connection.commit()
         print("OUT create_camera")
@@ -306,3 +306,76 @@ class Database:
             self.connection.commit()
 
         print("OUT add_note")
+    
+    def delete_note(self, id: int) -> None:
+        print("IN delete_note")
+        with self.connection.cursor() as cursor:
+            # Execute a command
+            cursor.execute(f"delete from notes where id={id}")
+            self.connection.commit()
+        print("OUT delete_note")
+    
+    def delete_maintenance_task(self, id: int) -> None:
+        print("IN delete_maintenance_task")
+        with self.connection.cursor() as cursor:
+            # Execute a command
+            cursor.execute(f"delete from maintenance where id={id}")
+            self.connection.commit()
+        print("OUT delete_maintenance_task")
+    
+    def delete_other_item(self, other_id: int) -> None:
+        print("IN delete_other_item")
+        with self.connection.cursor() as cursor:
+            # Execute a command
+            cursor.execute(f"delete from other_items where id={other_id}")
+            cursor.execute(f"delete from notes where item_type='{model.ItemType.OTHER.name}' and item_ref={other_id}")
+            cursor.execute(f"delete from maintenance where item_type='{model.ItemType.OTHER.name}' and item_ref={other_id}")
+            self.connection.commit()
+        print("OUT delete_other_item")
+    
+    def delete_camera(self, camera_id: int, name: str, type: str, base_unit: str) -> None:
+        print("IN delete_camera")
+        with self.connection.cursor() as cursor:
+            # Execute a command
+            cursor.execute(f"delete from cameras where id={camera_id}")
+            cursor.execute(f"delete from notes where item_type='{model.ItemType.CAMERA.name}' and item_ref={camera_id}")
+            cursor.execute(f"delete from maintenance where item_type='{model.ItemType.CAMERA.name}' and item_ref={camera_id}")
+            camera_type = model.CameraType.from_str_value(type)
+            if base_unit and camera_type == model.CameraType.FACE_CAMERA:
+                cursor.execute(f"update base_units set face_camera_ref=NULL where name='{base_unit}'")
+            elif base_unit and camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
+                cursor.execute(f"update base_units set license_plate_camera_ref=NULL where name='{base_unit}'")
+            elif base_unit and camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
+                cursor.execute(f"update base_units set wide_screen_camera_ref=NULL where name='{base_unit}'")
+            self.connection.commit()
+        print("OUT delete_camera")
+    
+    def delete_base_unit(self, bu_id: int, face_camera: str, license_plate_camera: str, widescreen_camera: str) -> None:
+        print("IN delete_base_unit")
+        with self.connection.cursor() as cursor:
+            # Execute a command
+            cursor.execute(f"delete from base_units where id={bu_id}")
+            cursor.execute(f"delete from notes where item_type='{model.ItemType.BASE_UNIT.name}' and item_ref={bu_id}")
+            cursor.execute(f"delete from maintenance where item_type='{model.ItemType.BASE_UNIT.name}' and item_ref={bu_id}")
+            camera_type = model.CameraType.from_str_value(type)
+            if face_camera:
+                cursor.execute(f"update cameras set base_unit_ref=NULL where name='{license_plate_camera}' and type='{model.CameraType.LICENSE_PLATE_CAMERA.name}'")
+            if license_plate_camera:
+                cursor.execute(f"update cameras set base_unit_ref=NULL where name='{face_camera}' and type='{model.CameraType.FACE_CAMERA.name}'")
+            if widescreen_camera:
+                cursor.execute(f"update cameras set base_unit_ref=NULL where name='{widescreen_camera}' and type='{model.CameraType.WIDE_SCREEN_CAMERA.name}'")
+            cursor.execute(f"update other_items set base_unit_ref=NULL where base_unit_ref={bu_id}")
+            self.connection.commit()
+        print("OUT delete_base_unit")
+    
+    def update_other_item(self, name: str, base_unit: str) -> None:
+        print("IN update_other_item")
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT id from base_units WHERE name='{base_unit}' LIMIT 1")
+            record = cursor.fetchone()
+            bu_id = record[0]
+
+            # Execute a command
+            cursor.execute(f"update other_items set base_unit_ref={bu_id} where name='{name}'")
+            self.connection.commit()
+        print("OUT update_other_item")

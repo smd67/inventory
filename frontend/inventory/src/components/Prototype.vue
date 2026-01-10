@@ -15,6 +15,7 @@
         :search="baseUnitSearch"
         item-value="name"
         class="elevation-1"
+        :key="baseUnitsKey"
         @dblclick:row="navigateToDetails"
       >
         <!-- If you still want the default pagination controls alongside the search -->
@@ -47,8 +48,8 @@
               </v-btn>
             </template>
             <v-list>
-              <v-list-item @click="showNotes(item)">
-                <v-list-item-title>Show Notes</v-list-item-title>
+              <v-list-item @click="deleteBaseUnit(item)">
+                <v-list-item-title>Delete</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -66,6 +67,7 @@
         :search="cameraSearch"
         item-value="name"
         class="elevation-1"
+        :key="cameraKey"
         @dblclick:row="navigateToCameraDetails"
       >
         <!-- If you still want the default pagination controls alongside the search -->
@@ -89,7 +91,7 @@
           <v-spacer></v-spacer>
         </template>
 
-        <!-- Use the specific slot name 'item.actions' -->
+         <!-- Use the specific slot name 'item.actions' -->
         <template v-slot:item.actions="{ item }">
           <v-menu>
             <template v-slot:activator="{ props }">
@@ -98,8 +100,8 @@
               </v-btn>
             </template>
             <v-list>
-              <v-list-item @click="showNotes(item)">
-                <v-list-item-title>Show Notes</v-list-item-title>
+              <v-list-item @click="deleteCamera(item)">
+                <v-list-item-title>Delete</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -117,6 +119,7 @@
         :search="otherSearch"
         item-value="name"
         class="elevation-1"
+        :key="otherKey"
         @dblclick:row="navigateToOtherItemsDetails"
       >
         <!-- If you still want the default pagination controls alongside the search -->
@@ -149,14 +152,18 @@
               </v-btn>
             </template>
             <v-list>
-              <v-list-item @click="showNotes(item)">
-                <v-list-item-title>Show Notes</v-list-item-title>
+              <v-list-item @click="deleteOtherItem(item)">
+                <v-list-item-title>Delete</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="updateOtherItem(item)">
+                <v-list-item-title>Update</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
         </template>
       </v-data-table>
     </v-container>
+    <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
   </div>
   <div v-else class="error-banner" style="color: red;">
     {{ error }}
@@ -168,6 +175,7 @@
   import { VDataTable } from 'vuetify/components';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
+  import ConfirmDialog from './ConfirmDialog.vue';
 
   const baseUnitSearch = ref('');
   const cameraSearch = ref('');
@@ -179,6 +187,10 @@
   const loading = ref(true);
   const router = useRouter();
   const route = useRoute();
+  const confirmDialog = ref(null);
+  const baseUnitsKey = ref(0);
+  const otherKey = ref(0);
+  const cameraKey = ref(0);
 
   const headers = ref([
     {title: 'Name', align: 'start', sortable: true, value: 'name', class: 'blue lighten-5'},
@@ -207,30 +219,29 @@
 
   // fetch the user information when params change
   watch(
-    () => route.params.id,
-    async refresh => {
+    () => route.fullPath,
+    async (newFullPath, oldFullPath) => {
+      console.log("IN Prototype.watch.refresh");
       fetchBaseUnits();
+      baseUnitsKey.value += 1;
       fetchCameras();
+      cameraKey.value += 1;
       fetchOtherItems();
+      otherKey.value += 1;
+      console.log("OUT Prototype.watch.refresh");
     }
   );
 
   onMounted(async () => {
     console.log('IN onMounted');
     fetchBaseUnits();
+    baseUnitsKey.value += 1;
     fetchCameras();
+    cameraKey.value += 1;
     fetchOtherItems();
+    otherKey.value += 1;
     console.log('OUT onMounted');
   });
-
-  const showNotes = (item) => {
-    console.log("IN showNotes id=" + item.id);
-    router.push({name: 'notes', params: {item_type: 'BASE_UNIT', item_ref: item.id}}).catch(failure => {
-      console.log('An unexpected navigation failure occurred:', failure);
-    });
-    console.log("OUT showNotes");
-  }
-
 
   const navigateToDetails = (event, { item }) => {
     // Prevent the default browser double-click behavior (e.g., text selection)
@@ -306,6 +317,46 @@
     console.log("OUT createBaseUnit");
   }
 
+  const deleteBaseUnit = async (item) => {
+    console.log("IN deleteBaseUnit item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this base unit?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+        face_camera: item.face_camera,
+        license_plate_camera: item.license_plate_camera,
+        widescreen_camera: item.widescreen_camera
+      };
+      try {
+          const response = await api.post('/delete-base-unit/', requestBody, config);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          error.value = 'Error fetching data:' + e;
+      }
+      fetchOtherItems();
+      fetchBaseUnits();
+      fetchCameras();
+      console.log('Other Item deleted!');
+      // Perform deletion logic here
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT deleteOtherItem");
+  };
+
   const createCamera = () => {
     console.log("IN createCamera");
     router.push({name: 'create-camera'}).catch(failure => {
@@ -314,6 +365,45 @@
     console.log("OUT createCamera");
   }
 
+  const deleteCamera = async (item) => {
+    console.log("IN deleteCamera item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this camera?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        base_unit: item.base_unit
+      };
+      try {
+          const response = await api.post('/delete-camera/', requestBody, config);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          error.value = 'Error fetching data:' + e;
+      }
+      fetchCameras();
+      fetchBaseUnits();
+      console.log('Camera deleted!');
+      // Perform deletion logic here
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT deleteCamera");
+  };
+
   const createOtherItem = () => {
     console.log("IN createOtherItem");
     router.push({name: 'create-other-item'}).catch(failure => {
@@ -321,6 +411,50 @@
     });
     console.log("OUT createOtherItem");
   }
+
+  const deleteOtherItem = async (item) => {
+    console.log("IN deleteOtherItem item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this other item?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+      };
+      try {
+          const response = await api.post('/delete-other-item/', requestBody, config);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          error.value = 'Error fetching data:' + e;
+      }
+      fetchOtherItems();
+      fetchBaseUnits();
+      console.log('Other Item deleted!');
+      // Perform deletion logic here
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT deleteOtherItem");
+  };
+
+  const updateOtherItem = (item) => {
+    console.log("IN updateOtherItem");
+    router.push({name: 'update-other-item', params: {name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT updateOtherItem");
+  };
 
   const fetchBaseUnits = async () => {
     const config = {

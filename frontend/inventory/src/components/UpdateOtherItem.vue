@@ -1,7 +1,7 @@
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 225px;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Create an Other Item
+    Update Other Item
   </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
@@ -13,10 +13,13 @@
           <v-text-field
             v-model="name"
             label="Name"
+            :key="nameKey"
+            readonly
           ></v-text-field>
           <v-text-field
             v-model="baseUnit"
-            label="Base Unit (optional)"
+            :key="baseUnitKey"
+            label="Base Unit"
           ></v-text-field>
           <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
             <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
@@ -26,16 +29,17 @@
       </v-sheet>
     </v-container>
     <ErrorDialog ref="errorDialog"></ErrorDialog>
-  </div>
+  </div>  
 </template>
 
 <script setup>
-  import { ref, onMounted, defineProps } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { ref, onMounted, defineProps, watch } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
+  import ErrorDialog from './ErrorDialog.vue';
 
   const props = defineProps({
-    base_unit: {
+    name: {
       type: String,
       default: null,
     }
@@ -45,11 +49,29 @@
   const name = ref(null);
   const baseUnit = ref(null);
   const router = useRouter();
+  const route = useRoute();
+  const nameKey = ref(0);
+  const baseUnitKey = ref(0);
   const errorDialog = ref(null);
+
+  watch(
+    () => route.fullPath,
+    async (newFullPath, oldFullPath) => {
+      console.log("IN UpdateOtherItem.watch.refresh");
+      baseUnit.value = props.base_unit;
+      baseUnitKey.value += 1;
+      name.value = props.name;
+      nameKey.value += 1;
+      baseUnit.value = null;
+      baseUnitKey.value += 1;
+      console.log("OUT UpdateOtherItem.watch.refresh");
+    }
+  );
 
   onMounted(async () => {
     console.log('IN onMounted');
-    baseUnit.value = props.base_unit;
+    name.value = props.name;
+    nameKey.value += 1;
     console.log('OUT onMounted');
   });
 
@@ -72,12 +94,13 @@
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
-        const response = await api.post('/create-other-item/', requestBody, config);
+        const response = await api.post('/update-other-item/', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
     } catch (e) {
         loading.value = false;
         console.error('Error updating data:', e);
+        // Call the dialog's open function using the template ref
         const result = await errorDialog.value.open(
           'Confirm Error',
           'Error updating data:' + e,

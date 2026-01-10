@@ -20,6 +20,7 @@ import CreateCamera from './components/CreateCamera.vue'
 import CreateOtherItem from './components/CreateOtherItem.vue'
 import AddMaintenanceTask from './components/AddMaintenanceTask.vue'
 import AddNote from './components/AddNote.vue'
+import UpdateOtherItem from './components/UpdateOtherItem.vue'
 
 // Composables
 import { createApp } from 'vue'
@@ -31,11 +32,12 @@ const routes = [
   { path: '/notes:item_type:item_ref', name: 'notes', component: Notes, props: true },
   { path: '/prototype', name: 'prototype', component: Prototype },
   { path: '/create', name: 'create', component: Create },
-  { path: '/create-camera', name: 'create-camera', component: CreateCamera },
+  { path: '/create-camera:base_unit?', name: 'create-camera', component: CreateCamera, props: true},
   { path: '/base-unit:id:name:location:has_new_mast_bearing:has_new_feet:face_camera:license_plate_camera:widescreen_camera', name: 'base-unit', component: BaseUnit, props: true },
   { path: '/camera:id:name:camera_type:location:base_unit', name: 'camera', component: Camera, props: true },
   { path: '/other-items:id:name:location:base_unit', name: 'other-items', component: OtherItems, props: true },
-  { path: '/create-other-item', name: 'create-other-item', component: CreateOtherItem },
+  { path: '/create-other-item:base_unit?', name: 'create-other-item', component: CreateOtherItem, props: true },
+  { path: '/update-other-item:name', name: 'update-other-item', component: UpdateOtherItem, props: true },
   { path: '/add-maintenance-task:item_type:item_ref', name: 'add-maintenance-task', component: AddMaintenanceTask, props: true },
   { path: '/add-note:item_type:item_ref', name: 'add-note', component: AddNote, props: true },
 ];

@@ -79,9 +79,10 @@ class CameraType(str, Enum):
         else:
             return CameraType.OTHER
 
+# BaseUnit models
 class BaseUnit(BaseModel):
     """
-    Base unit definition. The id is a unique field for internal use. The _ref
+    Base unit definition for db. The id is a unique field for internal use. The _ref
     fields refer to ids in other tables.
     """
     id: int
@@ -91,15 +92,78 @@ class BaseUnit(BaseModel):
     license_plate_camera_ref: Optional[int] = 0
     widescreen_camera_ref: Optional[int] = 0
 
+class BaseUnitQueryResult(BaseModel):
+    """
+    Base unit definitiion for ui.
+    """
+    id: int
+    name: str
+    location: int
+    has_new_mast_bearing: Optional[bool] = False
+    has_new_feet: Optional[bool] = False
+    face_camera: Optional[str] = None
+    license_plate_camera: Optional[str] = None
+    widescreen_camera: Optional[str] = None
+
+class BaseUnitCreate(BaseModel):
+    name: str
+    location: int
+    has_new_mast_bearing: Optional[bool] = False
+    has_new_feet: Optional[bool] = False
+    face_camera: Optional[str] = None
+    license_plate_camera: Optional[str] = None
+    widescreen_camera: Optional[str] = None
+
+class BaseUnitDelete(BaseModel):
+    id: int
+    face_camera: Optional[str] = None
+    license_plate_camera: Optional[str] = None
+    widescreen_camera: Optional[str] = None
+
+# Camera models
 class Camera(BaseModel):
     """
-    Camera definition. The base_unit_ref refers back to the containing base unit.
+    Camera definition for database
     """
     id: int
     name: str
     type: CameraType
     base_unit_ref: int
 
+class CameraQueryResult(BaseModel):
+    """
+    Camera definition for ui
+    """
+    id: int
+    name: str
+    type: str
+    base_unit: Optional[str] = None
+    location: Optional[str] = None
+
+class CameraQuery(BaseModel):
+    """
+    Camera query
+    """
+    base_unit_ref: int
+
+class CameraCreate(BaseModel):
+    """
+    Create a Camera
+    """
+    name: str
+    camera_type: str
+    base_unit: Optional[str] = None
+
+class CameraDelete(BaseModel):
+    """
+    Delete a Camera    
+    """
+    id: int
+    name: str
+    type: str
+    base_unit: Optional[str] = None
+
+# Other Item models
 class OtherItem(BaseModel):
     """
     Other types of generic items that may be in a base unit.
@@ -109,6 +173,42 @@ class OtherItem(BaseModel):
     description: str
     base_unit_ref: int
 
+class OtherItemQueryResult(BaseModel):
+    """
+    OtherItem definition for ui
+    """
+    id: int
+    name: str
+    base_unit: Optional[str] = None
+    location: Optional[str] = None
+
+class OtherItemQuery(BaseModel):
+    """
+    OtherItem query
+    """
+    base_unit_ref: int
+
+class OtherItemCreate(BaseModel):
+    """
+    OtherItem creation
+    """
+    name: str
+    base_unit: Optional[str] = None
+
+class OtherItemDelete(BaseModel):
+    """
+    Delete an OtherItem   
+    """
+    id: int
+
+class OtherItemUpdate(BaseModel):
+    """
+    OtherItem update
+    """
+    name: str
+    base_unit: str
+
+# Notes Models
 class Notes(BaseModel):
     """
     Notes that may be associated with a base unit, camera, or other type.
@@ -119,6 +219,22 @@ class Notes(BaseModel):
     item_type: ItemType
     item_ref: int
 
+class NotesQuery(BaseModel):
+    """
+    Return all notes for a base_unit, camera, or other item
+    """
+    item_type: str
+    item_ref: int
+
+class NotesCreate(BaseModel):
+    description: str
+    item_type: str
+    item_ref: int
+
+class NotesDelete(BaseModel):
+    id: int
+
+# Maintenance Task models
 class MaintenanceTask(BaseModel):
     """
     A maintenance task associated with a base unit, camera, or other item.
@@ -130,69 +246,12 @@ class MaintenanceTask(BaseModel):
     item_type: ItemType
     item_ref: int
 
-
 class MaintenanceTaskQuery(BaseModel):
     """
     Return all maintenance tasks for a base_unit, camera, or other item
     """
     item_type: str
     item_ref: int
-
-
-class BaseUnitQueryResult(BaseModel):
-    id: int
-    name: str
-    location: int
-    has_new_mast_bearing: Optional[bool] = False
-    has_new_feet: Optional[bool] = False
-    face_camera: Optional[str] = None
-    license_plate_camera: Optional[str] = None
-    widescreen_camera: Optional[str] = None
-
-class CameraQueryResult(BaseModel):
-    id: int
-    name: str
-    type: str
-    base_unit: Optional[str] = None
-    location: Optional[str] = None
-
-class OtherQueryResult(BaseModel):
-    id: int
-    name: str
-    base_unit: Optional[str] = None
-    location: Optional[str] = None
-
-class NotesQuery(BaseModel):
-    """
-    Return all notes for a base_unit, camera, or other item
-    """
-    item_type: str
-    item_ref: int
-
-class CameraQuery(BaseModel):
-    base_unit_ref: int
-
-class OtherItemQuery(BaseModel):
-    base_unit_ref: int
-
-
-class BaseUnitCreate(BaseModel):
-    name: str
-    location: int
-    has_new_mast_bearing: Optional[bool] = False
-    has_new_feet: Optional[bool] = False
-    face_camera: Optional[str] = None
-    license_plate_camera: Optional[str] = None
-    widescreen_camera: Optional[str] = None
-
-class CameraCreate(BaseModel):
-    name: str
-    camera_type: str
-    base_unit: Optional[str] = None
-
-class OtherItemCreate(BaseModel):
-    name: str
-    base_unit: Optional[str] = None
 
 class MaintenanceTaskCreate(BaseModel):
     last_done_date: str
@@ -201,7 +260,6 @@ class MaintenanceTaskCreate(BaseModel):
     item_type: str
     item_ref: int
 
-class NotesCreate(BaseModel):
-    description: str
-    item_type: str
-    item_ref: int
+class MaintenanceTaskDelete(BaseModel):
+    id: int
+

@@ -13,15 +13,18 @@
           <v-text-field
             v-model="name"
             label="Name"
+            :key="nameKey"
           ></v-text-field>
           <v-select
             v-model="cameraType"
             :items="cameraTypes"
             label="Camera Type"
+            :key="cameraTypeKey"
           ></v-select>
           <v-text-field
             v-model="baseUnit"
             label="Base Unit (optional)"
+            :key="baseUnitKey"
           ></v-text-field>
           <div class="d-flex justify-center align-center" style="padding-top: 20px; ; gap: 16px;">
             <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
@@ -38,9 +41,16 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { ref, onMounted, defineProps, watch } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
+
+  const props = defineProps({
+    base_unit: {
+      type: String,
+      default: null,
+    }
+  });
 
   const error = ref(null);
   const loading = ref(true);
@@ -49,15 +59,39 @@
   const cameraType = ref(null)
   const cameraTypes = ref(['Face Camera', 'License Plate Camera', 'Wide Screen Camera', 'Other']);
   const router = useRouter();
+  const route = useRoute();
+  const baseUnitKey = ref(0);
+  const nameKey = ref(0);
+  const cameraTypeKey = ref(0);
+
+  watch(
+    () => route.fullPath,
+    async (newFullPath, oldFullPath) => {
+      console.log("IN CreateCamera.watch.refresh");
+      baseUnit.value = props.base_unit;
+      baseUnitKey.value += 1;
+      name.value = null;
+      nameKey.value += 1;
+      cameraType.value = null;
+      cameraTypeKey.value += 1;
+      console.log("OUT CreateCamera.watch.refresh");
+    }
+  );
 
   onMounted(async () => {
     console.log('IN onMounted');
+    baseUnit.value = props.base_unit;
+    baseUnitKey.value += 1;
+    name.value = null;
+    nameKey.value += 1;
+    cameraType.value = null;
+    cameraTypeKey.value += 1;
     console.log('OUT onMounted');
   });
 
   const goBack = () => {
     console.log("IN goBack");
-    router.push({ path: '/prototype' });
+    router.back();
     console.log("OUT goBack");
   }
 

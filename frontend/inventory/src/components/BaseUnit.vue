@@ -51,7 +51,7 @@
         </v-form>
       </v-sheet>
     </v-container>
-    <v-container  width="750">
+    <v-container  width="800">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Cameras
       </div>
@@ -61,6 +61,7 @@
         :search="cameraSearch"
         item-value="name"
         class="elevation-1"
+        :key="cameraKey"
         @dblclick:row="navigateToCameraDetails"
       >
         <!-- If you still want the default pagination controls alongside the search -->
@@ -77,10 +78,29 @@
           ></v-text-field>
           <!-- Add a v-spacer if needed to align items correctly with default footer content -->
           <v-spacer></v-spacer>
+          <v-btn color="primary" dark small class="ma-2" @click="createCamera">
+            <v-icon left>mdi-plus</v-icon>
+            Add
+          </v-btn>
+        </template>
+        <!-- Use the specific slot name 'item.actions' -->
+        <template v-slot:item.actions="{ item }">
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-btn icon v-bind="props">
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item @click="deleteCamera(item)">
+                <v-list-item-title>Delete</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </template>
       </v-data-table>
     </v-container>
-    <v-container  width="750">
+    <v-container  width="800">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Other Items
       </div>
@@ -90,6 +110,7 @@
         :search="otherSearch"
         item-value="name"
         class="elevation-1"
+        :key="otherKey"
         @dblclick:row="navigateToOtherItemsDetails"
       >
         <!-- If you still want the default pagination controls alongside the search -->
@@ -106,10 +127,29 @@
           ></v-text-field>
           <!-- Add a v-spacer if needed to align items correctly with default footer content -->
           <v-spacer></v-spacer>
+          <v-btn color="primary" dark small class="ma-2" @click="createOtherItem">
+            <v-icon left>mdi-plus</v-icon>
+            Add
+          </v-btn>
+        </template>
+        <!-- Use the specific slot name 'item.actions' -->
+        <template v-slot:item.actions="{ item }">
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-btn icon v-bind="props">
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item @click="deleteOtherItem(item)">
+                <v-list-item-title>Delete</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </template>
       </v-data-table>
     </v-container>
-    <v-container  width="750">
+    <v-container  width="800">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Notes
       </div>
@@ -119,6 +159,7 @@
         :search="notesSearch"
         item-value="date"
         class="elevation-1"
+        :key="notesKey"
       >
         <!-- If you still want the default pagination controls alongside the search -->
         <template v-slot:footer.prepend>
@@ -139,9 +180,24 @@
             Add
           </v-btn>
         </template>
+        <!-- Use the specific slot name 'item.actions' -->
+        <template v-slot:item.actions="{ item }">
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-btn icon v-bind="props">
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item @click="deleteNote(item)">
+                <v-list-item-title>Delete</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </template>
       </v-data-table>
     </v-container>
-    <v-container  width="750">
+    <v-container  width="800">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Maintenance Tasks
       </div>
@@ -151,6 +207,7 @@
         :search="maintSearch"
         item-value="status"
         class="elevation-1"
+        :key="maintKey"
       >
         <!-- If you still want the default pagination controls alongside the search -->
         <template v-slot:footer.prepend>
@@ -171,8 +228,24 @@
             Add
           </v-btn>
         </template>
+        <!-- Use the specific slot name 'item.actions' -->
+        <template v-slot:item.actions="{ item }">
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-btn icon v-bind="props">
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item @click="deleteMaintenanceTask(item)">
+                <v-list-item-title>Delete</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </template>
       </v-data-table>
     </v-container>
+    <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
   </div>
   
   <div v-else class="error-banner" style="color: red;">
@@ -184,6 +257,7 @@
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
+  import ConfirmDialog from './ConfirmDialog.vue';
 
   const error = ref(null);
   const loading = ref(true);
@@ -205,25 +279,38 @@
   const cameraSearch = ref('')
   const otherSearch = ref('')
   const notesSearch = ref('')
+  const confirmDialog = ref(null);
+  const notesKey = ref(0);
+  const maintKey = ref(0);
+  const otherKey = ref(0);
+  const cameraKey = ref(0);
 
   const headers = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
-    {title: 'Description', value: 'description' , sortable: true}
+    {title: 'Description', value: 'description' , sortable: true},
+    // ... other headers
+    { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
 
   const maintHeaders = ref([
     {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
     {title: 'Status', value: 'status' , sortable: true},
     {title: 'Last Done', value: 'last_done_date' , sortable: true},
+    // ... other headers
+    { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
 
   const cameraHeaders = ref([
     {title: 'Name', align: 'start', value: 'name', sortable: true, value: 'name', class: 'blue lighten-5'},
-    {title: 'Type', value: 'type' , sortable: true}
+    {title: 'Type', value: 'type' , sortable: true},
+    // ... other headers
+    { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
 
   const otherHeaders = ref([
     {title: 'Name', align: 'start', value: 'name', sortable: true, value: 'name', class: 'blue lighten-5'},
+    // ... other headers
+    { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
 
   const props = defineProps({
@@ -265,10 +352,26 @@
   watch(
     () => route.params.id,
     async refresh => {
+      console.log("IN BaseUnit.watch.refresh");
       fetchCameras();
+      cameraKey.value += 1;
       fetchNotes();
+      notesKey.value += 1;
       fetchMaintTasks();
+      maintKey.value += 1;
       fetchOther();
+      otherKey.value += 1;
+      console.log("cameraTable=" + JSON.stringify(cameraTable.value));
+      for (const camera of cameraTable.value) {
+        if(camera.type === "Face Camera"){
+          face_camera.value = camera.name;
+        } else if(camera.type === "License Plate Camera") {
+          license_plate_camera.value = camera.name;
+        } else if(camera.type === "Widescreen Camera") {
+          widescreen_camera.value = camera.name;
+        }
+      }
+      console.log("OUT BaseUnit.watch.refresh");
     }
   )
   onMounted(async () => {
@@ -282,9 +385,13 @@
     license_plate_camera.value = props.license_plate_camera;
     widescreen_camera.value = props.widescreen_camera;
     fetchCameras();
+    cameraKey.value += 1;
     fetchNotes();
+    notesKey.value += 1;
     fetchMaintTasks();
+    maintKey.value += 1;
     fetchOther();
+    otherKey.value += 1;
     console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; has_new_feet=' + has_new_feet.value + '; has_new_mast_bearing=' + has_new_mast_bearing.value + '; face_camera=' + face_camera.value);
   });
 
@@ -334,6 +441,94 @@
     console.log("OUT goBack");
   };
 
+  const createCamera = () => {
+    console.log("IN createCamera");
+    router.push({name: 'create-camera', params: {base_unit: name.value}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT createCamera");
+  };
+
+  const deleteCamera = async (item) => {
+    console.log("IN deleteCamera item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this camera?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        base_unit: item.base_unit
+      };
+      try {
+          const response = await api.post('/delete-camera/', requestBody, config);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          error.value = 'Error fetching data:' + e;
+      }
+      fetchCameras();
+      console.log('Camera deleted!');
+      // Perform deletion logic here
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT deleteCamera");
+  };
+  const createOtherItem = () => {
+    console.log("IN createOtherItem");
+    router.push({name: 'create-other-item', params: {base_unit: name.value}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT createOtherItem");
+  };
+
+  const deleteOtherItem = async (item) => {
+    console.log("IN deleteOtherItem item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this other item?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+      };
+      try {
+          const response = await api.post('/delete-other-item/', requestBody, config);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          error.value = 'Error fetching data:' + e;
+      }
+      fetchOther();
+      console.log('Other Item deleted!');
+      // Perform deletion logic here
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT deleteOtherItem");
+  };
+
   const addMaintenanceTask = () => {
     console.log("IN addMaintenanceTask");
     router.push({name: 'add-maintenance-task', params: {item_type: 'BASE_UNIT', item_ref: id.value}}).catch(failure => {
@@ -342,6 +537,41 @@
     console.log("OUT addMaintenanceTask");
   }
 
+  const deleteMaintenanceTask = async (item) => {
+    console.log("IN deleteMaintenanceTask item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this task?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+      };
+      try {
+          const response = await api.post('/delete-maintenance-task/', requestBody, config);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          error.value = 'Error fetching data:' + e;
+      }
+      fetchMaintTasks();
+      console.log('Maintenance Task deleted!');
+      // Perform deletion logic here
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT deleteMaintenanceTask");
+  };
+
   const addNote = () => {
     console.log("IN addNote");
     router.push({name: 'add-note', params: {item_type: 'BASE_UNIT', item_ref: id.value}}).catch(failure => {
@@ -349,6 +579,40 @@
     });
     console.log("OUT addNote");
   }
+
+  const deleteNote = async (item) => {
+    console.log("IN deleteNote item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this note?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+      };
+      try {
+          const response = await api.post('/delete-note/', requestBody, config);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          error.value = 'Error fetching data:' + e;
+      }
+      console.log('Note deleted!');
+      fetchNotes();
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT deleteNote");
+  };
 
   const fetchNotes = async () => {
     const config = {
