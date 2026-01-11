@@ -1,4 +1,21 @@
 <template>
+  <div class="reports-menu-container">
+    <div class="reports-menu-right">
+      <button @click="toggleMenu" class="reports-button" aria-label="Settings menu">
+        <img src="../assets/report_icon.jpeg" alt="Description of action" class="button-image" />
+          <!-- You can use a settings icon here, e.g., a gear symbol (⚙) or an SVG -->
+          <!-- ⚙ Settings -->
+      </button>
+
+      <div v-if="isOpen" class="reports-dropdown">
+          <ul>
+          <li @click="selectOption('MastBearing')">Has New Mast Bearing</li>
+          <li @click="selectOption('NewFeet')">Has New Feet</li>
+          <li @click="selectOption('MaintItems')">Has Expired Maintenance Tasks</li>
+          </ul>
+      </div>
+    </div>
+  </div>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Base Units
@@ -175,13 +192,14 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, watch } from 'vue';
+  import { ref, onMounted, watch, onUnmounted } from 'vue';
   import { VDataTable } from 'vuetify/components';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ConfirmDialog from './ConfirmDialog.vue';
   import ErrorDialog from './ErrorDialog.vue';
-
+  
+  const isOpen = ref(false);
   const baseUnitSearch = ref('');
   const cameraSearch = ref('');
   const otherSearch = ref('');
@@ -237,14 +255,21 @@
   );
 
   onMounted(async () => {
-    console.log('IN onMounted');
+    console.log('IN Prototype.onMounted');
     fetchBaseUnits();
     baseUnitsKey.value += 1;
     fetchCameras();
     cameraKey.value += 1;
     fetchOtherItems();
     otherKey.value += 1;
-    console.log('OUT onMounted');
+    console.log('Before');
+    document.addEventListener('click', handleClickOutside);
+    console.log('After');
+    console.log('OUT Prototype.onMounted');
+  });
+
+  onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
   });
 
   const navigateToDetails = (event, { item }) => {
@@ -312,6 +337,30 @@
     });
     console.log("OUT navigateToOtherItemsDetails");
   }
+
+  const toggleMenu = () => {
+    isOpen.value = !isOpen.value;
+  };
+
+  const selectOption = (option) => {
+    console.log('Selected:' + option);
+    isOpen.value = false; // Close menu after selection
+    // Emit event to parent component if needed, e.g., emit('select', option)
+    if(option === "MastBearing"){
+      router.push({name: "mast-bearing-report"});
+    } else if (option === "NewFeet") {
+      router.push({name: "new-feet-report"});
+    } else if (option === "MaintItems") {
+      router.push({name: "maint-items-report"});
+    }
+  };
+
+  // Close the menu when clicking outside
+  const handleClickOutside = (event) => {
+    if (!event.target.closest('.reports-menu-container')) {
+        isOpen.value = false;
+    }
+  };
 
   const createBaseUnit = () => {
     console.log("IN createBaseUnit");
@@ -569,5 +618,52 @@ const fetchCameras = async () => {
   }
   .v-table tbody tr:nth-child(even) {
     background-color: #ffffff; /* White for even rows */
+  }
+  .reports-menu-container {
+    position: absolute;
+    top: 0; /* Aligns to the top edge of the parent */
+    right: 0; /* Aligns to the right edge of the parent */
+    display: inline-block;
+  }
+
+  .reports-button {
+    /* background-color: lightgray;  Example styling */
+    color: white;
+    padding: 0.5px .5px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .reports-dropdown {
+    position: absolute;
+    right: 0;
+    background-color: #f9f9f9;
+    min-width: 320px;
+    box-shadow: 0px 1px 1px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+
+  .reports-dropdown ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .reports-dropdown li {
+    padding: 12px 16px;
+    cursor: pointer;
+  }
+
+  .reports-dropdown li:hover {
+    background-color: #ddd;
+  }
+  .reports-menu-right {
+    margin-left: auto; /* Pushes this element and everything after it to the far right */
+    padding-right: 10px;
+    padding-top: 10px;
+  }
+  .button-image {
+    width: 20px; /* Set a specific width */
+    height: auto; /* Maintain aspect ratio */
   }
 </style>

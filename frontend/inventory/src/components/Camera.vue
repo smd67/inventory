@@ -1,14 +1,14 @@
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 225px;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Camera Details
   </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div v-if="!error" style="padding-right: 250px;">
-    <v-container style="border: 1px solid green" width="700">
-      <v-sheet class="pa-4 text-right" width="600">
+  <div style="padding-right: 25.0%;">
+    <v-container style="border: 1px solid green" width="70%">
+      <v-sheet class="pa-4 text-right" width="95%">
         <v-form>
           <v-text-field
             v-model="name"
@@ -133,10 +133,7 @@
       </v-data-table>
     </v-container>
     <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
-  </div>
-  
-  <div v-else class="error-banner" style="color: red;">
-    {{ error }}
+    <ErrorDialog ref="errorDialog"></ErrorDialog>
   </div>
 </template>
 
@@ -144,9 +141,11 @@
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
-   import ConfirmDialog from './ConfirmDialog.vue';
+  import ConfirmDialog from './ConfirmDialog.vue';
+  import ErrorDialog from './ErrorDialog.vue';
 
-  const error = ref(null);
+  const errorDialog = ref(null);
+  const confirmDialog = ref(null);
   const loading = ref(true);
   const id = ref(null);
   const name = ref(null);
@@ -159,9 +158,9 @@
   const maintTable = ref([]);
   const notesSearch = ref('');
   const maintSearch = ref('');
-  const confirmDialog = ref(null);
   const notesKey = ref(0);
   const maintKey = ref(0);
+  
 
   const notesHeaders = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
@@ -203,14 +202,9 @@
 
   // fetch the user information when params change
   watch(
-    () => route.params.id,
-    async refresh => {
+    () => route.fullPath,
+    async (newFullPath, oldFullPath) => {
       console.log('IN Camera.watch');
-      id.value = props.id;
-      name.value = props.name;
-      location.value = props.location;
-      baseUnit.value = props.base_unit;
-      cameraType.value = props.camera_type;
       fetchNotes();
       notesKey.value += 1;
       fetchMaintTasks();
@@ -270,7 +264,12 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          // Call the dialog's open function using the template ref
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting data:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       fetchMaintTasks();
       console.log('Maintenance Task deleted!');
@@ -313,7 +312,12 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          // Call the dialog's open function using the template ref
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting data:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       console.log('Note deleted!');
       fetchNotes();
@@ -340,7 +344,12 @@
     } catch (e) {
         loading.value = false;
         console.log("error=" + e)
-        error.value = 'Error fetching data:' + e;
+        // Call the dialog's open function using the template ref
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error fetching data:' + e,
+          { color: 'red lighten-3' }
+        );
     }
   };
 
@@ -361,7 +370,12 @@
     } catch (e) {
         loading.value = false;
         console.log("error=" + e)
-        error.value = 'Error fetching data:' + e;
+        // Call the dialog's open function using the template ref
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching data:' + e,
+            { color: 'red lighten-3' }
+          );
     }
   };
 </script>

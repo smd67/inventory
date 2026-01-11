@@ -25,7 +25,19 @@ app.add_middleware(
 @app.get("/get-base-units")
 def get_base_units() -> List[model.BaseUnitQueryResult]:
     db = Database()
-    results = db.get_business_units()
+    results = db.get_base_units()
+    return results
+
+@app.get("/get-has-new-mast-bearing")
+def get_has_new_mast_bearing() -> List[model.BaseUnitQueryResult]:
+    db = Database()
+    results = db.get_has_new_mast_bearing()
+    return results
+
+@app.get("/get-has-new-feet")
+def get_has_new_feet() -> List[model.BaseUnitQueryResult]:
+    db = Database()
+    results = db.get_has_new_feet()
     return results
 
 @app.post("/get-notes")
@@ -264,3 +276,9 @@ def update_base_unit(query: model.BaseUnitUpdate) -> None:
             detail=f"An unexpected exception e={e} has occured"
         )
     print(f"OUT update-base-unit")
+
+@app.get("/get-expired-maintenance-tasks")
+def get_expired_maintenance_tasks() -> List[model.MaintenanceTaskQueryResult]:
+    db = Database()
+    results = db.get_expired_maintenance_tasks()
+    return results

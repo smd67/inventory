@@ -49,8 +49,8 @@ class Database:
         else:
             self.connection = getattr(self, '_connection')
 
-    def get_business_units(self) -> List[model.BaseUnitQueryResult]:
-        print("IN Database.get_business_units")
+    def get_base_units(self) -> List[model.BaseUnitQueryResult]:
+        print("IN Database.get_base_units")
         bu_dict = {}
         # Open a cursor to perform database operations
         with self.connection.cursor() as cur:
@@ -80,7 +80,7 @@ class Database:
                 elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
                     bu_results.widescreen_camera= row[0][5]
 
-        print(f"OUT Database.get_business_units: {list(bu_dict.values())}")
+        print(f"OUT Database.get_base_units: {list(bu_dict.values())}")
         return list(bu_dict.values())
     
 
@@ -109,7 +109,7 @@ class Database:
             for row in cur:
                 maint_task = model.MaintenanceTask(id=row[0], 
                                              description=row[1], 
-                                             status=Status.from_str(row[2]), 
+                                             status=model.Status.from_str(row[2]), 
                                              last_done_date=row[3], 
                                              item_type=model.ItemType.from_str(row[4]), 
                                              item_ref=row[5])
@@ -408,3 +408,101 @@ class Database:
             cursor.execute(f"update base_units set location={location} where id={id}")
             self.connection.commit()
         print("OUT update_base_unit")
+    
+    def get_has_new_mast_bearing(self) -> List[model.BaseUnitQueryResult]:
+        print("IN Database.get_has_new_mast_bearing")
+        bu_dict = {}
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur:
+            # Execute a command
+            cur.execute("select (base_units.id, base_units.name, base_units.location, " +
+                        "base_units.has_new_mast_bearing, base_units.has_new_feet,cameras.name, " +
+                        "cameras.type) from base_units LEFT OUTER JOIN cameras ON " + 
+                        "base_units.id=cameras.base_unit_ref WHERE base_units.has_new_mast_bearing=true")
+            # Fetch the results
+            for row in cur:
+                print(f"row={row}")
+                if row[0][1] in bu_dict:
+                    bu_results = bu_dict[row[0][1]]
+                else:
+                    bu_results = model.BaseUnitQueryResult(id=row[0][0], 
+                                                            name=row[0][1], 
+                                                            location=row[0][2],
+                                                            has_new_mast_bearing=row[0][3],
+                                                            has_new_feet=row[0][4])
+                    bu_dict[row[0][1]] = bu_results
+                camera_type = model.CameraType.from_str(row[0][6])
+                print(f"camera_type={camera_type} {model.CameraType.FACE_CAMERA.name}")
+                if camera_type == model.CameraType.FACE_CAMERA:
+                    bu_results.face_camera = row[0][5]
+                elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
+                    bu_results.license_plate_camera = row[0][5]
+                elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
+                    bu_results.widescreen_camera= row[0][5]
+
+        print(f"OUT Database.get_has_new_mast_bearing: {list(bu_dict.values())}")
+        return list(bu_dict.values())
+
+
+    def get_has_new_feet(self) -> List[model.BaseUnitQueryResult]:
+        print("IN Database.get_has_new_feet")
+        bu_dict = {}
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur:
+            # Execute a command
+            cur.execute("select (base_units.id, base_units.name, base_units.location, " +
+                        "base_units.has_new_mast_bearing, base_units.has_new_feet,cameras.name, " +
+                        "cameras.type) from base_units LEFT OUTER JOIN cameras ON " + 
+                        "base_units.id=cameras.base_unit_ref WHERE base_units.has_new_feet=true")
+            # Fetch the results
+            for row in cur:
+                print(f"row={row}")
+                if row[0][1] in bu_dict:
+                    bu_results = bu_dict[row[0][1]]
+                else:
+                    bu_results = model.BaseUnitQueryResult(id=row[0][0], 
+                                                            name=row[0][1], 
+                                                            location=row[0][2],
+                                                            has_new_mast_bearing=row[0][3],
+                                                            has_new_feet=row[0][4])
+                    bu_dict[row[0][1]] = bu_results
+                camera_type = model.CameraType.from_str(row[0][6])
+                print(f"camera_type={camera_type} {model.CameraType.FACE_CAMERA.name}")
+                if camera_type == model.CameraType.FACE_CAMERA:
+                    bu_results.face_camera = row[0][5]
+                elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
+                    bu_results.license_plate_camera = row[0][5]
+                elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
+                    bu_results.widescreen_camera= row[0][5]
+
+        print(f"OUT Database.get_has_new_feet: {list(bu_dict.values())}")
+        return list(bu_dict.values())
+    
+    def get_expired_maintenance_tasks(self) -> List[model.MaintenanceTask]:
+        print("IN Database.get_expired_maintenance_tasks")
+        maint_list = []
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur:
+            # Execute a command
+            cur.execute(f"SELECT * from maintenance WHERE last_done <= CURRENT_DATE - INTERVAL '6 months'")
+            # Fetch the results
+            for row in cur:
+                item_name = ""
+                item_type_enum = model.ItemType.from_str(row[4])
+                if item_type_enum == model.ItemType.BASE_UNIT:
+                    cur.execute(f"SELECT name from base_units WHERE id='{row[5]}' LIMIT 1")
+                elif item_type_enum == model.ItemType.CAMERA:
+                    cur.execute(f"SELECT name from cameras WHERE id='{row[5]}' LIMIT 1")
+                elif item_type_enum == model.ItemType.OTHER:
+                    cur.execute(f"SELECT name from other_items WHERE id='{row[5]}' LIMIT 1")
+                record = cur.fetchone()
+                item_name = record[0]
+                maint_task = model.MaintenanceTaskQueryResult(id=row[0], 
+                                                              description=row[1], 
+                                                              status=model.Status.from_str(row[2]).value, 
+                                                              last_done_date=row[3], 
+                                                              item_type=model.ItemType.from_str(row[4]).value, 
+                                                              item_name=item_name)
+                maint_list.append(maint_task)
+        print("OUT Database.get_expired_maintenance_tasks")
+        return maint_list

@@ -439,9 +439,7 @@
 
   const goBack = () => {
     console.log("IN goBack");
-    router.push({name: 'prototype'}).catch(failure => {
-      console.log('An unexpected navigation failure occurred:', failure);
-    });
+    router.back();
     console.log("OUT goBack");
   };
 

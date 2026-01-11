@@ -33,13 +33,13 @@ class Status(str, Enum):
         elif label == Status.FAILED.value:
             return Status.FAILED
         
-class ItemType(Enum):
+class ItemType(str, Enum):
     """
     Type of item associated with a note or maintenance task
     """
-    BASE_UNIT = 1
-    CAMERA = 2
-    OTHER = 3
+    BASE_UNIT = "Base Unit"
+    CAMERA = "Camera"
+    OTHER = "Other Item"
     @staticmethod
     def from_str(label: str):
         if label == ItemType.BASE_UNIT.name:
@@ -257,6 +257,14 @@ class MaintenanceTask(BaseModel):
     status: Status
     item_type: ItemType
     item_ref: int
+
+class MaintenanceTaskQueryResult(BaseModel):
+    id: int
+    last_done_date: date
+    description: str
+    status: str
+    item_type: str
+    item_name: str
 
 class MaintenanceTaskQuery(BaseModel):
     """

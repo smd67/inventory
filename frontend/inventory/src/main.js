@@ -22,6 +22,9 @@ import AddNote from './components/AddNote.vue'
 import UpdateOtherItem from './components/UpdateOtherItem.vue'
 import UpdateCamera from './components/UpdateCamera.vue'
 import UpdateBaseUnit from './components/UpdateBaseUnit.vue'
+import MastBearingReport from './components/MastBearingReport.vue'
+import NewFeetReport from './components/NewFeetReport.vue'
+import MaintItemsReport from './components/MaintItemsReport.vue'
 
 // Composables
 import { createApp } from 'vue'
@@ -42,6 +45,9 @@ const routes = [
   { path: '/update-other-item:name', name: 'update-other-item', component: UpdateOtherItem, props: true },
   { path: '/add-maintenance-task:item_type:item_ref', name: 'add-maintenance-task', component: AddMaintenanceTask, props: true },
   { path: '/add-note:item_type:item_ref', name: 'add-note', component: AddNote, props: true },
+  { path: '/mast-bearing-report', name: 'mast-bearing-report', component: MastBearingReport },
+  { path: '/new-feet-report', name: 'new-feet-report', component: NewFeetReport },
+  { path: '/maint-items-report', name: 'maint-items-report', component: MaintItemsReport },
 ];
 
 // 2. Create the router instance
