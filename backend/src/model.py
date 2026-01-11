@@ -120,6 +120,11 @@ class BaseUnitDelete(BaseModel):
     license_plate_camera: Optional[str] = None
     widescreen_camera: Optional[str] = None
 
+class BaseUnitUpdate(BaseModel):
+    id: int
+    name: str
+    location: int
+
 # Camera models
 class Camera(BaseModel):
     """
@@ -162,6 +167,13 @@ class CameraDelete(BaseModel):
     name: str
     type: str
     base_unit: Optional[str] = None
+
+class CameraUpdate(BaseModel):
+    """
+    CameraItem update
+    """
+    name: str
+    base_unit: str
 
 # Other Item models
 class OtherItem(BaseModel):

@@ -36,7 +36,7 @@
         </v-form>
       </v-sheet>
     </v-container>
-    <v-container  width="800">
+    <v-container  width="80%">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Notes
       </div>
@@ -84,7 +84,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <v-container  width="800">
+    <v-container  width="80%">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Maintenance Tasks
       </div>

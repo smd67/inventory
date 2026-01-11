@@ -33,16 +33,19 @@
           <v-text-field
             v-model="face_camera"
             label="Face Camera"
+            :key="faceCameraKey"
             readonly
           ></v-text-field>
           <v-text-field
             v-model="license_plate_camera"
             label="License Plate Camera"
+            :key="licensePlateCameraKey"
             readonly
           ></v-text-field>
            <v-text-field
             v-model="widescreen_camera"
             label="Widescreen Camera"
+            :key="watch"
             readonly
           ></v-text-field>
           <div class="d-flex justify-center align-center" style="padding-top: 20px;">
@@ -51,7 +54,7 @@
         </v-form>
       </v-sheet>
     </v-container>
-    <v-container  width="800">
+    <v-container  width="80%">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Cameras
       </div>
@@ -95,12 +98,15 @@
               <v-list-item @click="deleteCamera(item)">
                 <v-list-item-title>Delete</v-list-item-title>
               </v-list-item>
+              <v-list-item @click="updateCamera(item)">
+                <v-list-item-title>Update</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-menu>
         </template>
       </v-data-table>
     </v-container>
-    <v-container  width="800">
+    <v-container  width="80%">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Other Items
       </div>
@@ -144,12 +150,15 @@
               <v-list-item @click="deleteOtherItem(item)">
                 <v-list-item-title>Delete</v-list-item-title>
               </v-list-item>
+              <v-list-item @click="updateOtherItem(item)">
+                <v-list-item-title>Update</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-menu>
         </template>
       </v-data-table>
     </v-container>
-    <v-container  width="800">
+    <v-container  width="80%">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Notes
       </div>
@@ -182,22 +191,24 @@
         </template>
         <!-- Use the specific slot name 'item.actions' -->
         <template v-slot:item.actions="{ item }">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn icon v-bind="props">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="deleteNote(item)">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+          <td class="text-right">
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deleteNote(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </td>
         </template>
       </v-data-table>
     </v-container>
-    <v-container  width="800">
+    <v-container  width="80%">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Maintenance Tasks
       </div>
@@ -284,6 +295,9 @@
   const maintKey = ref(0);
   const otherKey = ref(0);
   const cameraKey = ref(0);
+  const faceCameraKey = ref(0);
+  const licensePlateCameraKey = ref(0);
+  const widescreenCameraKey = ref(0);
 
   const headers = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
@@ -348,10 +362,10 @@
     },
   });
 
-  // fetch the user information when params change
   watch(
-    () => route.params.id,
-    async refresh => {
+    // fetch the user information when params change
+    () => route.fullPath,
+    async (newFullPath, oldFullPath) => {
       console.log("IN BaseUnit.watch.refresh");
       fetchCameras();
       cameraKey.value += 1;
@@ -361,16 +375,6 @@
       maintKey.value += 1;
       fetchOther();
       otherKey.value += 1;
-      console.log("cameraTable=" + JSON.stringify(cameraTable.value));
-      for (const camera of cameraTable.value) {
-        if(camera.type === "Face Camera"){
-          face_camera.value = camera.name;
-        } else if(camera.type === "License Plate Camera") {
-          license_plate_camera.value = camera.name;
-        } else if(camera.type === "Widescreen Camera") {
-          widescreen_camera.value = camera.name;
-        }
-      }
       console.log("OUT BaseUnit.watch.refresh");
     }
   )
@@ -486,6 +490,14 @@
     }
     console.log("OUT deleteCamera");
   };
+  const updateCamera = (item) => {
+    console.log("IN updateCamera");
+    router.push({name: 'update-camera', params: {name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT updateCamera");
+  };
+
   const createOtherItem = () => {
     console.log("IN createOtherItem");
     router.push({name: 'create-other-item', params: {base_unit: name.value}}).catch(failure => {
@@ -527,6 +539,14 @@
       console.log('Deletion cancelled.');
     }
     console.log("OUT deleteOtherItem");
+  };
+  
+  const updateOtherItem = (item) => {
+    console.log("IN updateOtherItem");
+    router.push({name: 'update-other-item', params: {name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT updateOtherItem");
   };
 
   const addMaintenanceTask = () => {
@@ -668,6 +688,24 @@
     try {
         const response = await api.post('/get-cameras-for-bu/', requestBody, config);
         cameraTable.value = response.data;
+
+        console.log("cameraTable=" + JSON.stringify(cameraTable.value));
+        face_camera.value = "NONE";
+        license_plate_camera.value = "NONE";
+        widescreen_camera.value = "NONE";
+        for (const camera of cameraTable.value) {
+          if(camera.type === "Face Camera"){
+            face_camera.value = camera.name;
+          } else if(camera.type === "License Plate Camera") {
+            license_plate_camera.value = camera.name;
+          } else if(camera.type === "Wide Screen Camera") {
+            widescreen_camera.value = camera.name; 
+          }
+        }
+        faceCameraKey.value += 1;
+        licensePlateCameraKey.value += 1;
+        widescreenCameraKey.value += 1;
+
         loading.value = false;
     } catch (e) {
         loading.value = false;

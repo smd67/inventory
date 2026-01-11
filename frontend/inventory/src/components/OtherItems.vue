@@ -1,14 +1,14 @@
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 225px;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 12.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Other Items Details
   </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div v-if="!error" style="padding-right: 250px;">
-    <v-container style="border: 1px solid green" width="700">
-      <v-sheet class="pa-4 text-right" width="600">
+  <div style="padding-right: 25%;">
+    <v-container style="border: 1px solid green" width="70%">
+      <v-sheet class="pa-4 text-right" width="95%">
         <v-form>
           <v-text-field
             v-model="name"
@@ -31,7 +31,7 @@
         </v-form>
       </v-sheet>
     </v-container>
-    <v-container  width="800">
+    <v-container  width="80%">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Notes
       </div>
@@ -79,7 +79,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <v-container  width="800">
+    <v-container  width="80%">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Maintenance Tasks
       </div>
@@ -129,10 +129,7 @@
       </v-data-table>
     </v-container>
     <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
-  </div>
-  
-  <div v-else class="error-banner" style="color: red;">
-    {{ error }}
+    <ErrorDialog ref="errorDialog"></ErrorDialog>
   </div>
 </template>
 
@@ -141,8 +138,9 @@
   import { useRouter, useRoute } from 'vue-router';
   import ConfirmDialog from './ConfirmDialog.vue';
   import api from "../api";
+  import ErrorDialog from './ErrorDialog.vue';
 
-  const error = ref(null);
+  const errorDialog = ref(null);
   const loading = ref(true);
   const id = ref(null);
   const name = ref(null);
@@ -255,7 +253,11 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting note:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       fetchMaintTasks();
       console.log('Maintenance Task deleted!');
@@ -298,7 +300,11 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting note:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       console.log('Note deleted!');
       fetchNotes();
@@ -325,7 +331,11 @@
     } catch (e) {
         loading.value = false;
         console.log("error=" + e)
-        error.value = 'Error fetching data:' + e;
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error fetching data:' + e,
+          { color: 'red lighten-3' }
+        );
     }
   };
 
@@ -346,7 +356,11 @@
     } catch (e) {
         loading.value = false;
         console.log("error=" + e)
-        error.value = 'Error fetching data:' + e;
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error fetching data:' + e,
+          { color: 'red lighten-3' }
+        );
     }
   };
 </script>

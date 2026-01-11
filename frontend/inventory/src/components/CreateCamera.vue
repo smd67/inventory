@@ -1,14 +1,14 @@
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 225px;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 12.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Create a Camera
   </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div v-if="!error" style="padding-right: 250px;">
-    <v-container style="border: 1px solid green" width="700">
-      <v-sheet class="pa-4 text-right" width="600">
+  <div style="padding-right: 25%;">
+    <v-container style="border: 1px solid green" width="70%">
+      <v-sheet class="pa-4 text-right" width="95%">
         <v-form @submit.prevent="handleSubmit">
           <v-text-field
             v-model="name"
@@ -33,10 +33,7 @@
         </v-form>
       </v-sheet>
     </v-container>
-  </div>
-  
-  <div v-else class="error-banner" style="color: red;">
-    {{ error }}
+    <ErrorDialog ref="errorDialog"></ErrorDialog>
   </div>
 </template>
 
@@ -44,6 +41,7 @@
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
+  import ErrorDialog from './ErrorDialog.vue';
 
   const props = defineProps({
     base_unit: {
@@ -52,7 +50,6 @@
     }
   });
 
-  const error = ref(null);
   const loading = ref(true);
   const name = ref(null);
   const baseUnit = ref(null);
@@ -63,6 +60,7 @@
   const baseUnitKey = ref(0);
   const nameKey = ref(0);
   const cameraTypeKey = ref(0);
+  const errorDialog = ref(null);
 
   watch(
     () => route.fullPath,
@@ -114,8 +112,13 @@
         loading.value = false;
     } catch (e) {
         loading.value = false;
-        error.value = 'Error fetching data:' + e;
-        console.error('Error fetching data:', e);
+        console.error('Error inserting data:', e);
+        // Call the dialog's open function using the template ref
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error inserting data:' + e,
+          { color: 'red lighten-3' }
+        );
     }
     goBack();
     console.log('OUT handleSubmit');

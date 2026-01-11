@@ -236,3 +236,31 @@ def update_other_item(query: model.OtherItemUpdate) -> None:
             detail=f"An unexpected exception e={e} has occured"
         )
     print(f"OUT update-other-item")
+
+@app.post("/update-camera")
+def update_camera(query: model.CameraUpdate) -> None:
+    print(f"IN update-camera query={query}")
+    try:
+        db = Database()
+        db.update_camera(query.name, query.base_unit)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT update-camera")
+
+@app.post("/update-base-unit")
+def update_base_unit(query: model.BaseUnitUpdate) -> None:
+    print(f"IN update-base-unit query={query}")
+    try:
+        db = Database()
+        db.update_base_unit(query.id, query.name, query.location)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT update-base-unit")

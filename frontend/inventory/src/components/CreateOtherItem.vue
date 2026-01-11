@@ -1,5 +1,5 @@
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 225px;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 17.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Create an Other Item
   </div>
@@ -7,8 +7,8 @@
       <div class="spinner" v-if="loading"></div>
   </div>
   <div style="padding-right: 250px;">
-    <v-container style="border: 1px solid green" width="700">
-      <v-sheet class="pa-4 text-right" width="600">
+    <v-container style="border: 1px solid green" width="60%">
+      <v-sheet class="pa-4 text-right" width="95%">
         <v-form @submit.prevent="handleSubmit">
           <v-text-field
             v-model="name"
@@ -33,6 +33,7 @@
   import { ref, onMounted, defineProps } from 'vue';
   import { useRouter } from 'vue-router';
   import api from "../api";
+  import ErrorDialog from './ErrorDialog.vue';
 
   const props = defineProps({
     base_unit: {

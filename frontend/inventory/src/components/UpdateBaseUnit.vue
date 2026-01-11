@@ -1,7 +1,7 @@
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Update Other Item
+    Update Camera
   </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
@@ -17,9 +17,9 @@
             readonly
           ></v-text-field>
           <v-text-field
-            v-model="baseUnit"
-            :key="baseUnitKey"
-            label="Base Unit"
+            v-model="location"
+            :key="locationKey"
+            label="Location"
           ></v-text-field>
           <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
             <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
@@ -42,29 +42,33 @@
     name: {
       type: String,
       default: null,
-    }
+    },
+    id: {
+      type: Number,
+      default: -1,
+    },
   });
 
   const loading = ref(true);
   const name = ref(null);
-  const baseUnit = ref(null);
+  const id = ref(null);
+  const location = ref(null);
   const router = useRouter();
   const route = useRoute();
   const nameKey = ref(0);
-  const baseUnitKey = ref(0);
+  const locationKey = ref(0);
   const errorDialog = ref(null);
 
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
-      console.log("IN UpdateOtherItem.watch.refresh");
-      baseUnit.value = props.base_unit;
-      baseUnitKey.value += 1;
+      console.log("IN UpdateBaseUnit.watch.refresh");
       name.value = props.name;
       nameKey.value += 1;
-      baseUnit.value = null;
-      baseUnitKey.value += 1;
-      console.log("OUT UpdateOtherItem.watch.refresh");
+      location.value = null;
+      locationKey.value += 1;
+      id.value = props.id;
+      console.log("OUT UpdateBaseUnit.watch.refresh");
     }
   );
 
@@ -72,6 +76,8 @@
     console.log('IN onMounted');
     name.value = props.name;
     nameKey.value += 1;
+    id.value = props.id;
+    location.value = null;
     console.log('OUT onMounted');
   });
 
@@ -89,12 +95,13 @@
         }
     };
     const requestBody = {
+        id: id.value,
         name: name.value,
-        base_unit: baseUnit.value
+        location: location.value
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
-        const response = await api.post('/update-other-item/', requestBody, config);
+        const response = await api.post('/update-base-unit/', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
     } catch (e) {
@@ -103,7 +110,7 @@
         // Call the dialog's open function using the template ref
         const result = await errorDialog.value.open(
           'Confirm Error',
-          'Error updating data:' + e,
+          'Error updating base unit:' + e,
           { color: 'red lighten-3' }
         );
     }

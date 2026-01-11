@@ -1,7 +1,7 @@
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Update Other Item
+    Update Camera
   </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
@@ -94,7 +94,7 @@
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
-        const response = await api.post('/update-other-item/', requestBody, config);
+        const response = await api.post('/update-camera/', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
     } catch (e) {

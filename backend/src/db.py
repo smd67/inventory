@@ -234,54 +234,63 @@ class Database:
                      base_unit: str = None):
         print("IN create_camera")
         with self.connection.cursor() as cursor:
-            # Execute a command
-            camera_type_enum = model.CameraType.from_str_value(camera_type)
-            cursor.execute("insert into cameras (name, type) " + 
-                           f"values('{name}', '{camera_type_enum.name}')")
-            self.connection.commit()
+            try:
+                # Execute a command
+                camera_type_enum = model.CameraType.from_str_value(camera_type)
+                cursor.execute("insert into cameras (name, type) " + 
+                            f"values('{name}', '{camera_type_enum.name}') RETURNING id")
 
-            cursor.execute(f"SELECT id from  cameras WHERE name='{name}' LIMIT 1")
-            record = cursor.fetchone()
-            camera_id = record[0]
-
-            if base_unit:
-                cursor.execute(f"select id from base_units WHERE name='{base_unit}' LIMIT 1")
                 record = cursor.fetchone()
-                bu_id = record[0]
+                camera_id = record[0]
 
-                cursor.execute(f"update cameras set base_unit_ref={bu_id} WHERE id={camera_id}")
+                if base_unit:
+                    cursor.execute(f"select id from base_units WHERE name='{base_unit}' LIMIT 1")
+                    record = cursor.fetchone()
+                    bu_id = record[0]
+
+                    cursor.execute(f"update cameras set base_unit_ref={bu_id} WHERE id={camera_id}")
+                    if camera_type_enum == model.CameraType.FACE_CAMERA:
+                        cursor.execute(f"update base_units set face_camera_ref={camera_id} WHERE id={bu_id}")
+                    elif camera_type_enum == model.CameraType.LICENSE_PLATE_CAMERA:
+                        cursor.execute(f"update base_units set license_plate_camera_ref={camera_id} WHERE id={bu_id}")
+                    elif camera_type_enum == model.CameraType.WIDE_SCREEN_CAMERA:
+                        cursor.execute(f"update base_units set wide_screen_camera_ref={camera_id} WHERE id={bu_id}")
+            except Exception as e:
+                # If any statement fails, roll back all changes within the transaction
+                self.connection.rollback()
+                print(f"Transaction failed: {e}")
+                raise e
+            finally:
                 self.connection.commit()
-
-                if camera_type_enum == model.CameraType.FACE_CAMERA:
-                    cursor.execute(f"update base_units set face_camera_ref={camera_id} WHERE id={bu_id}")
-                    self.connection.commit()
-                elif camera_type_enum == model.CameraType.LICENSE_PLATE_CAMERA:
-                    cursor.execute(f"update base_units set license_plate_camera_ref={camera_id} WHERE id={bu_id}")
-                    self.connection.commit()
-                elif camera_type_enum == model.CameraType.WIDE_SCREEN_CAMERA:
-                    cursor.execute(f"update base_units set wide_screen_camera_ref={camera_id} WHERE id={bu_id}")
-                    self.connection.commit()
         print("OUT create_camera")
     
     def create_other_item(self, name: str, base_unit: str = None):
         print("IN create_other_item")
         with self.connection.cursor() as cursor:
-            # Execute a command
-            cursor.execute("insert into other_items (name) " + 
-                           f"values('{name}')")
-            self.connection.commit()
+            try:
+                # Execute a command
+                cursor.execute("insert into other_items (name) " +
+                            f"values('{name}') RETURNING id")
 
-            cursor.execute(f"SELECT id from other_items  WHERE name='{name}' LIMIT 1")
-            record = cursor.fetchone()
-            other_id = record[0]
-
-            if base_unit:
-                cursor.execute(f"select id from base_units WHERE name='{base_unit}' LIMIT 1")
                 record = cursor.fetchone()
-                bu_id = record[0]
+                other_id = record[0]
+                print(f"other_id={other_id}")
 
-                cursor.execute(f"update other_items set base_unit_ref={bu_id} WHERE id={other_id}")
+                if base_unit:
+                    cursor.execute(f"select id from base_units WHERE name='{base_unit}' LIMIT 1")
+                    record = cursor.fetchone()
+                    bu_id = record[0]
+                    print(f"bu_id={bu_id}")
+                    cursor.execute(f"update other_items set base_unit_ref={bu_id} WHERE id={other_id}")
+            except Exception as e:
+                # If any statement fails, roll back all changes within the transaction
+                self.connection.rollback()
+                print(f"Transaction failed: {e}")
+                raise e
+            finally:
                 self.connection.commit()
+                
+
 
         print("OUT create_other_item")
 
@@ -379,3 +388,23 @@ class Database:
             cursor.execute(f"update other_items set base_unit_ref={bu_id} where name='{name}'")
             self.connection.commit()
         print("OUT update_other_item")
+    
+    def update_camera(self, name: str, base_unit: str) -> None:
+        print("IN update_camera")
+        with self.connection.cursor() as cursor:
+            cursor.execute(f"SELECT id from base_units WHERE name='{base_unit}' LIMIT 1")
+            record = cursor.fetchone()
+            bu_id = record[0]
+
+            # Execute a command
+            cursor.execute(f"update cameras set base_unit_ref={bu_id} where name='{name}'")
+            self.connection.commit()
+        print("OUT update_camera")
+    
+    def update_base_unit(self, id: int, name: str, location: int) -> None:
+        print("IN update_base_unit")
+        with self.connection.cursor() as cursor:
+            # Execute a command
+            cursor.execute(f"update base_units set location={location} where id={id}")
+            self.connection.commit()
+        print("OUT update_base_unit")

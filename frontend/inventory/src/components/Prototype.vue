@@ -1,12 +1,12 @@
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 150px;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Base Units
   </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div v-if="!error">
+  <div>
     <v-container>
       <!-- Data Table -->
       <v-data-table
@@ -51,12 +51,15 @@
               <v-list-item @click="deleteBaseUnit(item)">
                 <v-list-item-title>Delete</v-list-item-title>
               </v-list-item>
+              <v-list-item @click="updateBaseUnit(item)">
+                <v-list-item-title>Update</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-menu>
         </template>
       </v-data-table>
     </v-container>
-    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 150px;">
+    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
       Cameras
     </div>
     <v-container>
@@ -103,12 +106,15 @@
               <v-list-item @click="deleteCamera(item)">
                 <v-list-item-title>Delete</v-list-item-title>
               </v-list-item>
+              <v-list-item @click="updateCamera(item)">
+                <v-list-item-title>Update</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-menu>
         </template>
       </v-data-table>
     </v-container>
-    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 150px;">
+    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
       Other Items
     </div>
     <v-container>
@@ -164,9 +170,7 @@
       </v-data-table>
     </v-container>
     <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
-  </div>
-  <div v-else class="error-banner" style="color: red;">
-    {{ error }}
+    <ErrorDialog ref="errorDialog"></ErrorDialog>
   </div>
 </template>
 
@@ -176,6 +180,7 @@
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ConfirmDialog from './ConfirmDialog.vue';
+  import ErrorDialog from './ErrorDialog.vue';
 
   const baseUnitSearch = ref('');
   const cameraSearch = ref('');
@@ -183,7 +188,6 @@
   const baseUnitsTable = ref([]);
   const camerasTable = ref([]);
   const otherItemsTable = ref([]);
-  const error = ref(null);
   const loading = ref(true);
   const router = useRouter();
   const route = useRoute();
@@ -311,7 +315,7 @@
 
   const createBaseUnit = () => {
     console.log("IN createBaseUnit");
-    router.push({name: 'create'}).catch(failure => {
+    router.push({name: 'create-base-unit'}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT createBaseUnit");
@@ -344,7 +348,11 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting data:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       fetchOtherItems();
       fetchBaseUnits();
@@ -355,6 +363,14 @@
       console.log('Deletion cancelled.');
     }
     console.log("OUT deleteOtherItem");
+  };
+
+  const updateBaseUnit = (item) => {
+    console.log("IN updateBaseUnit");
+    router.push({name: 'update-base-unit', params: {name: item.name, id: item.id}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT updateBaseUnit");
   };
 
   const createCamera = () => {
@@ -392,7 +408,11 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting camera:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       fetchCameras();
       fetchBaseUnits();
@@ -402,6 +422,13 @@
       console.log('Deletion cancelled.');
     }
     console.log("OUT deleteCamera");
+  };
+  const updateCamera = (item) => {
+    console.log("IN updateCamera");
+    router.push({name: 'update-camera', params: {name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT updateCamera");
   };
 
   const createOtherItem = () => {
@@ -436,7 +463,11 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting other item:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       fetchOtherItems();
       fetchBaseUnits();
@@ -469,7 +500,11 @@
         loading.value = false;
     } catch (e) {
         loading.value = false;
-        error.value = 'Error fetching data:' + e;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching data:' + e,
+            { color: 'red lighten-3' }
+          );
     }
   };
 
@@ -486,7 +521,11 @@ const fetchCameras = async () => {
         loading.value = false;
     } catch (e) {
         loading.value = false;
-        error.value = 'Error fetching data:' + e;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching data:' + e,
+            { color: 'red lighten-3' }
+          );
     }
   };
   const fetchOtherItems = async () => {
@@ -502,7 +541,11 @@ const fetchCameras = async () => {
         loading.value = false;
     } catch (e) {
         loading.value = false;
-        error.value = 'Error fetching data:' + e;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching data:' + e,
+            { color: 'red lighten-3' }
+          );
     }
   };
 </script>
