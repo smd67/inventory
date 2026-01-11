@@ -30,8 +30,8 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, defineProps } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { ref, onMounted, defineProps, watch } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
@@ -46,7 +46,20 @@
   const name = ref(null);
   const baseUnit = ref(null);
   const router = useRouter();
+  const route = useRoute();
   const errorDialog = ref(null);
+
+  watch(
+    () => route.fullPath,
+    async (newFullPath, oldFullPath) => {
+      console.log("IN CreateOtherItem.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
+      if(newFullPath.includes("/create-other-item")){
+        baseUnit.value = props.base_unit;
+        name.value = null;
+      }
+      console.log('OUT CreateOtherItem.watch.refresh. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
+    }
+  );
 
   onMounted(async () => {
     console.log('IN onMounted');

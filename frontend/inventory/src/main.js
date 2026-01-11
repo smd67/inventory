@@ -35,7 +35,7 @@ import 'unfonts.css'
 const routes = [
   { path: '/prototype', name: 'prototype', component: Prototype },
   { path: '/create-base-unit', name: 'create-base-unit', component: CreateBaseUnit },
-  { path: '/update-base-unit:name:id', name: 'update-base-unit', component: UpdateBaseUnit, props: true },
+  { path: '/update-base-unit:name:id:location:has_new_feet:has_new_mast_bearing', name: 'update-base-unit', component: UpdateBaseUnit, props: true },
   { path: '/create-camera:base_unit?', name: 'create-camera', component: CreateCamera, props: true},
   { path: '/update-camera:name', name: 'update-camera', component: UpdateCamera, props: true },
   { path: '/base-unit:id:name:location:has_new_mast_bearing:has_new_feet:face_camera:license_plate_camera:widescreen_camera', name: 'base-unit', component: BaseUnit, props: true },

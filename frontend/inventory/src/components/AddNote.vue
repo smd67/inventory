@@ -26,8 +26,8 @@
 </template>
 
 <script setup>
-  import { ref, onMounted, defineProps } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { ref, onMounted, defineProps, watch } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
@@ -36,6 +36,7 @@
   const itemType = ref(null);
   const itemRef = ref(0);
   const router = useRouter();
+  const route = useRoute();
   const errorDialog = ref(null);
 
   const props = defineProps({
@@ -49,11 +50,25 @@
     },
   });
 
+  watch(
+    () => route.fullPath,
+    async (newFullPath, oldFullPath) => {
+      console.log("IN AddNote.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
+      if(newFullPath.includes("/add-note")){
+        itemType.value = props.item_type;
+        itemRef.value = props.item_ref;
+        description.value = null;
+      }
+      console.log('OUT AddNote.watch.refresh. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
+    }
+  );
+
   onMounted(async () => {
-    console.log('IN AddMaintenaceTask.onMounted');
+    console.log('IN AddNote.onMounted');
     itemType.value = props.item_type;
     itemRef.value = props.item_ref;
-    console.log('OUT AddMaintenaceTask.onMounted. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
+    description.value = null;
+    console.log('OUT AddNote.onMounted. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
   });
 
   const goBack = () => {

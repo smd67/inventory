@@ -124,6 +124,8 @@ class BaseUnitUpdate(BaseModel):
     id: int
     name: str
     location: int
+    has_new_feet: bool
+    has_new_mast_bearing: bool
 
 # Camera models
 class Camera(BaseModel):

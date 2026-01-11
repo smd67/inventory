@@ -1,14 +1,14 @@
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 225px;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Add Maintenance Task
   </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div v-if="!error" style="padding-right: 250px;">
-    <v-container style="border: 1px solid green" width="700">
-      <v-sheet class="pa-4 text-right" width="600">
+  <div style="padding-right: 25%;">
+    <v-container style="border: 1px solid green" width="70%">
+      <v-sheet class="pa-4 text-right" width="95%">
         <v-form @submit.prevent="handleSubmit">
           <v-text-field
             v-model="description"
@@ -28,17 +28,14 @@
       </v-sheet>
     </v-container>
   </div>
-  
-  <div v-else class="error-banner" style="color: red;">
-    {{ error }}
-  </div>
 </template>
 
 <script setup>
-  import { ref, onMounted, defineProps } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { ref, onMounted, defineProps, watch } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
   import { VDateInput } from 'vuetify/labs/VDateInput'
   import api from "../api";
+  import ErrorDialog from './ErrorDialog.vue';
 
   const error = ref(null);
   const loading = ref(true);
@@ -49,6 +46,7 @@
   const itemRef = ref(0);
   const lastDone = ref(null);
   const router = useRouter();
+  const route = useRoute();
 
   const props = defineProps({
     item_ref: {
@@ -60,6 +58,21 @@
       default: "",
     },
   });
+
+  watch(
+    () => route.fullPath,
+    async (newFullPath, oldFullPath) => {
+      console.log("IN AddMaintenanceTask.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
+      if(newFullPath.includes("/add-maintenance-task")){
+        itemType.value = props.item_type;
+        itemRef.value = props.item_ref;
+        description.value = null;
+        status.value = null;
+        lastDone.value = null;
+      }
+      console.log('OUT AddMaintenanceTask.watch.refresh. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
+    }
+  );
 
   onMounted(async () => {
     console.log('IN AddMaintenaceTask.onMounted');
@@ -77,16 +90,16 @@
   const handleSubmit = async () => {
     console.log('IN handleSubmit');
     const config = {
-        headers: {
-            'Content-Type': 'application/json'
-        }
+      headers: {
+          'Content-Type': 'application/json'
+      }
     };
     const requestBody = {
-        last_done_date: lastDone.value,
-        description: description.value,
-        status: status.value,
-        item_type: itemType.value,
-        item_ref: itemRef.value
+      last_done_date: lastDone.value,
+      description: description.value,
+      status: status.value,
+      item_type: itemType.value,
+      item_ref: itemRef.value
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
@@ -95,8 +108,13 @@
         loading.value = false;
     } catch (e) {
         loading.value = false;
-        error.value = 'Error fetching data:' + e;
         console.error('Error fetching data:', e);
+        // Call the dialog's open function using the template ref
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error inserting data:' + e,
+          { color: 'red lighten-3' }
+        );
     }
     goBack();
     console.log('OUT handleSubmit');

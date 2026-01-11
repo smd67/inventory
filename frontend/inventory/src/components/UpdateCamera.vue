@@ -57,22 +57,24 @@
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
-      console.log("IN UpdateOtherItem.watch.refresh");
+      console.log("IN UpdateCamera.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
       baseUnit.value = props.base_unit;
       baseUnitKey.value += 1;
       name.value = props.name;
       nameKey.value += 1;
       baseUnit.value = null;
       baseUnitKey.value += 1;
-      console.log("OUT UpdateOtherItem.watch.refresh");
+      console.log("OUT UpdateCamera.watch.refresh");
     }
   );
 
   onMounted(async () => {
-    console.log('IN onMounted');
+    console.log('IN UpdateCamera.onMounted');
     name.value = props.name;
     nameKey.value += 1;
-    console.log('OUT onMounted');
+    baseUnit.value = null;
+    baseUnitKey.value += 1;
+    console.log('OUT UpdateCamera.onMounted');
   });
 
   const goBack = () => {

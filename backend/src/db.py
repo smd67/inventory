@@ -401,11 +401,11 @@ class Database:
             self.connection.commit()
         print("OUT update_camera")
     
-    def update_base_unit(self, id: int, name: str, location: int) -> None:
+    def update_base_unit(self, id: int, name: str, location: int, has_new_feet: bool, has_new_mast_bearing: bool) -> None:
         print("IN update_base_unit")
         with self.connection.cursor() as cursor:
             # Execute a command
-            cursor.execute(f"update base_units set location={location} where id={id}")
+            cursor.execute(f"update base_units set location={location}, has_new_feet={has_new_feet}, has_new_mast_bearing={has_new_mast_bearing} where id={id}")
             self.connection.commit()
         print("OUT update_base_unit")
     

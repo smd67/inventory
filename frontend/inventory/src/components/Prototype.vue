@@ -416,7 +416,7 @@
 
   const updateBaseUnit = (item) => {
     console.log("IN updateBaseUnit");
-    router.push({name: 'update-base-unit', params: {name: item.name, id: item.id}}).catch(failure => {
+    router.push({name: 'update-base-unit', params: {name: item.name, id: item.id, location: item.location, has_new_feet: item.has_new_feet, has_new_mast_bearing: item.has_new_mast_bearing}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT updateBaseUnit");
@@ -563,7 +563,6 @@ const fetchCameras = async () => {
             'Content-Type': 'application/json'
         }
     };
-
     try {
         const response = await api.get('/get-cameras/', config);
         camerasTable.value = response.data;

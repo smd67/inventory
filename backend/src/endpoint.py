@@ -268,7 +268,7 @@ def update_base_unit(query: model.BaseUnitUpdate) -> None:
     print(f"IN update-base-unit query={query}")
     try:
         db = Database()
-        db.update_base_unit(query.id, query.name, query.location)
+        db.update_base_unit(query.id, query.name, query.location, query.has_new_feet, query.has_new_mast_bearing)
     except Exception as e:
         print(f"An unexpected exception e={e} has occured")
         raise HTTPException(
