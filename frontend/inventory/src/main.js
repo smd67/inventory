@@ -25,6 +25,7 @@ import UpdateBaseUnit from './components/UpdateBaseUnit.vue'
 import MastBearingReport from './components/MastBearingReport.vue'
 import NewFeetReport from './components/NewFeetReport.vue'
 import MaintItemsReport from './components/MaintItemsReport.vue'
+import UpdateMaintenanceTask from './components/UpdateMaintenanceTask.vue'
 
 // Composables
 import { createApp } from 'vue'
@@ -44,6 +45,7 @@ const routes = [
   { path: '/create-other-item:base_unit?', name: 'create-other-item', component: CreateOtherItem, props: true },
   { path: '/update-other-item:name', name: 'update-other-item', component: UpdateOtherItem, props: true },
   { path: '/add-maintenance-task:item_type:item_ref', name: 'add-maintenance-task', component: AddMaintenanceTask, props: true },
+  { path: '/update-maintenance-task:id:description:last_done_date', name: 'update-maintenance-task', component: UpdateMaintenanceTask, props: true },
   { path: '/add-note:item_type:item_ref', name: 'add-note', component: AddNote, props: true },
   { path: '/mast-bearing-report', name: 'mast-bearing-report', component: MastBearingReport },
   { path: '/new-feet-report', name: 'new-feet-report', component: NewFeetReport },

@@ -2,36 +2,6 @@ from datetime import date
 from pydantic import BaseModel
 from enum import Enum
 from typing import List, Optional
-
-class Status(str, Enum):
-    """
-    Status for maintenance items (just a first pass)
-    """
-    PENDING = "Pending"
-    IN_PROGRESS = "In Progress"
-    DONE = "Done"
-    FAILED = "Failed"
-    @staticmethod
-    def from_str(label: str):
-        if label == Status.PENDING.name:
-            return Status.PENDING
-        elif label == Status.IN_PROGRESS.name:
-            return Status.IN_PROGRESS
-        elif label == Status.DONE.name:
-            return Status.DONE
-        elif label == Status.FAILED.name:
-            return Status.FAILED
-     
-    @staticmethod
-    def from_str_value(label: str):
-        if label == Status.PENDING.value:
-            return Status.PENDING
-        elif label == Status.IN_PROGRESS.value:
-            return Status.IN_PROGRESS
-        elif label == Status.DONE.value:
-            return Status.DONE
-        elif label == Status.FAILED.value:
-            return Status.FAILED
         
 class ItemType(str, Enum):
     """
@@ -256,7 +226,6 @@ class MaintenanceTask(BaseModel):
     id: int
     last_done_date: date
     description: str
-    status: Status
     item_type: ItemType
     item_ref: int
 
@@ -264,7 +233,6 @@ class MaintenanceTaskQueryResult(BaseModel):
     id: int
     last_done_date: date
     description: str
-    status: str
     item_type: str
     item_name: str
 
@@ -278,10 +246,11 @@ class MaintenanceTaskQuery(BaseModel):
 class MaintenanceTaskCreate(BaseModel):
     last_done_date: str
     description: str
-    status: str
     item_type: str
     item_ref: int
 
 class MaintenanceTaskDelete(BaseModel):
     id: int
 
+class MaintenanceTaskUpdate(BaseModel):
+    id: int

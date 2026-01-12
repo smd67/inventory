@@ -4,7 +4,7 @@ import psycopg
 from psycopg.rows import class_row
 from common import get_secret
 import model
-from model import  MaintenanceTask, Status
+from model import  MaintenanceTask
 from typing import List
 from datetime import datetime
 
@@ -107,12 +107,11 @@ class Database:
             cur.execute(f"SELECT * from maintenance WHERE item_type='{item_type}' AND item_ref='{item_ref}'")
             # Fetch the results
             for row in cur:
-                maint_task = model.MaintenanceTask(id=row[0], 
-                                             description=row[1], 
-                                             status=model.Status.from_str(row[2]), 
-                                             last_done_date=row[3], 
-                                             item_type=model.ItemType.from_str(row[4]), 
-                                             item_ref=row[5])
+                maint_task = model.MaintenanceTask(id=row[0],
+                                                    description=row[1],
+                                                    last_done_date=row[2], 
+                                                    item_type=model.ItemType.from_str(row[3]),
+                                                    item_ref=row[4])
                 maint_list.append(maint_task)
         print("OUT Database.get_maintenance_tasks")
         return maint_list
@@ -294,14 +293,13 @@ class Database:
 
         print("OUT create_other_item")
 
-    def add_maintenance_task(self, description: str, status: str, last_done: str, item_type: str, item_ref: int) -> None:
+    def add_maintenance_task(self, description: str, last_done: str, item_type: str, item_ref: int) -> None:
         print("IN add_maintenance_task")
 
-        status_enum = Status.from_str_value(status)
         with self.connection.cursor() as cursor:
             # Execute a command
-            cursor.execute("insert into maintenance (description, status, last_done, item_type, item_ref) " +
-                           f"values('{description}', '{status_enum.name}', '{last_done}', '{item_type}', {item_ref})")
+            cursor.execute("insert into maintenance (description, last_done, item_type, item_ref) " +
+                           f"values('{description}', '{last_done}', '{item_type}', {item_ref})")
             self.connection.commit()
 
         print("OUT add_maintenance_task")
@@ -366,7 +364,6 @@ class Database:
             cursor.execute(f"delete from base_units where id={bu_id}")
             cursor.execute(f"delete from notes where item_type='{model.ItemType.BASE_UNIT.name}' and item_ref={bu_id}")
             cursor.execute(f"delete from maintenance where item_type='{model.ItemType.BASE_UNIT.name}' and item_ref={bu_id}")
-            camera_type = model.CameraType.from_str_value(type)
             if face_camera:
                 cursor.execute(f"update cameras set base_unit_ref=NULL where name='{license_plate_camera}' and type='{model.CameraType.LICENSE_PLATE_CAMERA.name}'")
             if license_plate_camera:
@@ -499,10 +496,17 @@ class Database:
                 item_name = record[0]
                 maint_task = model.MaintenanceTaskQueryResult(id=row[0], 
                                                               description=row[1], 
-                                                              status=model.Status.from_str(row[2]).value, 
                                                               last_done_date=row[3], 
                                                               item_type=model.ItemType.from_str(row[4]).value, 
                                                               item_name=item_name)
                 maint_list.append(maint_task)
         print("OUT Database.get_expired_maintenance_tasks")
         return maint_list
+    
+    def complete_maintenance_task(self, id: int) -> None:
+        print("IN complete_maintenance_task")
+        with self.connection.cursor() as cursor:
+            # Execute a command
+            cursor.execute(f"update maintenance set last_done=now() where id={id}")
+            self.connection.commit()
+        print("OUT complete_maintenance_task")

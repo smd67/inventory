@@ -16,7 +16,7 @@
       </div>
     </div>
   </div>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Base Units
   </div>
@@ -76,7 +76,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
+    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
       Cameras
     </div>
     <v-container>
@@ -131,7 +131,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
+    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
       Other Items
     </div>
     <v-container>

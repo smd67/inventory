@@ -1,5 +1,5 @@
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 12.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Base Unit Details
   </div>
@@ -216,7 +216,7 @@
         :headers="maintHeaders"
         :items="maintTable"
         :search="maintSearch"
-        item-value="status"
+        item-value="description"
         class="elevation-1"
         :key="maintKey"
       >
@@ -250,6 +250,9 @@
             <v-list>
               <v-list-item @click="deleteMaintenanceTask(item)">
                 <v-list-item-title>Delete</v-list-item-title>
+              </v-list-item>
+              <v-list-item @click="updateMaintenanceTask(item)">
+                <v-list-item-title>Update</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -306,7 +309,6 @@
 
   const maintHeaders = ref([
     {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
-    {title: 'Status', value: 'status' , sortable: true},
     {title: 'Last Done', value: 'last_done_date' , sortable: true},
     // ... other headers
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
@@ -476,7 +478,11 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting camera:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       fetchCameras();
       console.log('Camera deleted!');
@@ -526,7 +532,11 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting other-item:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       fetchOther();
       console.log('Other Item deleted!');
@@ -553,6 +563,14 @@
     console.log("OUT addMaintenanceTask");
   }
 
+  const updateMaintenanceTask = (item) => {
+    console.log("IN updateMaintenanceTask. item=" + JSON.stringify(item));
+    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, last_done_date: item.last_done_date}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT updateMaintenanceTask");
+  };
+
   const deleteMaintenanceTask = async (item) => {
     console.log("IN deleteMaintenanceTask item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
@@ -577,7 +595,11 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting maintenance task:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       fetchMaintTasks();
       console.log('Maintenance Task deleted!');
@@ -620,7 +642,11 @@
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
-          error.value = 'Error fetching data:' + e;
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting note:' + e,
+            { color: 'red lighten-3' }
+          );
       }
       console.log('Note deleted!');
       fetchNotes();
@@ -647,7 +673,11 @@
     } catch (e) {
         loading.value = false;
         console.log("error=" + e)
-        error.value = 'Error fetching data:' + e;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching notes:' + e,
+            { color: 'red lighten-3' }
+          );
     }
   };
 
@@ -668,7 +698,11 @@
     } catch (e) {
         loading.value = false;
         console.log("error=" + e)
-        error.value = 'Error fetching data:' + e;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching maint tasks:' + e,
+            { color: 'red lighten-3' }
+          );
     }
   };
 
@@ -706,7 +740,11 @@
     } catch (e) {
         loading.value = false;
         console.log("error=" + e)
-        error.value = 'Error fetching data:' + e;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching cameras:' + e,
+            { color: 'red lighten-3' }
+          );
     }
   };
 
@@ -726,7 +764,11 @@
     } catch (e) {
         loading.value = false;
         console.log("error=" + e)
-        error.value = 'Error fetching data:' + e;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching other-items:' + e,
+            { color: 'red lighten-3' }
+          );
     }
   };
 </script>

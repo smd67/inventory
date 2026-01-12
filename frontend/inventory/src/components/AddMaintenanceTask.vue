@@ -14,11 +14,6 @@
             v-model="description"
             label="Description"
           ></v-text-field>
-          <v-select
-            v-model="status"
-            :items="statusTypes"
-            label="Status"
-          ></v-select>
           <v-date-input v-model="lastDone" label="Last Done"></v-date-input>
           <div class="d-flex justify-center align-center" style="padding-top: 20px; ; gap: 16px;">
             <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
@@ -40,8 +35,6 @@
   const error = ref(null);
   const loading = ref(true);
   const description = ref(null);
-  const status = ref(null);
-  const statusTypes = ref(['Pending', 'In Progress', 'Done', 'Failed']);
   const itemType = ref(null);
   const itemRef = ref(0);
   const lastDone = ref(null);
@@ -67,7 +60,6 @@
         itemType.value = props.item_type;
         itemRef.value = props.item_ref;
         description.value = null;
-        status.value = null;
         lastDone.value = null;
       }
       console.log('OUT AddMaintenanceTask.watch.refresh. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
@@ -97,7 +89,6 @@
     const requestBody = {
       last_done_date: lastDone.value,
       description: description.value,
-      status: status.value,
       item_type: itemType.value,
       item_ref: itemRef.value
     };

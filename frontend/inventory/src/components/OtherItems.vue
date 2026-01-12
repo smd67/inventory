@@ -123,6 +123,9 @@
               <v-list-item @click="deleteMaintenanceTask(item)">
                 <v-list-item-title>Delete</v-list-item-title>
               </v-list-item>
+              <v-list-item @click="updateMaintenanceTask(item)">
+                <v-list-item-title>Update</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-menu>
         </template>
@@ -165,7 +168,6 @@
 
   const maintHeaders = ref([
     {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
-    {title: 'Status', value: 'status' , sortable: true},
     {title: 'Last Done', value: 'last_done_date' , sortable: true},
     // ... other headers
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
@@ -227,7 +229,16 @@
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT addMaintenanceTask");
-  }
+  };
+
+  const updateMaintenanceTask = (item) => {
+    console.log("IN updateMaintenanceTask. item=" + JSON.stringify(item));
+    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, last_done_date: item.last_done_date}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT updateMaintenanceTask");
+  };
+
 
   const deleteMaintenanceTask = async (item) => {
     console.log("IN deleteMaintenanceTask item=" + JSON.stringify(item));

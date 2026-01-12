@@ -142,7 +142,7 @@ def add_maintenance_task(query: model.MaintenanceTaskCreate) -> None:
     print(f"IN add-maintenance-task query={query}")
     try:
         db = Database()
-        db.add_maintenance_task(query.description, query.status, query.last_done_date, query.item_type, query.item_ref)
+        db.add_maintenance_task(query.description, query.last_done_date, query.item_type, query.item_ref)
     except Exception as e:
         print(f"An unexpected exception e={e} has occured")
         raise HTTPException(
@@ -282,3 +282,17 @@ def get_expired_maintenance_tasks() -> List[model.MaintenanceTaskQueryResult]:
     db = Database()
     results = db.get_expired_maintenance_tasks()
     return results
+
+@app.post("/complete-maintenance-task")
+def complete_maintenance_task(query: model.MaintenanceTaskUpdate) -> None:
+    print(f"IN complete-maintenance-task query={query}")
+    try:
+        db = Database()
+        db.complete_maintenance_task(query.id)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured"
+        )
+    print(f"OUT complete-maintenance-task")
