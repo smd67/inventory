@@ -4,33 +4,37 @@ maintenance task by "completing" it, meaning the last done stamp is set to
 the current time.
  -->
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
-    <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Update Maintenance Task
-  </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
   <div class="outer-div">
-    <v-container class="detail-container">
-      <v-sheet class="pa-4 text-right detail-sheet">
-        <v-text-field
-          v-model="description"
-          label="Description"
-          :key="descriptionKey"
-          readonly
-        ></v-text-field>
-        <v-text-field
-          v-model="lastDoneDate"
-          :key="lastDoneDateKey"
-          label="Last Done Date"
-          readonly
-        ></v-text-field>
-        <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
-          <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
-          <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" @click="completeTask">Complete</v-btn>
+    <v-container class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 24px;">
+          <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
+          Update Maintenance Task
         </div>
-      </v-sheet>
+      </v-row>
+      <v-row style="border: 1px solid green;">
+        <v-sheet class="pa-4 text-right detail-sheet">
+          <v-text-field
+            v-model="description"
+            label="Description"
+            :key="descriptionKey"
+            readonly
+          ></v-text-field>
+          <v-text-field
+            v-model="lastDoneDate"
+            :key="lastDoneDateKey"
+            label="Last Done Date"
+            readonly
+          ></v-text-field>
+          <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
+            <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
+            <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" @click="completeTask">Complete</v-btn>
+          </div>
+        </v-sheet>
+      </v-row>
     </v-container>
     <ErrorDialog ref="errorDialog"></ErrorDialog>
     <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
@@ -145,7 +149,7 @@ the current time.
     console.log('OUT completeTask');
   };
 </script>
-<style>
+<style scoped>
   .detail-container {
     border: 1px solid green;
     width: 70%;
@@ -160,7 +164,7 @@ the current time.
   }
 
   .outer-div {
-    padding-right: 25%;
+    width: 80%;
   }
    /* Specific styles for screens smaller than 600px */
   @media (max-width: 600px) {
@@ -176,7 +180,7 @@ the current time.
       width: 100%
     }
     .outer-div {
-      padding-right: 0%;
+      width: 100%;
     }
   }
 </style>

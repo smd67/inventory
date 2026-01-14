@@ -3,36 +3,42 @@ This file is the vue component implementation for a report that lists all
 of the base units with new feet.
  -->
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
-    <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Has New Feet Report
-  </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
   <div class="outer-div">
     <v-container  class="table-container">
-      <!-- Data Table -->
-      <v-data-table
-        :headers="headers"
-        :items="baseUnitsTable"
-        :search="baseUnitSearch"
-        item-value="name"
-        class="elevation-1"
-        :key="baseUnitsKey"
-        @dblclick:row="navigateToDetails"
-      >
-      </v-data-table>
-    </v-container>
-    <v-container>
-      <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
-        <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">
-          Back
-        </v-btn>
-        <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="exportToCSV">
-          Export to CSV
-        </v-btn>
-      </div>
+      <v-row>
+        <div style="color: green; font-size: 24px;">
+          <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
+          Has New Feet Report
+        </div>
+      </v-row>
+      <v-row style="border: 1px solid green;">
+        <!-- Data Table -->
+        <v-data-table
+          :headers="headers"
+          :items="baseUnitsTable"
+          :search="baseUnitSearch"
+          item-value="name"
+          class="elevation-1"
+          :key="baseUnitsKey"
+          @dblclick:row="navigateToDetails"
+        >
+        </v-data-table>
+      </v-row>
+      <v-row>
+        <v-spacer></v-spacer>
+        <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
+          <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">
+            Back
+          </v-btn>
+          <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="exportToCSV">
+            Export to CSV
+          </v-btn>
+        </div>
+        <v-spacer></v-spacer>
+      </v-row>
     </v-container>
     <ErrorDialog ref="errorDialog"></ErrorDialog>
   </div>
@@ -178,6 +184,8 @@ of the base units with new feet.
   .v-table tbody tr:nth-child(even) {
     background-color: #ffffff; /* White for even rows */
   }
+</style>
+<style scoped>
   .my-button {
     cursor: pointer;
     padding: 8px 20px;
@@ -199,7 +207,7 @@ of the base units with new feet.
   }
 
   .outer-div {
-    padding-right: 25%;
+    width: 100%;
   }
    /* Specific styles for screens smaller than 600px */
   @media (max-width: 600px) {
@@ -215,7 +223,7 @@ of the base units with new feet.
       width: 100%
     }
     .outer-div {
-      padding-right: 0%;
+      width: 100%;
     }
   }
 </style>

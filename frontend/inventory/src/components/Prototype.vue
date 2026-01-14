@@ -21,175 +21,188 @@ upper right for generating reports.
       </div>
     </div>
   </div>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
-    <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Base Units
-  </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div>
-    <v-container>
-      <!-- Data Table -->
-      <v-data-table
-        :headers="headers"
-        :items="baseUnitsTable"
-        :search="baseUnitSearch"
-        item-value="name"
-        class="elevation-1"
-        :key="baseUnitsKey"
-        @dblclick:row="navigateToDetails"
-      >
-        <!-- If you still want the default pagination controls alongside the search -->
-        <template v-slot:footer.prepend>
-          <v-text-field
-            v-model="baseUnitSearch"
-            label="Search"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            bg-color="#f5f5f5"
-            hide-details
-            class="flex-grow-1 mr-4"
-          ></v-text-field>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="createBaseUnit">
-            <v-icon left>mdi-plus</v-icon>
-            Add
-          </v-btn>
-          <!-- Add a v-spacer if needed to align items correctly with default footer content -->
-          <v-spacer></v-spacer>
-        </template>
+  <div class="outer-div">
+    <v-container class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 24px">
+          <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
+          Base Units
+        </div>
+      </v-row>
+      <v-row>
+        <!-- Data Table -->
+        <v-data-table
+          :headers="headers"
+          :items="baseUnitsTable"
+          :search="baseUnitSearch"
+          item-value="name"
+          class="elevation-1"
+          :key="baseUnitsKey"
+          @dblclick:row="navigateToDetails"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="baseUnitSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="createBaseUnit">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+          </template>
 
-        <!-- Use the specific slot name 'item.actions' -->
-        <template v-slot:item.actions="{ item }">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn icon v-bind="props">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="deleteBaseUnit(item)">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="updateBaseUnit(item)">
-                <v-list-item-title>Update</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </template>
-      </v-data-table>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deleteBaseUnit(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="updateBaseUnit(item)">
+                  <v-list-item-title>Update</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+        </v-data-table>
+      </v-row>
     </v-container>
-    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
-      Cameras
-    </div>
-    <v-container>
-      <!-- Data Table -->
-      <v-data-table
-        :headers="camerasHeaders"
-        :items="camerasTable"
-        :search="cameraSearch"
-        item-value="name"
-        class="elevation-1"
-        :key="cameraKey"
-        @dblclick:row="navigateToCameraDetails"
-      >
-        <!-- If you still want the default pagination controls alongside the search -->
-        <template v-slot:footer.prepend>
-          <v-text-field
-            v-model="cameraSearch"
-            label="Search"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            bg-color="#f5f5f5"
-            hide-details
-            class="flex-grow-1 mr-4"
-          ></v-text-field>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="createCamera">
-            <v-icon left>mdi-plus</v-icon>
-            Add
-          </v-btn>
-          <!-- Add a v-spacer if needed to align items correctly with default footer content -->
-          <v-spacer></v-spacer>
-        </template>
+    
+    <v-container class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 24px">
+          Cameras
+        </div>
+      </v-row>
+      <v-row>
+        <!-- Data Table -->
+        <v-data-table
+          :headers="camerasHeaders"
+          :items="camerasTable"
+          :search="cameraSearch"
+          item-value="name"
+          class="elevation-1"
+          :key="cameraKey"
+          @dblclick:row="navigateToCameraDetails"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="cameraSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="createCamera">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+          </template>
 
-         <!-- Use the specific slot name 'item.actions' -->
-        <template v-slot:item.actions="{ item }">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn icon v-bind="props">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="deleteCamera(item)">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="updateCamera(item)">
-                <v-list-item-title>Update</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </template>
-      </v-data-table>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deleteCamera(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="updateCamera(item)">
+                  <v-list-item-title>Update</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+        </v-data-table>
+      </v-row>
     </v-container>
-    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
-      Other Items
-    </div>
-    <v-container>
-      <!-- Data Table -->
-      <v-data-table
-        :headers="otherItemsHeaders"
-        :items="otherItemsTable"
-        :search="otherSearch"
-        item-value="name"
-        class="elevation-1"
-        :key="otherKey"
-        @dblclick:row="navigateToOtherItemsDetails"
-      >
-        <!-- If you still want the default pagination controls alongside the search -->
-        <template v-slot:footer.prepend>
-          <v-text-field
-            v-model="otherSearch"
-            label="Search"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            bg-color="#f5f5f5"
-            hide-details
-            class="flex-grow-1 mr-4"
-          ></v-text-field>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="createOtherItem">
-            <v-icon left>mdi-plus</v-icon>
-            Add
-          </v-btn>
-          <!-- Add a v-spacer if needed to align items correctly with default footer content -->
-          <v-spacer></v-spacer>
-        </template>
+    <v-container class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 24px">
+          Other Items
+        </div>
+      </v-row>
+      <v-row>
+        <!-- Data Table -->
+        <v-data-table
+          :headers="otherItemsHeaders"
+          :items="otherItemsTable"
+          :search="otherSearch"
+          item-value="name"
+          class="elevation-1"
+          :key="otherKey"
+          @dblclick:row="navigateToOtherItemsDetails"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="otherSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="createOtherItem">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+          </template>
 
-        <!-- Use the specific slot name 'item.actions' -->
-        <template v-slot:item.actions="{ item }">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn icon v-bind="props">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="deleteOtherItem(item)">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="updateOtherItem(item)">
-                <v-list-item-title>Update</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </template>
-      </v-data-table>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deleteOtherItem(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="updateOtherItem(item)">
+                  <v-list-item-title>Update</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+        </v-data-table>
+      </v-row>
     </v-container>
     <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
     <ErrorDialog ref="errorDialog"></ErrorDialog>
@@ -646,6 +659,8 @@ upper right for generating reports.
   .v-table tbody tr:nth-child(even) {
     background-color: #ffffff; /* White for even rows */
   }
+</style>
+<style scoped>
   .reports-menu-container {
     position: absolute;
     top: 0; /* Aligns to the top edge of the parent */
@@ -692,5 +707,12 @@ upper right for generating reports.
   .button-image {
     width: 20px; /* Set a specific width */
     height: auto; /* Maintain aspect ratio */
+  }
+  .table-container { 
+    width: 80%;
+    padding-top: 30px;
+  }
+  .outer-div {
+    width: 100%;
   }
 </style>

@@ -4,141 +4,153 @@ The screen shows all of the data associated with a camera including any
 notes or maintenance tasks.
  -->
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
-    <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Camera Details
-  </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
   <div class="outer-div">
-    <v-container class="detail-container">
-      <v-sheet class="pa-4 text-right detail-sheet">
-        <v-form>
-          <v-text-field
-            v-model="name"
-            label="Name"
-            readonly
-          ></v-text-field>
-          <v-text-field
-            v-model="cameraType"
-            label="Camera Type"
-            readonly
-          ></v-text-field>
-          <v-text-field
-            v-model="location"
-            label="Location"
-            readonly
-          ></v-text-field>
-           <v-text-field
-            v-model="baseUnit"
-            label="Base Unit"
-            readonly
-          ></v-text-field>
-          <div class="d-flex justify-center align-center" style="padding-top: 20px;">
-            <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
-          </div>
-        </v-form>
-      </v-sheet>
+    <v-container class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 24px">
+          <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
+          Camera Details
+        </div>
+      </v-row>
+      <v-row style="border: 1px solid green;">
+        <v-sheet class="pa-4 text-right detail-sheet">
+          <v-form>
+            <v-text-field
+              v-model="name"
+              label="Name"
+              readonly
+            ></v-text-field>
+            <v-text-field
+              v-model="cameraType"
+              label="Camera Type"
+              readonly
+            ></v-text-field>
+            <v-text-field
+              v-model="location"
+              label="Location"
+              readonly
+            ></v-text-field>
+            <v-text-field
+              v-model="baseUnit"
+              label="Base Unit"
+              readonly
+            ></v-text-field>
+            <div class="d-flex justify-center align-center" style="padding-top: 20px;">
+              <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
+            </div>
+          </v-form>
+        </v-sheet>
+      </v-row>
     </v-container>
     <v-container  class="table-container">
-      <div style="color: green; font-size: 18px; padding-top: 10px">
-        Notes
-      </div>
-      <v-data-table
-        :headers="notesHeaders"
-        :items="notesTable"
-        :search="notesSearch"
-        item-value="date"
-        class="elevation-1"
-        :key="notesKey"
-      >
-        <!-- If you still want the default pagination controls alongside the search -->
-        <template v-slot:footer.prepend>
-          <v-text-field
-            v-model="notesSearch"
-            label="Search"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            bg-color="#f5f5f5"
-            hide-details
-            class="flex-grow-1 mr-4"
-          ></v-text-field>
-          <!-- Add a v-spacer if needed to align items correctly with default footer content -->
-          <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="addNote">
-            <v-icon left>mdi-plus</v-icon>
-            Add
-          </v-btn>
-        </template>
-        <!-- Use the specific slot name 'item.actions' -->
-        <template v-slot:item.actions="{ item }">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn icon v-bind="props">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="deleteNote(item)">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </template>
-      </v-data-table>
+      <v-row>
+        <div style="color: green; font-size: 18px">
+          Notes
+        </div>
+      </v-row>
+      <v-row>
+        <v-data-table
+          :headers="notesHeaders"
+          :items="notesTable"
+          :search="notesSearch"
+          item-value="date"
+          class="elevation-1"
+          :key="notesKey"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="notesSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="addNote">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+          </template>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deleteNote(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+        </v-data-table>
+      </v-row>
     </v-container>
     <v-container  class="table-container">
-      <div style="color: green; font-size: 18px; padding-top: 10px">
-        Maintenance Tasks
-      </div>
-      <v-data-table
-        :headers="maintHeaders"
-        :items="maintTable"
-        :search="maintSearch"
-        item-value="status"
-        class="elevation-1"
-        :key="maintKey"
-      >
-        <!-- If you still want the default pagination controls alongside the search -->
-        <template v-slot:footer.prepend>
-          <v-text-field
-            v-model="maintSearch"
-            label="Search"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            bg-color="#f5f5f5"
-            hide-details
-            class="flex-grow-1 mr-4"
-          ></v-text-field>
-          <!-- Add a v-spacer if needed to align items correctly with default footer content -->
-          <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="addMaintenanceTask">
-            <v-icon left>mdi-plus</v-icon>
-            Add
-          </v-btn>
-        </template>
-        <!-- Use the specific slot name 'item.actions' -->
-        <template v-slot:item.actions="{ item }">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn icon v-bind="props">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="deleteMaintenanceTask(item)">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="updateMaintenanceTask(item)">
-                <v-list-item-title>Update</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </template>
-      </v-data-table>
+      <v-row>
+        <div style="color: green; font-size: 18px">
+          Maintenance Tasks
+        </div>
+      </v-row>
+      <v-row>
+        <v-data-table
+          :headers="maintHeaders"
+          :items="maintTable"
+          :search="maintSearch"
+          item-value="status"
+          class="elevation-1"
+          :key="maintKey"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="maintSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="addMaintenanceTask">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+          </template>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deleteMaintenanceTask(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="updateMaintenanceTask(item)">
+                  <v-list-item-title>Update</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+        </v-data-table>
+      </v-row>
     </v-container>
     <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
     <ErrorDialog ref="errorDialog"></ErrorDialog>
@@ -428,6 +440,8 @@ notes or maintenance tasks.
   .v-table tbody tr:nth-child(even) {
     background-color: #ffffff; /* White for even rows */
   }
+</style>
+<style scoped>
   .my-button {
     cursor: pointer;
     padding: 8px 20px;
@@ -446,11 +460,12 @@ notes or maintenance tasks.
 
   .table-container { 
     width: 80%;
+    padding-top: 30px;
+  }
+  .outer-div {
+    width: 80%;
   }
 
-  .outer-div {
-    padding-right: 25%;
-  }
    /* Specific styles for screens smaller than 600px */
   @media (max-width: 600px) {
     .detail-container {
@@ -462,10 +477,11 @@ notes or maintenance tasks.
       width: 99%
     }
     .table-container { 
-      width: 100%
+      width: 100%;
+      padding-top: 30px;
     }
     .outer-div {
-      padding-right: 0%;
+      width: 100%;
     }
   }
 </style>

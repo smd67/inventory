@@ -3,39 +3,43 @@ This file is the vue component implementation to create a camera object
 in the database.
  -->
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 12.5%;">
-    <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Create a Camera
-  </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
   <div class="outer-div">
-    <v-container class="detail-container">
-      <v-sheet class="pa-4 text-right detail-sheet">
-        <v-form @submit.prevent="handleSubmit">
-          <v-text-field
-            v-model="name"
-            label="Name"
-            :key="nameKey"
-          ></v-text-field>
-          <v-select
-            v-model="cameraType"
-            :items="cameraTypes"
-            label="Camera Type"
-            :key="cameraTypeKey"
-          ></v-select>
-          <v-text-field
-            v-model="baseUnit"
-            label="Base Unit (optional)"
-            :key="baseUnitKey"
-          ></v-text-field>
-          <div class="d-flex justify-center align-center" style="padding-top: 20px; ; gap: 16px;">
-            <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
-            <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
-          </div>
-        </v-form>
-      </v-sheet>
+    <v-container class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 24px;">
+          <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
+          Create a Camera
+        </div>
+      </v-row>
+      <v-row style="border: 1px solid green;">
+        <v-sheet class="pa-4 text-right detail-sheet">
+          <v-form @submit.prevent="handleSubmit">
+            <v-text-field
+              v-model="name"
+              label="Name"
+              :key="nameKey"
+            ></v-text-field>
+            <v-select
+              v-model="cameraType"
+              :items="cameraTypes"
+              label="Camera Type"
+              :key="cameraTypeKey"
+            ></v-select>
+            <v-text-field
+              v-model="baseUnit"
+              label="Base Unit (optional)"
+              :key="baseUnitKey"
+            ></v-text-field>
+            <div class="d-flex justify-center align-center" style="padding-top: 20px; ; gap: 16px;">
+              <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
+              <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
+            </div>
+          </v-form>
+        </v-sheet>
+      </v-row>
     </v-container>
     <ErrorDialog ref="errorDialog"></ErrorDialog>
   </div>
@@ -135,7 +139,7 @@ in the database.
     console.log('OUT handleSubmit');
   };
 </script>
-<style>
+<style scoped>
   .detail-container {
     border: 1px solid green;
     width: 70%;
@@ -152,6 +156,7 @@ in the database.
   .outer-div {
     padding-right: 25%;
   }
+
    /* Specific styles for screens smaller than 600px */
   @media (max-width: 600px) {
     .detail-container {
@@ -166,7 +171,7 @@ in the database.
       width: 100%
     }
     .outer-div {
-      padding-right: 0%;
+      width: 100%;
     }
   }
 </style>

@@ -4,199 +4,102 @@ The screen shows all of the data associated with a base unit including any
 cameras, notes, other items, or maintenance tasks.
  -->
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 12.5%;">
-    <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Base Unit Details
-  </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
   <div class="outer-div">
-    <v-container class="detail-container">
-      <v-sheet class="pa-4 text-right detail-sheet">
-        <v-form>
-          <v-text-field
-            v-model="name"
-            label="Name"
-            readonly
-          ></v-text-field>
-          <v-text-field
-            v-model="location"
-            label="Location"
-            readonly
-          ></v-text-field>
-          <v-checkbox
-            v-model="has_new_feet"
-            label="Has new feet?"
-            readonly
-          ></v-checkbox>
-          <v-checkbox
-            v-model="has_new_mast_bearing"
-            label="Has new mast bearing?"
-            readonly
-          ></v-checkbox>
-          <v-text-field
-            v-model="face_camera"
-            label="Face Camera"
-            :key="faceCameraKey"
-            readonly
-          ></v-text-field>
-          <v-text-field
-            v-model="license_plate_camera"
-            label="License Plate Camera"
-            :key="licensePlateCameraKey"
-            readonly
-          ></v-text-field>
-           <v-text-field
-            v-model="widescreen_camera"
-            label="Widescreen Camera"
-            :key="watch"
-            readonly
-          ></v-text-field>
-          <div class="d-flex justify-center align-center" style="padding-top: 20px;">
-            <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
-          </div>
-        </v-form>
-      </v-sheet>
+    <v-container class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 24px;">
+          <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
+          Base Unit Details
+        </div>
+      </v-row>
+      <v-row style="border: 1px solid green;">
+        <v-sheet class="pa-4 text-right detail-sheet">
+          <v-form>
+            <v-text-field
+              v-model="name"
+              label="Name"
+              readonly
+            ></v-text-field>
+            <v-text-field
+              v-model="location"
+              label="Location"
+              readonly
+            ></v-text-field>
+            <v-checkbox
+              v-model="has_new_feet"
+              label="Has new feet?"
+              readonly
+            ></v-checkbox>
+            <v-checkbox
+              v-model="has_new_mast_bearing"
+              label="Has new mast bearing?"
+              readonly
+            ></v-checkbox>
+            <v-text-field
+              v-model="face_camera"
+              label="Face Camera"
+              :key="faceCameraKey"
+              readonly
+            ></v-text-field>
+            <v-text-field
+              v-model="license_plate_camera"
+              label="License Plate Camera"
+              :key="licensePlateCameraKey"
+              readonly
+            ></v-text-field>
+            <v-text-field
+              v-model="widescreen_camera"
+              label="Widescreen Camera"
+              :key="watch"
+              readonly
+            ></v-text-field>
+            <div class="d-flex justify-center align-center" style="padding-top: 20px;">
+              <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
+            </div>
+          </v-form>
+        </v-sheet>
+      </v-row>
     </v-container>
     <v-container  class="table-container">
-      <div style="color: green; font-size: 18px; padding-top: 10px">
-        Cameras
-      </div>
-      <v-data-table
-        :headers="cameraHeaders"
-        :items="cameraTable"
-        :search="cameraSearch"
-        item-value="name"
-        class="elevation-1"
-        :key="cameraKey"
-        @dblclick:row="navigateToCameraDetails"
-      >
-        <!-- If you still want the default pagination controls alongside the search -->
-        <template v-slot:footer.prepend>
-          <v-text-field
-            v-model="cameraSearch"
-            label="Search"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            bg-color="#f5f5f5"
-            hide-details
-            class="flex-grow-1 mr-4"
-          ></v-text-field>
-          <!-- Add a v-spacer if needed to align items correctly with default footer content -->
-          <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="createCamera">
-            <v-icon left>mdi-plus</v-icon>
-            Add
-          </v-btn>
-        </template>
-        <!-- Use the specific slot name 'item.actions' -->
-        <template v-slot:item.actions="{ item }">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn icon v-bind="props">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="deleteCamera(item)">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="updateCamera(item)">
-                <v-list-item-title>Update</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </template>
-      </v-data-table>
-    </v-container>
-    <v-container  class="table-container">
-      <div style="color: green; font-size: 18px; padding-top: 10px">
-        Other Items
-      </div>
-      <v-data-table
-        :headers="otherHeaders"
-        :items="otherTable"
-        :search="otherSearch"
-        item-value="name"
-        class="elevation-1"
-        :key="otherKey"
-        @dblclick:row="navigateToOtherItemsDetails"
-      >
-        <!-- If you still want the default pagination controls alongside the search -->
-        <template v-slot:footer.prepend>
-          <v-text-field
-            v-model="otherSearch"
-            label="Search"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            bg-color="#f5f5f5"
-            hide-details
-            class="flex-grow-1 mr-4"
-          ></v-text-field>
-          <!-- Add a v-spacer if needed to align items correctly with default footer content -->
-          <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="createOtherItem">
-            <v-icon left>mdi-plus</v-icon>
-            Add
-          </v-btn>
-        </template>
-        <!-- Use the specific slot name 'item.actions' -->
-        <template v-slot:item.actions="{ item }">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn icon v-bind="props">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="deleteOtherItem(item)">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="updateOtherItem(item)">
-                <v-list-item-title>Update</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </template>
-      </v-data-table>
-    </v-container>
-    <v-container  class="table-container">
-      <div style="color: green; font-size: 18px; padding-top: 10px">
-        Notes
-      </div>
-      <v-data-table
-        :headers="headers"
-        :items="notesTable"
-        :search="notesSearch"
-        item-value="date"
-        class="elevation-1"
-        :key="notesKey"
-      >
-        <!-- If you still want the default pagination controls alongside the search -->
-        <template v-slot:footer.prepend>
-          <v-text-field
-            v-model="notesSearch"
-            label="Search"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            bg-color="#f5f5f5"
-            hide-details
-            class="flex-grow-1 mr-4"
-          ></v-text-field>
-          <!-- Add a v-spacer if needed to align items correctly with default footer content -->
-          <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="addNote">
-            <v-icon left>mdi-plus</v-icon>
-            Add
-          </v-btn>
-        </template>
-        <!-- Use the specific slot name 'item.actions' -->
-        <template v-slot:item.actions="{ item }">
-          <td class="text-right">
+      <v-row>
+        <div style="color: green; font-size: 18px;">
+          Cameras
+        </div>
+      </v-row>
+      <v-row>
+        <v-data-table
+          :headers="cameraHeaders"
+          :items="cameraTable"
+          :search="cameraSearch"
+          item-value="name"
+          class="elevation-1"
+          :key="cameraKey"
+          @dblclick:row="navigateToCameraDetails"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="cameraSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="createCamera">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+          </template>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
             <v-menu>
               <template v-slot:activator="{ props }">
                 <v-btn icon v-bind="props">
@@ -204,65 +107,182 @@ cameras, notes, other items, or maintenance tasks.
                 </v-btn>
               </template>
               <v-list>
-                <v-list-item @click="deleteNote(item)">
+                <v-list-item @click="deleteCamera(item)">
                   <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="updateCamera(item)">
+                  <v-list-item-title>Update</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
-          </td>
-        </template>
-      </v-data-table>
+          </template>
+        </v-data-table>
+      </v-row>
     </v-container>
     <v-container  class="table-container">
-      <div style="color: green; font-size: 18px; padding-top: 10px">
-        Maintenance Tasks
-      </div>
-      <v-data-table
-        :headers="maintHeaders"
-        :items="maintTable"
-        :search="maintSearch"
-        item-value="description"
-        class="elevation-1"
-        :key="maintKey"
-      >
-        <!-- If you still want the default pagination controls alongside the search -->
-        <template v-slot:footer.prepend>
-          <v-text-field
-            v-model="maintSearch"
-            label="Search"
-            prepend-inner-icon="mdi-magnify"
-            density="compact"
-            variant="outlined"
-            bg-color="#f5f5f5"
-            hide-details
-            class="flex-grow-1 mr-4"
-          ></v-text-field>
-          <!-- Add a v-spacer if needed to align items correctly with default footer content -->
-          <v-spacer></v-spacer>
-          <v-btn color="primary" dark small class="ma-2" @click="addMaintenanceTask">
-            <v-icon left>mdi-plus</v-icon>
-            Add
-          </v-btn>
-        </template>
-        <!-- Use the specific slot name 'item.actions' -->
-        <template v-slot:item.actions="{ item }">
-          <v-menu>
-            <template v-slot:activator="{ props }">
-              <v-btn icon v-bind="props">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="deleteMaintenanceTask(item)">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="updateMaintenanceTask(item)">
-                <v-list-item-title>Update</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </template>
-      </v-data-table>
+      <v-row>
+        <div style="color: green; font-size: 18px;">
+          Other Items
+        </div>
+      </v-row>
+      <v-row>
+        <v-data-table
+          :headers="otherHeaders"
+          :items="otherTable"
+          :search="otherSearch"
+          item-value="name"
+          class="elevation-1"
+          :key="otherKey"
+          @dblclick:row="navigateToOtherItemsDetails"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="otherSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="createOtherItem">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+          </template>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deleteOtherItem(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="updateOtherItem(item)">
+                  <v-list-item-title>Update</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+        </v-data-table>
+      </v-row>
+    </v-container>
+    <v-container  class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 18px;">
+          Notes
+        </div>
+      </v-row>
+      <v-row>
+        <v-data-table
+          :headers="headers"
+          :items="notesTable"
+          :search="notesSearch"
+          item-value="date"
+          class="elevation-1"
+          :key="notesKey"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="notesSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="addNote">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+          </template>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
+            <td class="text-right">
+              <v-menu>
+                <template v-slot:activator="{ props }">
+                  <v-btn icon v-bind="props">
+                    <v-icon>mdi-dots-vertical</v-icon>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item @click="deleteNote(item)">
+                    <v-list-item-title>Delete</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </td>
+          </template>
+        </v-data-table>
+      </v-row>
+    </v-container>
+    <v-container  class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 18px;">
+          Maintenance Tasks
+        </div>
+      </v-row>
+      <v-row>
+        <v-data-table
+          :headers="maintHeaders"
+          :items="maintTable"
+          :search="maintSearch"
+          item-value="description"
+          class="elevation-1"
+          :key="maintKey"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="maintSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="addMaintenanceTask">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+          </template>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deleteMaintenanceTask(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="updateMaintenanceTask(item)">
+                  <v-list-item-title>Update</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+        </v-data-table>
+      </v-row>
     </v-container>
     <ConfirmDialog ref="confirmDialog"></ConfirmDialog>
     <ErrorDialog ref="errorDialog"></ErrorDialog>
@@ -824,6 +844,8 @@ cameras, notes, other items, or maintenance tasks.
   .v-table tbody tr:nth-child(even) {
     background-color: #ffffff; /* White for even rows */
   }
+</style>
+<style scoped>
   .my-button {
     cursor: pointer;
     padding: 8px 20px;
@@ -846,8 +868,9 @@ cameras, notes, other items, or maintenance tasks.
   }
 
   .outer-div {
-    padding-right: 25%;
+    width: 80%;
   }
+
    /* Specific styles for screens smaller than 600px */
   @media (max-width: 600px) {
     .detail-container {
@@ -862,7 +885,7 @@ cameras, notes, other items, or maintenance tasks.
       width: 100%
     }
     .outer-div {
-      padding-right: 0%;
+      width: 100%;
     }
   }
 </style>

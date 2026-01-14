@@ -3,58 +3,62 @@ This file is the vue component implementation to create a base unit object
 in the database.
  -->
 <template>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 225px;">
-    <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-    Create a Base Unit
-  </div>
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div class="outer-div">
-    <v-container class="detail-container">
-      <v-sheet class="pa-4 text-right detail-sheet">
-        <v-form @submit.prevent="handleSubmit">
-          <v-text-field
-            v-model="name"
-            label="Name"
-            :key="nameKey"
-          ></v-text-field>
-          <v-text-field
-            v-model="location"
-            label="Location"
-            :key="locationKey"
-          ></v-text-field>
-          <v-checkbox
-            v-model="has_new_feet"
-            label="Has new feet?"
-            :key="hasNewFeetKey"
-          ></v-checkbox>
-          <v-checkbox
-            v-model="has_new_mast_bearing"
-            label="Has new mast bearing?"
-            :key="hasNewMastBearingKey"
-          ></v-checkbox>
-          <v-text-field
-            v-model="face_camera"
-            label="Face Camera (optional)"
-            :key="faceCameraKey"
-          ></v-text-field>
-          <v-text-field
-            v-model="license_plate_camera"
-            label="License Plate Camera (optional)"
-            :key="licensePlateCameraKey"
-          ></v-text-field>
-           <v-text-field
-            v-model="widescreen_camera"
-            label="Widescreen Camera (optional)"
-            :key="widescreenCameraKey"
-          ></v-text-field>
-          <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
-            <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
-            <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
-          </div>
-        </v-form>
-      </v-sheet>
+  <div style="width: 80%;">
+    <v-container class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 24px;">
+          <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
+          Create a Base Unit
+        </div>
+      </v-row>
+      <v-row style="border: 1px solid green;">
+        <v-sheet class="pa-4 text-right detail-sheet">
+          <v-form @submit.prevent="handleSubmit">
+            <v-text-field
+              v-model="name"
+              label="Name"
+              :key="nameKey"
+            ></v-text-field>
+            <v-text-field
+              v-model="location"
+              label="Location"
+              :key="locationKey"
+            ></v-text-field>
+            <v-checkbox
+              v-model="has_new_feet"
+              label="Has new feet?"
+              :key="hasNewFeetKey"
+            ></v-checkbox>
+            <v-checkbox
+              v-model="has_new_mast_bearing"
+              label="Has new mast bearing?"
+              :key="hasNewMastBearingKey"
+            ></v-checkbox>
+            <v-text-field
+              v-model="face_camera"
+              label="Face Camera (optional)"
+              :key="faceCameraKey"
+            ></v-text-field>
+            <v-text-field
+              v-model="license_plate_camera"
+              label="License Plate Camera (optional)"
+              :key="licensePlateCameraKey"
+            ></v-text-field>
+            <v-text-field
+              v-model="widescreen_camera"
+              label="Widescreen Camera (optional)"
+              :key="widescreenCameraKey"
+            ></v-text-field>
+            <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
+              <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
+              <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
+            </div>
+          </v-form>
+        </v-sheet>
+      </v-row>
     </v-container>
     <ErrorDialog ref="errorDialog"></ErrorDialog>
   </div>
@@ -160,7 +164,7 @@ in the database.
     console.log('OUT handleSubmit');
   };
 </script>
-<style>
+<style scoped>
   .detail-container {
     border: 1px solid green;
     width: 70%;
