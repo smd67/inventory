@@ -1,3 +1,6 @@
+<!--
+This file is the vue component implementation for an other items detail screen.
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 12.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -137,12 +140,14 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import ConfirmDialog from './ConfirmDialog.vue';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
+  // Data
   const errorDialog = ref(null);
   const loading = ref(true);
   const id = ref(null);
@@ -159,6 +164,7 @@
   const maintKey = ref(0);
   const confirmDialog = ref(null);
   
+  // Table headers
   const notesHeaders = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
     {title: 'Description', value: 'description' , sortable: true},
@@ -173,6 +179,7 @@
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
 
+  // Properties passed in to component
   const props = defineProps({
     id: {
       type: Number,
@@ -204,6 +211,7 @@
     }
   );
 
+  // Initialize data on mount of component
   onMounted(async () => {
     console.log('IN onMounted');
     id.value = props.id;
@@ -217,12 +225,14 @@
     console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; base_unit=' + baseUnit.value);
   });
 
+  // Go back to previous page
   const goBack = () => {
     console.log("IN goBack");
     router.back();
     console.log("OUT goBack");
   };
 
+  // Add a maintnenance task to the database
   const addMaintenanceTask = () => {
     console.log("IN addMaintenanceTask");
     router.push({name: 'add-maintenance-task', params: {item_type: 'OTHER', item_ref: id.value}}).catch(failure => {
@@ -231,6 +241,7 @@
     console.log("OUT addMaintenanceTask");
   };
 
+  // Update a maintenance task
   const updateMaintenanceTask = (item) => {
     console.log("IN updateMaintenanceTask. item=" + JSON.stringify(item));
     router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, last_done_date: item.last_done_date}}).catch(failure => {
@@ -240,6 +251,7 @@
   };
 
 
+  // Delete a maintenance task
   const deleteMaintenanceTask = async (item) => {
     console.log("IN deleteMaintenanceTask item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
@@ -279,6 +291,7 @@
     console.log("OUT deleteMaintenanceTask");
   };
 
+  // Add a note to the database
   const addNote = () => {
     console.log("IN addNote");
     router.push({name: 'add-note', params: {item_type: 'OTHER', item_ref: id.value}}).catch(failure => {
@@ -287,6 +300,7 @@
     console.log("OUT addNote");
   }
 
+  // Delete a note from the database
   const deleteNote = async (item) => {
     console.log("IN deleteNote item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
@@ -325,6 +339,7 @@
     console.log("OUT deleteNote");
   };
 
+  // Retrieve notes from the database through a REST call.
   const fetchNotes = async () => {
     const config = {
         headers: {
@@ -350,6 +365,7 @@
     }
   };
 
+  // Retrieve maintenance tasks from the database through a REST call.
   const fetchMaintTasks = async () => {
     const config = {
         headers: {

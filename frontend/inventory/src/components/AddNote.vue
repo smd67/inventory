@@ -1,3 +1,7 @@
+<!--
+This file is the vue component implementation of a screen to add a note to the 
+database. 
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -26,11 +30,13 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
+  // Data
   const loading = ref(true);
   const description = ref(null);
   const itemType = ref(null);
@@ -39,6 +45,7 @@
   const route = useRoute();
   const errorDialog = ref(null);
 
+  // Properties passed into component
   const props = defineProps({
     item_ref: {
       type: Number,
@@ -50,6 +57,7 @@
     },
   });
 
+  // Resets data when path changes
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
@@ -63,6 +71,7 @@
     }
   );
 
+  // Initialize data on component mount
   onMounted(async () => {
     console.log('IN AddNote.onMounted');
     itemType.value = props.item_type;
@@ -71,12 +80,14 @@
     console.log('OUT AddNote.onMounted. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
   });
 
+  // Go back to previous page
   const goBack = () => {
     console.log("IN goBack");
     router.back()
     console.log("OUT goBack");
   }
 
+  // This method handles the REST call to insert the note into the database.
   const handleSubmit = async () => {
     console.log('IN handleSubmit');
     const config = {

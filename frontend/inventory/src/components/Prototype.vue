@@ -1,3 +1,8 @@
+<!--
+This file is the vue component implementation for the main screen that lists
+all of the base units, cameras, and other items. There is also a dropdown on the 
+upper right for generating reports.
+ -->
 <template>
   <div class="reports-menu-container">
     <div class="reports-menu-right">
@@ -16,7 +21,7 @@
       </div>
     </div>
   </div>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 11.75%;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Base Units
   </div>
@@ -76,7 +81,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 11.75%;">
+    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
       Cameras
     </div>
     <v-container>
@@ -131,7 +136,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 11.75%;">
+    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
       Other Items
     </div>
     <v-container>
@@ -192,6 +197,7 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, watch, onUnmounted } from 'vue';
   import { VDataTable } from 'vuetify/components';
   import { useRouter, useRoute } from 'vue-router';
@@ -199,6 +205,7 @@
   import ConfirmDialog from './ConfirmDialog.vue';
   import ErrorDialog from './ErrorDialog.vue';
   
+  // Data
   const isOpen = ref(false);
   const baseUnitSearch = ref('');
   const cameraSearch = ref('');
@@ -215,6 +222,7 @@
   const cameraKey = ref(0);
   const errorDialog = ref(null);
 
+  // Table headers
   const headers = ref([
     {title: 'Name', align: 'start', sortable: true, value: 'name', class: 'blue lighten-5'},
     {title: 'Location', value: 'location', sortable: true },
@@ -255,6 +263,7 @@
     }
   );
 
+  // Initialize data when component is mounted
   onMounted(async () => {
     console.log('IN Prototype.onMounted');
     fetchBaseUnits();
@@ -269,10 +278,12 @@
     console.log('OUT Prototype.onMounted');
   });
 
+  // Remove document listener when component is unmounted.
   onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
   });
 
+  // Navigate to base units detail screen on double-click.
   const navigateToDetails = (event, { item }) => {
     // Prevent the default browser double-click behavior (e.g., text selection)
     console.log("IN navigateToDetails: " + JSON.stringify(item));
@@ -298,6 +309,7 @@
     console.log("OUT navigateToDetails");
   }
 
+  // Navigate to camera details screen on double-click.
   const navigateToCameraDetails = (event, { item }) => {
     // Prevent the default browser double-click behavior (e.g., text selection)
     console.log("IN navigateToCameraDetails: " + JSON.stringify(item));
@@ -319,6 +331,7 @@
     console.log("OUT navigateToCameraDetails");
   }
 
+  // Navigate to other items detail screen on double-click.
   const navigateToOtherItemsDetails = (event, { item }) => {
     // Prevent the default browser double-click behavior (e.g., text selection)
     console.log("IN navigateToOtherItemsDetails: " + JSON.stringify(item));
@@ -339,10 +352,12 @@
     console.log("OUT navigateToOtherItemsDetails");
   }
 
+  // Toggle the reports menu.
   const toggleMenu = () => {
     isOpen.value = !isOpen.value;
   };
 
+  // Select an option from the reports menu dropdown.
   const selectOption = (option) => {
     console.log('Selected:' + option);
     isOpen.value = false; // Close menu after selection
@@ -363,6 +378,7 @@
     }
   };
 
+  // Create a base unit object in the database.
   const createBaseUnit = () => {
     console.log("IN createBaseUnit");
     router.push({name: 'create-base-unit'}).catch(failure => {
@@ -371,6 +387,7 @@
     console.log("OUT createBaseUnit");
   }
 
+  // Delete a base unit object from the database.
   const deleteBaseUnit = async (item) => {
     console.log("IN deleteBaseUnit item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
@@ -415,6 +432,7 @@
     console.log("OUT deleteOtherItem");
   };
 
+  // Update.  base unit object.
   const updateBaseUnit = (item) => {
     console.log("IN updateBaseUnit");
     router.push({name: 'update-base-unit', params: {name: item.name, id: item.id, location: item.location, has_new_feet: item.has_new_feet, has_new_mast_bearing: item.has_new_mast_bearing}}).catch(failure => {
@@ -423,6 +441,7 @@
     console.log("OUT updateBaseUnit");
   };
 
+  // Create a camera object in the database.
   const createCamera = () => {
     console.log("IN createCamera");
     router.push({name: 'create-camera'}).catch(failure => {
@@ -431,6 +450,7 @@
     console.log("OUT createCamera");
   }
 
+  // Delete a camera object from the database.
   const deleteCamera = async (item) => {
     console.log("IN deleteCamera item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
@@ -481,6 +501,7 @@
     console.log("OUT updateCamera");
   };
 
+  // Create an other item in the database.
   const createOtherItem = () => {
     console.log("IN createOtherItem");
     router.push({name: 'create-other-item'}).catch(failure => {
@@ -489,6 +510,7 @@
     console.log("OUT createOtherItem");
   }
 
+  // Delete an other item from the database.
   const deleteOtherItem = async (item) => {
     console.log("IN deleteOtherItem item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
@@ -529,6 +551,7 @@
     console.log("OUT deleteOtherItem");
   };
 
+  // Update an other item
   const updateOtherItem = (item) => {
     console.log("IN updateOtherItem");
     router.push({name: 'update-other-item', params: {name: item.name}}).catch(failure => {
@@ -537,6 +560,7 @@
     console.log("OUT updateOtherItem");
   };
 
+  // Retrieve base units from the database.
   const fetchBaseUnits = async () => {
     const config = {
         headers: {
@@ -558,7 +582,8 @@
     }
   };
 
-const fetchCameras = async () => {
+  // Retrieve cameras from the database.
+  const fetchCameras = async () => {
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -577,6 +602,8 @@ const fetchCameras = async () => {
           );
     }
   };
+
+  // Retrieve other items from the database.
   const fetchOtherItems = async () => {
     const config = {
         headers: {

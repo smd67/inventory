@@ -1,3 +1,8 @@
+<!--
+This file is the vue component implementation for a screen that updates a 
+maintenance task by "completing" it, meaning the last done stamp is set to
+the current time.
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -33,12 +38,14 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
   import ConfirmDialog from './ConfirmDialog.vue';
   
+  // Properties passed in to component.
   const props = defineProps({
     id: {
       type: Number,
@@ -54,6 +61,7 @@
     }
   });
 
+  // Data
   const loading = ref(true);
   const id = ref(null);
   const description = ref(null);
@@ -65,6 +73,7 @@
   const errorDialog = ref(null);
   const confirmDialog = ref(null);
 
+  // Watcher that resets data when the routing path changes.
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
@@ -80,6 +89,7 @@
     }
   );
 
+  // Initialize data when component is moounted.
   onMounted(async () => {
     console.log('IN UpdateMaintenanceTask.onMounted');
     id.value = props.id;
@@ -90,12 +100,14 @@
     console.log('OUT UpdateMaintenanceTask.onMounted');
   });
 
+  // Go back to previous page.
   const goBack = () => {
     console.log("IN goBack");
     router.back();
     console.log("OUT goBack");
   }
 
+  // Complete the task by updating the last done stamp to now.
   const completeTask = async () => {
     console.log('IN completeTask');
     const result = await confirmDialog.value.open(

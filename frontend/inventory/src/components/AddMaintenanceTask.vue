@@ -1,3 +1,7 @@
+<!--
+This file is the vue component implementation of a screen to add a maintenance 
+task to the database. 
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -22,16 +26,19 @@
         </v-form>
       </v-sheet>
     </v-container>
+    <ErrorDialog ref="errorDialog"></ErrorDialog>
   </div>
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import { VDateInput } from 'vuetify/labs/VDateInput'
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
+  // Data
   const loading = ref(true);
   const description = ref(null);
   const itemType = ref(null);
@@ -41,6 +48,7 @@
   const route = useRoute();
   const errorDialog = ref(null);
 
+  // Properties
   const props = defineProps({
     item_ref: {
       type: Number,
@@ -52,6 +60,7 @@
     },
   });
 
+  // Watch method to reset cached data 
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
@@ -66,6 +75,7 @@
     }
   );
 
+  // Initialize data on mount of component
   onMounted(async () => {
     console.log('IN AddMaintenaceTask.onMounted');
     itemType.value = props.item_type;
@@ -73,12 +83,14 @@
     console.log('OUT AddMaintenaceTask.onMounted. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
   });
 
+  // Method to return to the previous page.
   const goBack = () => {
     console.log("IN goBack");
     router.back()
     console.log("OUT goBack");
   }
 
+  // This method handles the REST call to insert the maintenance task.
   const handleSubmit = async () => {
     console.log('IN handleSubmit');
     const config = {
@@ -99,7 +111,7 @@
         loading.value = false;
     } catch (e) {
         loading.value = false;
-        console.error('Error fetching data:', e);
+        console.error('Error inserting data:', e);
         // Call the dialog's open function using the template ref
         const result = await errorDialog.value.open(
           'Confirm Error',

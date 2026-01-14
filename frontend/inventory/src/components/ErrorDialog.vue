@@ -1,3 +1,6 @@
+<!--
+This file is the vue component implementation an error dialog.
+ -->
 <template>
   <v-dialog v-model="dialog" :max-width="options.width" :style="{ zIndex: options.zIndex }">
     <v-card>

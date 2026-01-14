@@ -28,12 +28,13 @@ class Database:
         db_user = os.getenv("DB_USER")
         db_name = os.getenv("DB_NAME")
         deploy_type = os.getenv("DEPLOY_TYPE")
+        self.connection: Optional[psycopg.Connection] = None
         try:
             if deploy_type == "dev":
                 db_host = os.getenv("DB_HOST")
                 db_port = os.getenv("DB_PORT")
                 db_password = get_secret(os.getenv("DB_PWD"))
-                conn = psycopg.connect(
+                self.connection  = psycopg.connect(
                     dbname=db_name,
                     user=db_user,
                     password=db_password,
@@ -45,19 +46,18 @@ class Database:
                 db_password = os.getenv("DB_PWD")
                 instance_socket = os.getenv("INSTANCE_SOCKET")
                 print(f"instance_socket={instance_socket}")
-                conn = psycopg.connect(
+                self.connection  = psycopg.connect(
                     dbname=db_name,
                     user=db_user,
                     password=db_password,
                     host=instance_socket,  # unix socket path here
                 )
-            print("Connection successful using manual socket path!")
-            self.connection = conn
+                print("Connection successful using manual socket path!")
         except psycopg.OperationalError as e:
             print(f"Database connection failed: {e}")
         except Exception as e:
             print(f"An error occurred: {e}")
-        
+
     def get_base_units(self) -> List[model.BaseUnitQueryResult]:
         """
         This method returns a list of all of the rows in the base_units table.
@@ -1014,7 +1014,7 @@ class Database:
 
     def complete_maintenance_task(self, id: int) -> None:
         """
-        Complete a maintenance task by updating the last done date to the 
+        Complete a maintenance task by updating the last done date to the
         current date (now).
 
         Parameters

@@ -3,7 +3,6 @@ This file contains enumerations and models that define the communication between
 the frontend, backend, and database.
 """
 
-
 from datetime import date
 from enum import Enum
 from typing import Optional
@@ -11,7 +10,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-#### Enumerated Types ####
+# Enumerated Types
 class ItemType(str, Enum):
     """
     Type of item in the database
@@ -103,7 +102,8 @@ class CameraType(str, Enum):
             return CameraType.OTHER
 
 
-#### Model Definitions ####
+# Model Definitions
+
 
 # BaseUnit models
 class BaseUnit(BaseModel):
@@ -139,6 +139,7 @@ class BaseUnitCreate(BaseModel):
     """
     Query to create a Base Unit
     """
+
     name: str
     location: int
     has_new_mast_bearing: Optional[bool] = False
@@ -152,6 +153,7 @@ class BaseUnitDelete(BaseModel):
     """
     Query to delete a base unit
     """
+
     id: int
     face_camera: Optional[str] = None
     license_plate_camera: Optional[str] = None
@@ -162,6 +164,7 @@ class BaseUnitUpdate(BaseModel):
     """
     Query to update a base unit
     """
+
     id: int
     name: str
     location: int
@@ -314,6 +317,7 @@ class NotesCreate(BaseModel):
     """
     Query to create a note
     """
+
     description: str
     item_type: str
     item_ref: int
@@ -323,6 +327,7 @@ class NotesDelete(BaseModel):
     """
     Query to delete a note
     """
+
     id: int
 
 
@@ -331,6 +336,7 @@ class MaintenanceTask(BaseModel):
     """
     A maintenance task associated with a base unit, camera, or other item.
     """
+
     id: int
     last_done_date: date
     description: str
@@ -342,6 +348,7 @@ class MaintenanceTaskQueryResult(BaseModel):
     """
     Results returned to UI from Maintenance Task Query.
     """
+
     id: int
     last_done_date: date
     description: str
@@ -362,6 +369,7 @@ class MaintenanceTaskCreate(BaseModel):
     """
     Query to create a Maintenance Task.
     """
+
     last_done_date: str
     description: str
     item_type: str
@@ -372,6 +380,7 @@ class MaintenanceTaskDelete(BaseModel):
     """
     Query to delete a maintenance task.
     """
+
     id: int
 
 
@@ -379,4 +388,5 @@ class MaintenanceTaskUpdate(BaseModel):
     """
     Query to update a maintenance task.
     """
+
     id: int

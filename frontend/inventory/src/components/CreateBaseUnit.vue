@@ -1,3 +1,7 @@
+<!--
+This file is the vue component implementation to create a base unit object 
+in the database.
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 225px;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -57,12 +61,14 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, watch } from 'vue';
   import axios from 'axios';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
+  // Data
   const errorDialog = ref(null);
   const loading = ref(true);
   const name = ref(null);
@@ -82,6 +88,7 @@
   const licensePlateCameraKey = ref(0);
   const widescreenCameraKey = ref(0);
 
+  // Watcher to reset data when path changes
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
@@ -104,17 +111,20 @@
     }
   );
 
+  // Initilize when component mounts
   onMounted(async () => {
     console.log('IN onMounted');
     console.log('OUT onMounted');
   });
 
+  // Go back to previous page
   const goBack = () => {
     console.log("IN goBack");
     router.back();
     console.log("OUT goBack");
   }
 
+  // Submit the REST call to create a new base unit
   const handleSubmit = async () => {
     console.log('IN handleSubmit');
     const config = {

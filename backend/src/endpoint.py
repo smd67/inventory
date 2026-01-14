@@ -1,6 +1,7 @@
 """
 This file contains the definition of a FastAPI endpoint for the backend.
 """
+
 from typing import List
 
 import model
@@ -74,7 +75,7 @@ def get_notes(query: model.NotesQuery) -> List[model.Notes]:
     Parameters
     ----------
     query : model.NotesQuery
-        A query that contains the type and reference for the item to get the 
+        A query that contains the type and reference for the item to get the
         notes for.
 
     Returns
@@ -99,7 +100,7 @@ def get_maint_tasks(
     Parameters
     ----------
     query : model.MaintenanceTaskQuery
-        A query that contains the type and reference for the item to get the 
+        A query that contains the type and reference for the item to get the
         maintenance tasks for.
 
     Returns

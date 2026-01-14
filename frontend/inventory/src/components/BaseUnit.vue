@@ -1,3 +1,8 @@
+<!--
+This file is the vue component implementation of the base units details screen.
+The screen shows all of the data associated with a base unit including any
+cameras, notes, other items, or maintenance tasks.
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 12.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -265,12 +270,14 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
   import ConfirmDialog from './ConfirmDialog.vue';
 
+  // Data
   const loading = ref(true);
   const id = ref(null);
   const name = ref(null);
@@ -300,6 +307,7 @@
   const licensePlateCameraKey = ref(0);
   const widescreenCameraKey = ref(0);
 
+  // Table headers
   const headers = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
     {title: 'Description', value: 'description' , sortable: true},
@@ -327,6 +335,7 @@
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
 
+  // Properties that are passed into the component
   const props = defineProps({
     id: {
       type: Number,
@@ -362,6 +371,7 @@
     },
   });
 
+  // Reset data on path change
   watch(
     // fetch the user information when params change
     () => route.fullPath,
@@ -378,6 +388,8 @@
       console.log("OUT BaseUnit.watch.refresh");
     }
   )
+
+  // Initialize data on component mount
   onMounted(async () => {
     console.log('IN onMounted');
     id.value = props.id;
@@ -399,6 +411,7 @@
     console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; has_new_feet=' + has_new_feet.value + '; has_new_mast_bearing=' + has_new_mast_bearing.value + '; face_camera=' + face_camera.value);
   });
 
+  // Handle double-click on a camera row
   const navigateToCameraDetails = (event, { item }) => {
     // Prevent the default browser double-click behavior (e.g., text selection)
     console.log("IN navigateToCameraDetails: " + JSON.stringify(item));
@@ -418,6 +431,7 @@
     console.log("OUT navigateToCameraDetails");
   }
 
+  // Handle a double-click on an other items row.
   const navigateToOtherItemsDetails = (event, { item }) => {
     // Prevent the default browser double-click behavior (e.g., text selection)
     console.log("IN navigateToOtherItemsDetails: " + JSON.stringify(item));
@@ -437,12 +451,14 @@
     console.log("OUT navigateToOtherItemsDetails");
   }
 
+  // Go back to previous page
   const goBack = () => {
     console.log("IN goBack");
     router.back();
     console.log("OUT goBack");
   };
 
+  // Create a camera 
   const createCamera = () => {
     console.log("IN createCamera");
     router.push({name: 'create-camera', params: {base_unit: name.value}}).catch(failure => {
@@ -451,6 +467,7 @@
     console.log("OUT createCamera");
   };
 
+  // Delete a camera from database
   const deleteCamera = async (item) => {
     console.log("IN deleteCamera item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
@@ -492,6 +509,8 @@
     }
     console.log("OUT deleteCamera");
   };
+
+  // Update a camera 
   const updateCamera = (item) => {
     console.log("IN updateCamera");
     router.push({name: 'update-camera', params: {name: item.name}}).catch(failure => {
@@ -500,6 +519,7 @@
     console.log("OUT updateCamera");
   };
 
+  // Create an other item
   const createOtherItem = () => {
     console.log("IN createOtherItem");
     router.push({name: 'create-other-item', params: {base_unit: name.value}}).catch(failure => {
@@ -508,6 +528,7 @@
     console.log("OUT createOtherItem");
   };
 
+  // Delete an other item
   const deleteOtherItem = async (item) => {
     console.log("IN deleteOtherItem item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
@@ -547,6 +568,7 @@
     console.log("OUT deleteOtherItem");
   };
   
+  // Update an other item
   const updateOtherItem = (item) => {
     console.log("IN updateOtherItem");
     router.push({name: 'update-other-item', params: {name: item.name}}).catch(failure => {
@@ -555,6 +577,7 @@
     console.log("OUT updateOtherItem");
   };
 
+  // Add a mintenance task to database
   const addMaintenanceTask = () => {
     console.log("IN addMaintenanceTask");
     router.push({name: 'add-maintenance-task', params: {item_type: 'BASE_UNIT', item_ref: id.value}}).catch(failure => {
@@ -563,6 +586,7 @@
     console.log("OUT addMaintenanceTask");
   }
 
+  // Update a maintenance task
   const updateMaintenanceTask = (item) => {
     console.log("IN updateMaintenanceTask. item=" + JSON.stringify(item));
     router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, last_done_date: item.last_done_date}}).catch(failure => {
@@ -571,6 +595,7 @@
     console.log("OUT updateMaintenanceTask");
   };
 
+  // Delete a maintenace task from database
   const deleteMaintenanceTask = async (item) => {
     console.log("IN deleteMaintenanceTask item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
@@ -610,6 +635,7 @@
     console.log("OUT deleteMaintenanceTask");
   };
 
+  // Add a note to the database
   const addNote = () => {
     console.log("IN addNote");
     router.push({name: 'add-note', params: {item_type: 'BASE_UNIT', item_ref: id.value}}).catch(failure => {
@@ -618,6 +644,7 @@
     console.log("OUT addNote");
   }
 
+  // Delete a note from the database
   const deleteNote = async (item) => {
     console.log("IN deleteNote item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
@@ -656,6 +683,7 @@
     console.log("OUT deleteNote");
   };
 
+  // Fetch the notes associated with the base unit from the database.
   const fetchNotes = async () => {
     const config = {
         headers: {
@@ -681,6 +709,7 @@
     }
   };
 
+  // Fetch all maintenance tasks associated with the base unit.
   const fetchMaintTasks = async () => {
     const config = {
         headers: {
@@ -706,6 +735,7 @@
     }
   };
 
+  // Fetch all cameras associated with the base unit.
   const fetchCameras = async () => {
     const config = {
         headers: {
@@ -748,6 +778,7 @@
     }
   };
 
+  // Fetch all other items associated with the base unit.
   const fetchOther = async () => {
     const config = {
         headers: {

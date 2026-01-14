@@ -1,3 +1,7 @@
+<!--
+This file is the vue component implementation for a report that lists all 
+maintenance tasks whose last due date is >= 6 months.
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -34,12 +38,14 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
   import Papa from 'papaparse'; // Import PapaParse
 
+  // Data
   const errorDialog = ref(null);
   const loading = ref(true);
   const router = useRouter();
@@ -48,6 +54,7 @@
   const maintItemsTable = ref([]);
   const maintItemsKey = ref(0);
 
+  // Table headers
   const headers = ref([
     {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
     {title: 'Status', value: 'status' , sortable: true},
@@ -67,6 +74,7 @@
     }
   );
 
+  // Initialize data on component mount
   onMounted(async () => {
     console.log('IN MastBearingReport.onMounted');
     fetchMaintItems();
@@ -74,12 +82,14 @@
     console.log('OUT MastBearingReport.onMounted');
   });
 
+  // Go back to previous page
   const goBack = () => {
     console.log("IN MastBearingReport.goBack");
     router.back();
     console.log("OUT MastBearingReport.goBack");
   };
 
+  // Export the generated table to a csv 
   const exportToCSV = () => {
     // 1. Get your data source
     const jsonData = maintItemsTable.value;
@@ -97,6 +107,7 @@
     link.click();
   };
 
+  // Navigate to base units detail on a double-click
   const navigateToDetails = (event, { item }) => {
     // Prevent the default browser double-click behavior (e.g., text selection)
     console.log("IN navigateToDetails: " + JSON.stringify(item));
@@ -122,6 +133,8 @@
     console.log("OUT navigateToDetails");
   };
 
+  // Handles retrieving the maintenance items from the database using a REST 
+  // call.
   const fetchMaintItems = async () => {
     const config = {
         headers: {

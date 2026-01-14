@@ -1,3 +1,7 @@
+<!--
+This file is the vue component implementation for a screen that updates a 
+camera.
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -33,11 +37,13 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
+  // Properties passed in to the component
   const props = defineProps({
     name: {
       type: String,
@@ -45,6 +51,7 @@
     }
   });
 
+  // Data
   const loading = ref(true);
   const name = ref(null);
   const baseUnit = ref(null);
@@ -54,6 +61,7 @@
   const baseUnitKey = ref(0);
   const errorDialog = ref(null);
 
+  // A watcher that updates data when the path changes.
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
@@ -68,6 +76,7 @@
     }
   );
 
+  // Initialize data when component is mounted.
   onMounted(async () => {
     console.log('IN UpdateCamera.onMounted');
     name.value = props.name;
@@ -77,12 +86,14 @@
     console.log('OUT UpdateCamera.onMounted');
   });
 
+  // Go back to previous page.
   const goBack = () => {
     console.log("IN goBack");
     router.back();
     console.log("OUT goBack");
   }
 
+  // Submit updates to database through a REST call.
   const handleSubmit = async () => {
     console.log('IN handleSubmit');
     const config = {

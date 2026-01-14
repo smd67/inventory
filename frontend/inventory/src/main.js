@@ -33,6 +33,7 @@ import { createApp } from 'vue'
 // Styles
 import 'unfonts.css'
 
+// Define routes
 const routes = [
   { path: '/prototype', name: 'prototype', component: Prototype },
   { path: '/create-base-unit', name: 'create-base-unit', component: CreateBaseUnit },
@@ -52,7 +53,7 @@ const routes = [
   { path: '/maint-items-report', name: 'maint-items-report', component: MaintItemsReport },
 ];
 
-// 2. Create the router instance
+// Create the router instance
 const router = createRouter({
   history: createMemoryHistory(), // Recommended HTML5 history mode
   routes

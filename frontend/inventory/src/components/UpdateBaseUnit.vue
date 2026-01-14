@@ -1,3 +1,7 @@
+<!--
+This file is the vue component implementation for a screen that updates a base
+unit.
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 22.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -44,12 +48,14 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
   import ConfirmDialog from './ConfirmDialog.vue';
 
+  // Properties passe in to component.
   const props = defineProps({
     name: {
       type: String,
@@ -73,6 +79,7 @@
     },
   });
 
+  // Data
   const loading = ref(true);
   const name = ref(null);
   const id = ref(null);
@@ -88,6 +95,7 @@
   const errorDialog = ref(null);
   const confirmDialog = ref(null);
 
+  // A watcher to reset data when the path changes.
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
@@ -105,6 +113,7 @@
     }
   );
 
+  // Initialize data when component mounts.
   onMounted(async () => {
     console.log('IN onMounted');
     name.value = props.name;
@@ -119,12 +128,14 @@
     console.log('OUT onMounted');
   });
 
+  // Go back to previous page.
   const goBack = () => {
     console.log("IN goBack");
     router.back();
     console.log("OUT goBack");
   }
 
+  // Submit the changes to the database through a REST call.
   const handleSubmit = async () => {
     console.log('IN handleSubmit');
     const config = {

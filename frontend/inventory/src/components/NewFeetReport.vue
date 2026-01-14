@@ -1,3 +1,7 @@
+<!--
+This file is the vue component implementation for a report that lists all 
+of the base units with new feet.
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 9.0%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -35,12 +39,14 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
   import Papa from 'papaparse'; // Import PapaParse
 
+  // Data
   const errorDialog = ref(null);
   const loading = ref(true);
   const router = useRouter();
@@ -49,6 +55,7 @@
   const baseUnitsTable = ref([]);
   const baseUnitsKey = ref(0);
 
+  // Table headers
   const headers = ref([
     {title: 'Name', align: 'start', sortable: true, value: 'name', class: 'blue lighten-5'},
     {title: 'Location', value: 'location', sortable: true },
@@ -69,6 +76,7 @@
     }
   );
 
+  // Initialize data when component is mounted
   onMounted(async () => {
     console.log('IN MastBearingReport.onMounted');
     fetchBaseUnits();
@@ -76,12 +84,14 @@
     console.log('OUT MastBearingReport.onMounted');
   });
 
+  // Go back to previous page
   const goBack = () => {
     console.log("IN MastBearingReport.goBack");
     router.back();
     console.log("OUT MastBearingReport.goBack");
   };
 
+  // Export the generated table to a csv file and download it
   const exportToCSV = () => {
     // 1. Get your data source
     const jsonData = baseUnitsTable.value;
@@ -99,6 +109,7 @@
     link.click();
   };
 
+  // Navigate to the base units detail page on double-click.
   const navigateToDetails = (event, { item }) => {
     // Prevent the default browser double-click behavior (e.g., text selection)
     console.log("IN navigateToDetails: " + JSON.stringify(item));
@@ -124,6 +135,7 @@
     console.log("OUT navigateToDetails");
   };
 
+  // Retrieve base units from database with a REST call.
   const fetchBaseUnits = async () => {
     const config = {
         headers: {

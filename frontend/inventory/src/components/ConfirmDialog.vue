@@ -1,3 +1,6 @@
+<!--
+This file is the vue component implementation a confirmation dialog.
+ -->
 <template>
   <v-dialog v-model="dialog" :max-width="options.width" :style="{ zIndex: options.zIndex }">
     <v-card>

@@ -1,3 +1,7 @@
+<!--
+This file is the vue component implementation to create a camera object 
+in the database.
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 12.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -38,11 +42,13 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
+  // Properties passed into component
   const props = defineProps({
     base_unit: {
       type: String,
@@ -50,6 +56,7 @@
     }
   });
 
+  // Data
   const loading = ref(true);
   const name = ref(null);
   const baseUnit = ref(null);
@@ -62,6 +69,7 @@
   const cameraTypeKey = ref(0);
   const errorDialog = ref(null);
 
+  // Watcher to reset data when path changes
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
@@ -76,6 +84,7 @@
     }
   );
 
+  // Initialize data on component load
   onMounted(async () => {
     console.log('IN onMounted');
     baseUnit.value = props.base_unit;
@@ -87,12 +96,14 @@
     console.log('OUT onMounted');
   });
 
+  // Go back to previous page
   const goBack = () => {
     console.log("IN goBack");
     router.back();
     console.log("OUT goBack");
   }
 
+  // Handle REST call to create a camera object in the database.
   const handleSubmit = async () => {
     console.log('IN handleSubmit');
     const config = {

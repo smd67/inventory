@@ -1,3 +1,7 @@
+<!--
+This file is the vue component implementation to create a other item object 
+in the database.
+ -->
 <template>
   <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 17.5%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
@@ -30,11 +34,13 @@
 </template>
 
 <script setup>
+  // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
+  // Properties passed into component.
   const props = defineProps({
     base_unit: {
       type: String,
@@ -42,6 +48,7 @@
     }
   });
 
+  // Data
   const loading = ref(true);
   const name = ref(null);
   const baseUnit = ref(null);
@@ -49,6 +56,7 @@
   const route = useRoute();
   const errorDialog = ref(null);
 
+  // Watcher to reset data when path changes.
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
