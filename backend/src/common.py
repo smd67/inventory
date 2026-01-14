@@ -1,3 +1,7 @@
+"""
+This file contains common utility functions.
+"""
+
 import os
 from typing import Union
 

@@ -6,8 +6,8 @@
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div style="padding-right: 25%;">
-    <v-container  width="80%">
+  <div class="outer-div">
+    <v-container  class="table-container">
       <!-- Data Table -->
       <v-data-table
         :headers="headers"
@@ -130,7 +130,7 @@
     };
 
     try {
-        const response = await api.get('get-expired-maintenance-tasks', config);
+        const response = await api.get('/get-expired-maintenance-tasks', config);
         maintItemsTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -170,5 +170,38 @@
     border: 1px solid transparent;
     border-radius: 6px; /* */
     font-weight: 700;
+  }
+  .detail-container {
+    border: 1px solid green;
+    width: 70%;
+  }
+
+  .detail-sheet { 
+    width: 95%;
+  }
+
+  .table-container { 
+    width: 80%;
+  }
+
+  .outer-div {
+    padding-right: 25%;
+  }
+   /* Specific styles for screens smaller than 600px */
+  @media (max-width: 600px) {
+    .detail-container {
+      border: 1px solid green;
+      width: 100%; /* Take up full width on mobile */
+      padding: 0 1em; /* Add some padding */
+    }
+    .detail-sheet { 
+      width: 99%
+    }
+    .table-container { 
+      width: 100%
+    }
+    .outer-div {
+      padding-right: 0%;
+    }
   }
 </style>

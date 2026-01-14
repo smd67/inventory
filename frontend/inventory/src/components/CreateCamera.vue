@@ -6,9 +6,9 @@
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div style="padding-right: 25%;">
-    <v-container style="border: 1px solid green" width="70%">
-      <v-sheet class="pa-4 text-right" width="95%">
+  <div class="outer-div">
+    <v-container class="detail-container">
+      <v-sheet class="pa-4 text-right detail-sheet">
         <v-form @submit.prevent="handleSubmit">
           <v-text-field
             v-model="name"
@@ -107,7 +107,7 @@
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
-        const response = await api.post('/create-camera/', requestBody, config);
+        const response = await api.post('/create-camera', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
     } catch (e) {
@@ -124,3 +124,38 @@
     console.log('OUT handleSubmit');
   };
 </script>
+<style>
+  .detail-container {
+    border: 1px solid green;
+    width: 70%;
+  }
+
+  .detail-sheet { 
+    width: 95%;
+  }
+
+  .table-container { 
+    width: 80%;
+  }
+
+  .outer-div {
+    padding-right: 25%;
+  }
+   /* Specific styles for screens smaller than 600px */
+  @media (max-width: 600px) {
+    .detail-container {
+      border: 1px solid green;
+      width: 100%; /* Take up full width on mobile */
+      padding: 0 1em; /* Add some padding */
+    }
+    .detail-sheet { 
+      width: 99%
+    }
+    .table-container { 
+      width: 100%
+    }
+    .outer-div {
+      padding-right: 0%;
+    }
+  }
+</style>

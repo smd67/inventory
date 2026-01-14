@@ -10,8 +10,9 @@ services:
       DB_PWD: postgres_user_password
       DB_HOST: host.docker.internal
       DB_PORT: 5432
+      DEPLOY_TYPE: dev
     ports:
-      - "8001:8000"
+      - "8001:8080"
     secrets:
       - postgres_user_password
 

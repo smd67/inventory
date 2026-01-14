@@ -6,9 +6,9 @@
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div style="padding-right: 25%;">
-    <v-container style="border: 1px solid green" width="70%">
-      <v-sheet class="pa-4 text-right" width="95%">
+  <div class="outer-div">
+    <v-container class="detail-container">
+      <v-sheet class="pa-4 text-right detail-sheet">
         <v-form>
           <v-text-field
             v-model="name"
@@ -54,7 +54,7 @@
         </v-form>
       </v-sheet>
     </v-container>
-    <v-container  width="80%">
+    <v-container  class="table-container">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Cameras
       </div>
@@ -106,7 +106,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <v-container  width="80%">
+    <v-container  class="table-container">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Other Items
       </div>
@@ -158,7 +158,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <v-container  width="80%">
+    <v-container  class="table-container">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Notes
       </div>
@@ -208,7 +208,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <v-container  width="80%">
+    <v-container  class="table-container">
       <div style="color: green; font-size: 18px; padding-top: 10px">
         Maintenance Tasks
       </div>
@@ -473,7 +473,7 @@
         base_unit: item.base_unit
       };
       try {
-          const response = await api.post('/delete-camera/', requestBody, config);
+          const response = await api.post('/delete-camera', requestBody, config);
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -527,7 +527,7 @@
         id: item.id,
       };
       try {
-          const response = await api.post('/delete-other-item/', requestBody, config);
+          const response = await api.post('/delete-other-item', requestBody, config);
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -590,7 +590,7 @@
         id: item.id,
       };
       try {
-          const response = await api.post('/delete-maintenance-task/', requestBody, config);
+          const response = await api.post('/delete-maintenance-task', requestBody, config);
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -637,7 +637,7 @@
         id: item.id,
       };
       try {
-          const response = await api.post('/delete-note/', requestBody, config);
+          const response = await api.post('/delete-note', requestBody, config);
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -667,7 +667,7 @@
       item_ref: id.value,
     };
     try {
-        const response = await api.post('/get-notes/', requestBody, config);
+        const response = await api.post('/get-notes', requestBody, config);
         notesTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -692,7 +692,7 @@
       item_ref: id.value,
     };
     try {
-        const response = await api.post('/get-maint-tasks/', requestBody, config);
+        const response = await api.post('/get-maint-tasks', requestBody, config);
         maintTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -716,7 +716,7 @@
       base_unit_ref: id.value,
     };
     try {
-        const response = await api.post('/get-cameras-for-bu/', requestBody, config);
+        const response = await api.post('/get-cameras-for-bu', requestBody, config);
         cameraTable.value = response.data;
 
         console.log("cameraTable=" + JSON.stringify(cameraTable.value));
@@ -758,7 +758,7 @@
       base_unit_ref: id.value,
     };
     try {
-        const response = await api.post('/get-other-items-for-bu/', requestBody, config);
+        const response = await api.post('/get-other-items-for-bu', requestBody, config);
         otherTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -799,5 +799,39 @@
     border: 1px solid transparent;
     border-radius: 6px; /* */
     font-weight: 700;
+  }
+
+  .detail-container {
+    border: 1px solid green;
+    width: 70%;
+  }
+
+  .detail-sheet { 
+    width: 95%;
+  }
+
+  .table-container { 
+    width: 80%;
+  }
+
+  .outer-div {
+    padding-right: 25%;
+  }
+   /* Specific styles for screens smaller than 600px */
+  @media (max-width: 600px) {
+    .detail-container {
+      border: 1px solid green;
+      width: 100%; /* Take up full width on mobile */
+      padding: 0 1em; /* Add some padding */
+    }
+    .detail-sheet { 
+      width: 99%
+    }
+    .table-container { 
+      width: 100%
+    }
+    .outer-div {
+      padding-right: 0%;
+    }
   }
 </style>

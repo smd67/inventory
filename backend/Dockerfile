@@ -14,9 +14,9 @@ RUN poetry install --no-root
 COPY . /app
 
 # Expose the port your application listens on (if applicable)
-EXPOSE 8001
+EXPOSE 8080
 
 ENV PYTHONPATH="${PYTHONPATH}:/app/src"
 
 # Define the command to run your application
-CMD ["poetry", "run", "uvicorn", "src.endpoint:app", "--host", "0.0.0.0", "--reload"]
+CMD ["poetry", "run", "uvicorn", "src.endpoint:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]

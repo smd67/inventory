@@ -16,7 +16,7 @@
       </div>
     </div>
   </div>
-  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
+  <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 11.75%;">
     <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
     Base Units
   </div>
@@ -76,7 +76,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
+    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 11.75%;">
       Cameras
     </div>
     <v-container>
@@ -131,7 +131,7 @@
         </template>
       </v-data-table>
     </v-container>
-    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 5.0%;">
+    <div style="color: green; font-size: 24px; padding-top: 30px; padding-left: 11.75%;">
       Other Items
     </div>
     <v-container>
@@ -213,6 +213,7 @@
   const baseUnitsKey = ref(0);
   const otherKey = ref(0);
   const cameraKey = ref(0);
+  const errorDialog = ref(null);
 
   const headers = ref([
     {title: 'Name', align: 'start', sortable: true, value: 'name', class: 'blue lighten-5'},
@@ -392,7 +393,7 @@
         widescreen_camera: item.widescreen_camera
       };
       try {
-          const response = await api.post('/delete-base-unit/', requestBody, config);
+          const response = await api.post('/delete-base-unit', requestBody, config);
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -452,7 +453,7 @@
         base_unit: item.base_unit
       };
       try {
-          const response = await api.post('/delete-camera/', requestBody, config);
+          const response = await api.post('/delete-camera', requestBody, config);
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -507,7 +508,7 @@
         id: item.id,
       };
       try {
-          const response = await api.post('/delete-other-item/', requestBody, config);
+          const response = await api.post('/delete-other-item', requestBody, config);
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -544,7 +545,7 @@
     };
 
     try {
-        const response = await api.get('/get-base-units/', config);
+        const response = await api.get('/get-base-units', config);
         baseUnitsTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -564,7 +565,7 @@ const fetchCameras = async () => {
         }
     };
     try {
-        const response = await api.get('/get-cameras/', config);
+        const response = await api.get('/get-cameras', config);
         camerasTable.value = response.data;
         loading.value = false;
     } catch (e) {
@@ -584,7 +585,7 @@ const fetchCameras = async () => {
     };
 
     try {
-        const response = await api.get('/get-other-items/', config);
+        const response = await api.get('/get-other-items', config);
         otherItemsTable.value = response.data;
         loading.value = false;
     } catch (e) {

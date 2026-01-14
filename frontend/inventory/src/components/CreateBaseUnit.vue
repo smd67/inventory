@@ -6,9 +6,9 @@
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div v-if="!error" style="padding-right: 250px;">
-    <v-container style="border: 1px solid green" width="700">
-      <v-sheet class="pa-4 text-right" width="600">
+  <div class="outer-div">
+    <v-container class="detail-container">
+      <v-sheet class="pa-4 text-right detail-sheet">
         <v-form @submit.prevent="handleSubmit">
           <v-text-field
             v-model="name"
@@ -52,10 +52,7 @@
         </v-form>
       </v-sheet>
     </v-container>
-  </div>
-  
-  <div v-else class="error-banner" style="color: red;">
-    {{ error }}
+    <ErrorDialog ref="errorDialog"></ErrorDialog>
   </div>
 </template>
 
@@ -64,8 +61,9 @@
   import axios from 'axios';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
+  import ErrorDialog from './ErrorDialog.vue';
 
-  const error = ref(null);
+  const errorDialog = ref(null);
   const loading = ref(true);
   const name = ref(null);
   const location = ref(null);
@@ -135,15 +133,55 @@
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
-        const response = await api.post('/create-base-unit/', requestBody, config);
+        const response = await api.post('/create-base-unit', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
     } catch (e) {
         loading.value = false;
-        error.value = 'Error fetching data:' + e;
+        // Call the dialog's open function using the template ref
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error inserting data:' + e,
+          { color: 'red lighten-3' }
+        );
         console.error('Error fetching data:', e);
     }
     goBack();
     console.log('OUT handleSubmit');
   };
 </script>
+<style>
+  .detail-container {
+    border: 1px solid green;
+    width: 70%;
+  }
+
+  .detail-sheet { 
+    width: 95%;
+  }
+
+  .table-container { 
+    width: 80%;
+  }
+
+  .outer-div {
+    padding-right: 25%;
+  }
+   /* Specific styles for screens smaller than 600px */
+  @media (max-width: 600px) {
+    .detail-container {
+      border: 1px solid green;
+      width: 100%; /* Take up full width on mobile */
+      padding: 0 1em; /* Add some padding */
+    }
+    .detail-sheet { 
+      width: 99%
+    }
+    .table-container { 
+      width: 100%
+    }
+    .outer-div {
+      padding-right: 0%;
+    }
+  }
+</style>
