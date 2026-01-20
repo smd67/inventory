@@ -1,5 +1,5 @@
 <!--
-This file is the vue component implementation to create a camera object 
+This file is the vue component implementation to create a otherItem object 
 in the database.
  -->
 <template>
@@ -11,31 +11,22 @@ in the database.
       <v-row>
         <div style="color: green; font-size: 24px;">
           <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-          Create a Camera
+          Add an Other Item
         </div>
       </v-row>
       <v-row style="border: 1px solid green;">
         <v-sheet class="pa-4 text-right detail-sheet">
           <v-form @submit.prevent="handleSubmit">
-            <v-text-field
-              v-model="name"
-              label="Name"
-              :key="nameKey"
-            ></v-text-field>
             <v-select
-              v-model="cameraType"
-              :items="cameraTypes"
-              label="Camera Type"
-              :key="cameraTypeKey"
+              v-model="otherItem"
+              :items="availableOtherItems"
+              item-title="name"
+              item-value="name"
+              label="Other Item"
             ></v-select>
-            <v-text-field
-              v-model="baseUnit"
-              label="Base Unit (optional)"
-              :key="baseUnitKey"
-            ></v-text-field>
             <div class="d-flex justify-center align-center" style="padding-top: 20px; ; gap: 16px;">
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
-              <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
+              <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Add</v-btn>
             </div>
           </v-form>
         </v-sheet>
@@ -47,91 +38,117 @@ in the database.
 
 <script setup>
   // Imports
-  import { ref, onMounted, defineProps, watch } from 'vue';
+  import { ref, onMounted, defineProps, watch, computed } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Properties passed into component
   const props = defineProps({
-    base_unit: {
+    base_unit_id: {
+      type: Number,
+      default: null,
+    },
+    base_unit_name: {
       type: String,
       default: null,
-    }
+    },
   });
 
   // Data
   const loading = ref(true);
-  const name = ref(null);
-  const baseUnit = ref(null);
-  const cameraType = ref(null)
-  const cameraTypes = ref(['Face Camera', 'License Plate Camera', 'Wide Screen Camera', 'Other']);
+  const baseUnitRef = ref(null);
+  const baseUnitName = ref(null);
+  const otherItem = ref(null);
+  const availableOtherItems = ref([]);
   const router = useRouter();
   const route = useRoute();
-  const baseUnitKey = ref(0);
-  const nameKey = ref(0);
-  const cameraTypeKey = ref(0);
   const errorDialog = ref(null);
-
+  
   // Watcher to reset data when path changes
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
-      console.log("IN CreateCamera.watch.refresh");
-      baseUnit.value = props.base_unit;
-      baseUnitKey.value += 1;
-      name.value = null;
-      nameKey.value += 1;
-      cameraType.value = null;
-      cameraTypeKey.value += 1;
-      console.log("OUT CreateCamera.watch.refresh");
+      console.log("IN AddOtherItem.watch.refresh");
+      baseUnitRef.value = props.base_unit_id;
+      baseUnitName.value = props.base_unit_name;
+      fetchAvailableOtherItems();
+      console.log("OUT AddOtherItem.watch.refresh");
     }
   );
 
   // Initialize data on component load
   onMounted(async () => {
-    console.log('IN onMounted');
-    baseUnit.value = props.base_unit;
-    baseUnitKey.value += 1;
-    name.value = null;
-    nameKey.value += 1;
-    cameraType.value = null;
-    cameraTypeKey.value += 1;
-    console.log('OUT onMounted');
+    console.log('IN AddOtherItem.onMounted');
+    baseUnitRef.value = props.base_unit_id;
+    baseUnitName.value = props.base_unit_name;
+
+    fetchAvailableOtherItems();
+    console.log('OUT AddOtherItem.onMounted. baseUnitRef=' + baseUnitRef.value + ', baseUnitName=' + baseUnitName.value);
   });
 
   // Go back to previous page
   const goBack = () => {
-    console.log("IN goBack");
+    console.log("IN AddOtherItem.goBack");
     router.back();
-    console.log("OUT goBack");
-  }
+    console.log("OUT AddOtherItem.goBack");
+  };
 
-  // Handle REST call to create a camera object in the database.
-  const handleSubmit = async () => {
-    console.log('IN handleSubmit');
+  // Retrieve base units from the database.
+  const fetchAvailableOtherItems = async () => {
+    console.log("IN AddOtherItem.fetchAvailableOtherItems");
     const config = {
         headers: {
             'Content-Type': 'application/json'
         }
     };
+    try {
+        const response = await api.get('/get-available-other-items', config);
+        availableOtherItems.value = response.data;
+        if(availableOtherItems.value.length > 0){
+          otherItem.value = availableOtherItems.value[0].name;
+        } else {
+          otherItem.value = '';
+        }
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching data:' + e,
+            { color: 'red lighten-3' }
+          );
+    }
+    console.log("OUT AddOtherItem.fetchAvailableOtherItems. availableOtherItems=" + availableOtherItems.value);
+  };
+
+
+  // Handle REST call to create a otherItem object in the database.
+  // Submit updates to database through a REST call.
+  const handleSubmit = async () => {
+    console.log('IN handleSubmit otherItem=' + otherItem.value + '; baseUnitName=' + baseUnitName.value);
+    const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+    console.log("otherItem=" + JSON.stringify(otherItem.value));
     const requestBody = {
-        name: name.value,
-        camera_type: cameraType.value,
-        base_unit: baseUnit.value
+        name: otherItem.value,
+        base_unit: baseUnitName.value
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
-        const response = await api.post('/create-camera', requestBody, config);
+        const response = await api.post('/update-other-item', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
     } catch (e) {
         loading.value = false;
-        console.error('Error inserting data:', e);
+        console.error('Error updating data:', e);
         // Call the dialog's open function using the template ref
         const result = await errorDialog.value.open(
           'Confirm Error',
-          'Error inserting data:' + e,
+          'Error updating data:' + e,
           { color: 'red lighten-3' }
         );
     }

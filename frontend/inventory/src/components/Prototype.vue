@@ -4,23 +4,46 @@ all of the base units, cameras, and other items. There is also a dropdown on the
 upper right for generating reports.
  -->
 <template>
-  <div class="reports-menu-container">
-    <div class="reports-menu-right">
-      <button @click="toggleMenu" class="reports-button" aria-label="Settings menu">
-        <img src="../assets/report_icon.jpeg" alt="Description of action" class="button-image" />
-          <!-- You can use a settings icon here, e.g., a gear symbol (⚙) or an SVG -->
-          <!-- ⚙ Settings -->
-      </button>
+  <div class="tools-menu-container">
+    <v-row>
+      <v-col style="padding-right: 5px;">
+        <div class="tools-menu-right">
+          <button @click="toggleReportsMenu" class="tools-button" aria-label="Settings menu">
+            <img src="../assets/report_icon.jpg" alt="Description of action" class="button-image" />
+              <!-- You can use a settings icon here, e.g., a gear symbol (⚙) or an SVG -->
+              <!-- ⚙ Settings -->
+          </button>
 
-      <div v-if="isOpen" class="reports-dropdown">
-          <ul>
-          <li @click="selectOption('MastBearing')">Has New Mast Bearing</li>
-          <li @click="selectOption('NewFeet')">Has New Feet</li>
-          <li @click="selectOption('MaintItems')">Has Expired Maintenance Tasks</li>
-          </ul>
-      </div>
-    </div>
+          <div v-if="isReportsOpen" class="tools-dropdown">
+              <ul>
+              <li @click="selectReportsOption('MastBearing')">Has New Mast Bearing</li>
+              <li @click="selectReportsOption('NewFeet')">Has New Feet</li>
+              <li @click="selectReportsOption('MaintItems')">Has Expired Maintenance Tasks</li>
+              </ul>
+          </div>
+        </div>
+      </v-col>
+      <v-col style="padding-left: 0px">
+        <div class="tools-menu-right">
+          <button @click="toggleChecklistsMenu" class="tools-button" aria-label="Settings menu">
+            <img src="../assets/checkbox_icon.png" alt="Description of action" class="button-image"/>
+              <!-- You can use a settings icon here, e.g., a gear symbol (⚙) or an SVG -->
+              <!-- ⚙ Settings -->
+          </button>
+          <div v-if="isChecklistsOpen" class="tools-dropdown">
+              <ul>
+              <li @click="selectChecklistsOption('SystemTestChecklist')">System Test Checklist</li>
+              </ul>
+          </div>
+        </div>
+      </v-col>
+      <v-col>
+        <v-spacer></v-spacer>
+      </v-col>
+    </v-row>
   </div>
+
+
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
@@ -211,7 +234,7 @@ upper right for generating reports.
 
 <script setup>
   // Imports
-  import { ref, onMounted, watch, onUnmounted } from 'vue';
+  import { ref, onMounted, watch, onUnmounted, computed } from 'vue';
   import { VDataTable } from 'vuetify/components';
   import { useRouter, useRoute } from 'vue-router';
   import api from "../api";
@@ -219,13 +242,18 @@ upper right for generating reports.
   import ErrorDialog from './ErrorDialog.vue';
   
   // Data
-  const isOpen = ref(false);
+  const isReportsOpen = ref(false);
+  const isChecklistsOpen = ref(false);
   const baseUnitSearch = ref('');
   const cameraSearch = ref('');
   const otherSearch = ref('');
   const baseUnitsTable = ref([]);
   const camerasTable = ref([]);
   const otherItemsTable = ref([]);
+  const faceCameras = ref([]);
+  const licensePlateCameras = ref([]);
+  const widescreenCameras = ref([]);
+
   const loading = ref(true);
   const router = useRouter();
   const route = useRoute();
@@ -239,9 +267,9 @@ upper right for generating reports.
   const headers = ref([
     {title: 'Name', align: 'start', sortable: true, value: 'name', class: 'blue lighten-5'},
     {title: 'Location', value: 'location', sortable: true },
-    {title: 'Face Camera', value: 'face_camera' , sortable: true},
-    {title: 'License Plate Camera', value: 'license_plate_camera', sortable: true},
-    {title: 'Widescreen Camera', value: 'widescreen_camera', sortable: true},
+    {title: 'Face Cameras', value: 'face_cameras_str' , sortable: true},
+    {title: 'License Plate Cameras', value: 'license_plate_cameras_str', sortable: true},
+    {title: 'Widescreen Cameras', value: 'widescreen_cameras_str', sortable: true},
     // ... other headers
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
@@ -303,22 +331,27 @@ upper right for generating reports.
 
     event.preventDefault();
 
-    let face_camera = "NONE";
-    if ('face_camera' in item && item.face_camera != null) {
-      face_camera = item.face_camera;
+    let face_cameras = [];
+    let license_plate_cameras = [];
+    let widescreen_cameras = [];
+    if ('face_cameras' in item && item.face_cameras != null) {
+      face_cameras = item.face_cameras;
     }
-    let license_plate_camera = "NONE";
-    if ('license_plate_camera' in item && item.license_plate_camera != null) {
-      license_plate_camera = item.license_plate_camera;
+    let license_plate_camera = [];
+    if ('license_plate_cameras' in item && item.license_plate_cameras != null) {
+      license_plate_cameras = item.license_plate_cameras;
     }
-    let widescreen_camera = "NONE";
-    if ('widescreen_camera' in item && item.widescreen_camera != null) {
-      widescreen_camera = item.widescreen_camera;
+    let widescreen_camera = [];
+    if ('widescreen_cameras' in item && item.widescreen_cameras != null) {
+      widescreen_cameras = item.widescreen_cameras;
     }
 
-    router.push({name: 'base-unit', params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet, face_camera: face_camera, license_plate_camera: license_plate_camera, widescreen_camera: widescreen_camera}}).catch(failure => {
-      console.log('An unexpected navigation failure occurred:', failure);
-    });
+    router.push(
+      {
+        name: 'base-unit',
+        query: { face_cameras: face_cameras, license_plate_cameras: license_plate_cameras, widescreen_cameras: widescreen_cameras },
+        params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet}
+      });
     console.log("OUT navigateToDetails");
   }
 
@@ -366,14 +399,19 @@ upper right for generating reports.
   }
 
   // Toggle the reports menu.
-  const toggleMenu = () => {
-    isOpen.value = !isOpen.value;
+  const toggleReportsMenu = () => {
+    isReportsOpen.value = !isReportsOpen.value;
+  };
+
+  // Toggle the reports menu.
+  const toggleChecklistsMenu = () => {
+    isChecklistsOpen.value = !isChecklistsOpen.value;
   };
 
   // Select an option from the reports menu dropdown.
-  const selectOption = (option) => {
+  const selectReportsOption = (option) => {
     console.log('Selected:' + option);
-    isOpen.value = false; // Close menu after selection
+    isReportsOpen.value = false; // Close menu after selection
     // Emit event to parent component if needed, e.g., emit('select', option)
     if(option === "MastBearing"){
       router.push({name: "mast-bearing-report"});
@@ -384,10 +422,21 @@ upper right for generating reports.
     }
   };
 
+  const selectChecklistsOption = (option) => {
+    console.log("IN Prototype.selectChecklistsOption");
+    console.log('Selected:' + option);
+    isChecklistsOpen.value = false; // Close menu after selection
+    if(option == 'SystemTestChecklist'){
+      router.push({name: "system-test-info"});
+    }
+    console.log("OUT Prototype.selectChecklistsOption");
+  };
+
   // Close the menu when clicking outside
   const handleClickOutside = (event) => {
-    if (!event.target.closest('.reports-menu-container')) {
-        isOpen.value = false;
+    if (!event.target.closest('.tools-menu-container')) {
+        isReportsOpen.value = false;
+        isChecklistsOpen.value = false;
     }
   };
 
@@ -418,9 +467,9 @@ upper right for generating reports.
       };
       const requestBody = {
         id: item.id,
-        face_camera: item.face_camera,
-        license_plate_camera: item.license_plate_camera,
-        widescreen_camera: item.widescreen_camera
+        face_cameras: item.face_cameras,
+        license_plate_cameras: item.license_plate_cameras,
+        widescreen_cameras: item.widescreen_cameras
       };
       try {
           const response = await api.post('/delete-base-unit', requestBody, config);
@@ -582,8 +631,27 @@ upper right for generating reports.
     };
 
     try {
-        const response = await api.get('/get-base-units', config);
-        baseUnitsTable.value = response.data;
+        const response = await api.get('/get-base-units', config)
+        const target_bu = response.data;
+        baseUnitsTable.value = target_bu;
+        baseUnitsTable.value.forEach(bu => {
+          if('face_cameras' in bu && bu.face_cameras != null){
+            bu.face_cameras_str = bu.face_cameras.join(', ');
+          } else {
+            bu.face_cameras_str = "";
+          }
+          if('license_plate_cameras' in bu && bu.license_plate_cameras != null){
+            bu.license_plate_cameras_str = bu.license_plate_cameras.join(', ');
+          } else {
+            bu.license_plate_cameras_str = "";
+          }
+          if('widescreen_cameras' in bu && bu.widescreen_cameras != null){
+            bu.widescreen_cameras_str = bu.widescreen_cameras.join(', ');
+          } else {
+            bu.widescreen_cameras_str = "";
+          }
+        });
+
         loading.value = false;
     } catch (e) {
         loading.value = false;
@@ -661,14 +729,14 @@ upper right for generating reports.
   }
 </style>
 <style scoped>
-  .reports-menu-container {
+  .tools-menu-container {
     position: absolute;
     top: 0; /* Aligns to the top edge of the parent */
     right: 0; /* Aligns to the right edge of the parent */
     display: inline-block;
   }
 
-  .reports-button {
+  .tools-button {
     /* background-color: lightgray;  Example styling */
     color: white;
     padding: 0.5px .5px;
@@ -676,7 +744,7 @@ upper right for generating reports.
     cursor: pointer;
   }
 
-  .reports-dropdown {
+  .tools-dropdown {
     position: absolute;
     right: 0;
     background-color: #f9f9f9;
@@ -685,23 +753,23 @@ upper right for generating reports.
     z-index: 1;
   }
 
-  .reports-dropdown ul {
+  .tools-dropdown ul {
     list-style-type: none;
     padding: 0;
     margin: 0;
   }
 
-  .reports-dropdown li {
+  .tools-dropdown li {
     padding: 12px 16px;
     cursor: pointer;
   }
 
-  .reports-dropdown li:hover {
+  .tools-dropdown li:hover {
     background-color: #ddd;
   }
-  .reports-menu-right {
+  .tools-menu-right {
     margin-left: auto; /* Pushes this element and everything after it to the far right */
-    padding-right: 10px;
+    padding-right: 1px;
     padding-top: 10px;
   }
   .button-image {
@@ -714,5 +782,18 @@ upper right for generating reports.
   }
   .outer-div {
     width: 100%;
+    padding-top: 30px;
+  }
+  /* Specific styles for screens smaller than 600px */
+  @media (max-width: 600px) {
+    .detail-sheet { 
+      width: 99%
+    }
+    .table-container { 
+      width: 100%
+    }
+    .outer-div {
+      width: 100%;
+    }
   }
 </style>

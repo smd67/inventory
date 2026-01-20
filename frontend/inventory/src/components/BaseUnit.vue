@@ -39,21 +39,21 @@ cameras, notes, other items, or maintenance tasks.
               readonly
             ></v-checkbox>
             <v-text-field
-              v-model="face_camera"
-              label="Face Camera"
+              v-model="faceCameras"
+              label="Face Cameras"
               :key="faceCameraKey"
               readonly
             ></v-text-field>
             <v-text-field
-              v-model="license_plate_camera"
-              label="License Plate Camera"
+              v-model="licensePlateCameras"
+              label="License Plate Cameras"
               :key="licensePlateCameraKey"
               readonly
             ></v-text-field>
             <v-text-field
-              v-model="widescreen_camera"
-              label="Widescreen Camera"
-              :key="watch"
+              v-model="widescreenCameras"
+              label="Widescreen Cameras"
+              :key="widescreenCameraKey"
               readonly
             ></v-text-field>
             <div class="d-flex justify-center align-center" style="padding-top: 20px;">
@@ -107,8 +107,8 @@ cameras, notes, other items, or maintenance tasks.
                 </v-btn>
               </template>
               <v-list>
-                <v-list-item @click="deleteCamera(item)">
-                  <v-list-item-title>Delete</v-list-item-title>
+                <v-list-item @click="removeCamera(item)">
+                  <v-list-item-title>Remove</v-list-item-title>
                 </v-list-item>
                 <v-list-item @click="updateCamera(item)">
                   <v-list-item-title>Update</v-list-item-title>
@@ -163,8 +163,8 @@ cameras, notes, other items, or maintenance tasks.
                 </v-btn>
               </template>
               <v-list>
-                <v-list-item @click="deleteOtherItem(item)">
-                  <v-list-item-title>Delete</v-list-item-title>
+                <v-list-item @click="removeOtherItem(item)">
+                  <v-list-item-title>Remove</v-list-item-title>
                 </v-list-item>
                 <v-list-item @click="updateOtherItem(item)">
                   <v-list-item-title>Update</v-list-item-title>
@@ -304,9 +304,9 @@ cameras, notes, other items, or maintenance tasks.
   const location = ref(null);
   const has_new_feet = ref(false);
   const has_new_mast_bearing = ref(false);
-  const face_camera = ref(null);
-  const license_plate_camera = ref(null);
-  const widescreen_camera = ref(null);
+  const faceCameras = ref([]);
+  const licensePlateCameras = ref([]);
+  const widescreenCameras = ref([]);
   const router = useRouter();
   const route = useRoute()
   const notesTable = ref([]);
@@ -376,19 +376,7 @@ cameras, notes, other items, or maintenance tasks.
     has_new_mast_bearing: {
       type: Boolean,
       default: false,
-    },
-    face_camera: {
-      type: String,
-      default: "",
-    },
-    license_plate_camera : {
-      type: String,
-      default: "",
-    },
-    widescreen_camera : {
-      type: String,
-      default: "",
-    },
+    }
   });
 
   // Reset data on path change
@@ -396,7 +384,7 @@ cameras, notes, other items, or maintenance tasks.
     // fetch the user information when params change
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
-      console.log("IN BaseUnit.watch.refresh");
+      console.log("IN BaseUnit.watch.refresh newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
       fetchCameras();
       cameraKey.value += 1;
       fetchNotes();
@@ -417,9 +405,9 @@ cameras, notes, other items, or maintenance tasks.
     location.value = props.location;
     has_new_feet.value = (props.has_new_feet === 'true');
     has_new_mast_bearing.value = (props.has_new_mast_bearing === 'true');
-    face_camera.value = props.face_camera;
-    license_plate_camera.value = props.license_plate_camera;
-    widescreen_camera.value = props.widescreen_camera;
+    faceCameras.value = route.query.face_cameras;
+    licensePlateCameras.value = route.query.license_plate_cameras;
+    widescreenCameras.value = route.query.widescreen_cameras;
     fetchCameras();
     cameraKey.value += 1;
     fetchNotes();
@@ -428,7 +416,7 @@ cameras, notes, other items, or maintenance tasks.
     maintKey.value += 1;
     fetchOther();
     otherKey.value += 1;
-    console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; has_new_feet=' + has_new_feet.value + '; has_new_mast_bearing=' + has_new_mast_bearing.value + '; face_camera=' + face_camera.value);
+    console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; has_new_feet=' + has_new_feet.value + '; has_new_mast_bearing=' + has_new_mast_bearing.value + '; faceCameras=' + faceCameras.value);
   });
 
   // Handle double-click on a camera row
@@ -481,19 +469,19 @@ cameras, notes, other items, or maintenance tasks.
   // Create a camera 
   const createCamera = () => {
     console.log("IN createCamera");
-    router.push({name: 'create-camera', params: {base_unit: name.value}}).catch(failure => {
+    router.push({name: 'add-camera', params: {base_unit_name: name.value, base_unit_id: id.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT createCamera");
   };
 
-  // Delete a camera from database
-  const deleteCamera = async (item) => {
-    console.log("IN deleteCamera item=" + JSON.stringify(item));
+  // Remove a camera from the base unit
+  const removeCamera = async (item) => {
+    console.log("IN removeCamera item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
     const result = await confirmDialog.value.open(
-      'Confirm Deletion',
-      'Are you sure you want to delete this camera?',
+      'Confirm Removal',
+      'Are you sure you want to remove this camera from the base unit?',
       { color: 'red lighten-3' }
     );
 
@@ -510,24 +498,24 @@ cameras, notes, other items, or maintenance tasks.
         base_unit: item.base_unit
       };
       try {
-          const response = await api.post('/delete-camera', requestBody, config);
+          const response = await api.post('/remove-camera', requestBody, config);
           loading.value = false;
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
           const result = await errorDialog.value.open(
             'Confirm Error',
-            'Error deleting camera:' + e,
+            'Error removing camera:' + e,
             { color: 'red lighten-3' }
           );
       }
       fetchCameras();
-      console.log('Camera deleted!');
+      console.log('Camera removed!');
       // Perform deletion logic here
     } else {
-      console.log('Deletion cancelled.');
+      console.log('Removal cancelled.');
     }
-    console.log("OUT deleteCamera");
+    console.log("OUT removeCamera");
   };
 
   // Update a camera 
@@ -542,19 +530,19 @@ cameras, notes, other items, or maintenance tasks.
   // Create an other item
   const createOtherItem = () => {
     console.log("IN createOtherItem");
-    router.push({name: 'create-other-item', params: {base_unit: name.value}}).catch(failure => {
+    router.push({name: 'add-other-item', params: {base_unit_name: name.value, base_unit_id: id.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT createOtherItem");
   };
 
-  // Delete an other item
-  const deleteOtherItem = async (item) => {
-    console.log("IN deleteOtherItem item=" + JSON.stringify(item));
+  // Removce an other item
+  const removeOtherItem = async (item) => {
+    console.log("IN removeOtherItem item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
     const result = await confirmDialog.value.open(
-      'Confirm Deletion',
-      'Are you sure you want to delete this other item?',
+      'Confirm Removal',
+      'Are you sure you want to remove this other item from base unit?',
       { color: 'red lighten-3' }
     );
 
@@ -568,7 +556,7 @@ cameras, notes, other items, or maintenance tasks.
         id: item.id,
       };
       try {
-          const response = await api.post('/delete-other-item', requestBody, config);
+          const response = await api.post('/remove-other-item', requestBody, config);
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -585,7 +573,7 @@ cameras, notes, other items, or maintenance tasks.
     } else {
       console.log('Deletion cancelled.');
     }
-    console.log("OUT deleteOtherItem");
+    console.log("OUT removeOtherItem");
   };
   
   // Update an other item
@@ -770,16 +758,16 @@ cameras, notes, other items, or maintenance tasks.
         cameraTable.value = response.data;
 
         console.log("cameraTable=" + JSON.stringify(cameraTable.value));
-        face_camera.value = "NONE";
-        license_plate_camera.value = "NONE";
-        widescreen_camera.value = "NONE";
+        faceCameras.value = [];
+        licensePlateCameras.value = [];
+        widescreenCameras.value = [];
         for (const camera of cameraTable.value) {
           if(camera.type === "Face Camera"){
-            face_camera.value = camera.name;
+            faceCameras.value.push(camera.name);
           } else if(camera.type === "License Plate Camera") {
-            license_plate_camera.value = camera.name;
+            licensePlateCameras.value.push(camera.name);
           } else if(camera.type === "Wide Screen Camera") {
-            widescreen_camera.value = camera.name; 
+            widescreenCameras.value.push(camera.name); 
           }
         }
         faceCameraKey.value += 1;
@@ -869,6 +857,7 @@ cameras, notes, other items, or maintenance tasks.
 
   .outer-div {
     width: 80%;
+    padding-top: 30px;
   }
 
    /* Specific styles for screens smaller than 600px */

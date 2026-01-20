@@ -138,6 +138,7 @@ task to the database.
 
   .outer-div {
     width: 80%;
+    padding-top: 30px;
   }
 
    /* Specific styles for screens smaller than 600px */

@@ -65,9 +65,9 @@ maintenance tasks whose last due date is >= 6 months.
   const headers = ref([
     {title: 'Name', align: 'start', sortable: true, value: 'name', class: 'blue lighten-5'},
     {title: 'Location', value: 'location', sortable: true },
-    {title: 'Face Camera', value: 'face_camera' , sortable: true},
-    {title: 'License Plate Camera', value: 'license_plate_camera', sortable: true},
-    {title: 'Widescreen Camera', value: 'widescreen_camera', sortable: true},
+    {title: 'Face Cameras', value: 'face_cameras_str' , sortable: true},
+    {title: 'License Plate Cameras', value: 'license_plate_cameras_str', sortable: true},
+    {title: 'Widescreen Cameras', value: 'widescreen_cameras_str', sortable: true},
     {title: 'Has New Mast Bearing', value: 'has_new_mast_bearing', sortable: true},
   ]);
   
@@ -121,22 +121,25 @@ maintenance tasks whose last due date is >= 6 months.
 
     event.preventDefault();
 
-    let face_camera = "NONE";
-    if ('face_camera' in item && item.face_camera != null) {
-      face_camera = item.face_camera;
+    let face_cameras = [];
+    if ('face_cameras' in item && item.face_cameras != null) {
+      face_cameras = item.face_cameras;
     }
-    let license_plate_camera = "NONE";
-    if ('license_plate_camera' in item && item.license_plate_camera != null) {
-      license_plate_camera = item.license_plate_camera;
+    let license_plate_cameras = [];
+    if ('license_plate_cameras' in item && item.license_plate_cameras != null) {
+      license_plate_cameras = item.license_plate_cameras;
     }
-    let widescreen_camera = "NONE";
-    if ('widescreen_camera' in item && item.widescreen_camera != null) {
-      widescreen_camera = item.widescreen_camera;
+    let widescreen_cameras = [];
+    if ('widescreen_cameras' in item && item.widescreen_cameras != null) {
+      widescreen_cameras = item.widescreen_cameras;
     }
 
-    router.push({name: 'base-unit', params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet, face_camera: face_camera, license_plate_camera: license_plate_camera, widescreen_camera: widescreen_camera}}).catch(failure => {
-      console.log('An unexpected navigation failure occurred:', failure);
-    });
+    router.push(
+      {
+        name: 'base-unit',
+        query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, widescreen_cameras: widescreenCameras.value },
+        params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet}
+      });
     console.log("OUT navigateToDetails");
   };
 
@@ -151,6 +154,23 @@ maintenance tasks whose last due date is >= 6 months.
     try {
         const response = await api.get('/get-has-new-mast-bearing', config);
         baseUnitsTable.value = response.data;
+        baseUnitsTable.value.forEach(bu => {
+          if('face_cameras' in bu && bu.face_cameras != null){
+            bu.face_cameras_str = bu.face_cameras.join(', ');
+          } else {
+            bu.face_cameras_str = "";
+          }
+          if('license_plate_cameras' in bu && bu.license_plate_cameras != null){
+            bu.license_plate_cameras_str = bu.license_plate_cameras.join(', ');
+          } else {
+            bu.license_plate_cameras_str = "";
+          }
+          if('widescreen_cameras' in bu && bu.widescreen_cameras != null){
+            bu.widescreen_cameras_str = bu.widescreen_cameras.join(', ');
+          } else {
+            bu.widescreen_cameras_str = "";
+          }
+        });
         loading.value = false;
     } catch (e) {
         loading.value = false;
@@ -207,6 +227,7 @@ maintenance tasks whose last due date is >= 6 months.
 
   .outer-div {
     width: 100%;
+    padding-top: 30px;
   }
    /* Specific styles for screens smaller than 600px */
   @media (max-width: 600px) {

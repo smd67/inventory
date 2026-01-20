@@ -70,7 +70,7 @@ class Database:
         print("IN Database.get_base_units")
         bu_dict: Dict[Any, Any] = {}
         # Open a cursor to perform database operations
-        with self.connection.cursor() as cur:
+        with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
                 "select (base_units.id, base_units.name, base_units.location, "
@@ -95,14 +95,72 @@ class Database:
                     bu_dict[row[0][1]] = bu_results
                 camera_type = model.CameraType.from_str(row[0][6])
                 if camera_type == model.CameraType.FACE_CAMERA:
-                    bu_results.face_camera = row[0][5]
+                    if not bu_results.face_cameras:
+                        bu_results.face_cameras = []
+                    bu_results.face_cameras.append(row[0][5])
                 elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
-                    bu_results.license_plate_camera = row[0][5]
+                    if not bu_results.license_plate_cameras:
+                        bu_results.license_plate_cameras = []
+                    bu_results.license_plate_cameras.append(row[0][5])
+                
                 elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
-                    bu_results.widescreen_camera = row[0][5]
+                    if not bu_results.widescreen_cameras:
+                        bu_results.widescreen_cameras = []
+                    bu_results.widescreen_cameras.append(row[0][5])
 
         print(f"OUT Database.get_base_units: {list(bu_dict.values())}")
         return list(bu_dict.values())
+    
+    def get_base_unit_by_name(self, bu_name: str) -> model.BaseUnitQueryByNameResult:
+        """
+        This method returns a list of all of the rows in the base_units table.
+
+        Returns
+        -------
+        List[model.BaseUnitQueryByNameResult]
+            A list of all of the rows in the base_units table.
+        """
+        print("IN Database.get_base_unit_by_name")
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute(
+                "select (base_units.id, base_units.name, base_units.location, "
+                + "base_units.has_new_mast_bearing, base_units.has_new_feet,"
+                + "cameras.name, "
+                + "cameras.type) from base_units LEFT OUTER JOIN cameras ON "
+                + "base_units.id=cameras.base_unit_ref " 
+                + f"where base_units.name='{bu_name}' order by cameras.id asc;"
+            )
+
+            bu_results: model.BaseUnitQueryByNameResult = None
+            # Fetch the results
+            for idx, row in enumerate(cur):
+                print(f"row={row}")
+                if 0 == idx:
+                    bu_results = model.BaseUnitQueryByNameResult(
+                        id=row[0][0],
+                        name=row[0][1],
+                        location=row[0][2],
+                        has_new_mast_bearing=row[0][3],
+                        has_new_feet=row[0][4],
+                    )
+                camera_type = model.CameraType.from_str(row[0][6])
+                if camera_type == model.CameraType.FACE_CAMERA:
+                    if not bu_results.face_cameras:
+                        bu_results.face_cameras = []
+                    bu_results.face_cameras.append(row[0][5])
+                elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
+                    if not bu_results.license_plate_cameras:
+                        bu_results.license_plate_cameras = []
+                    bu_results.license_plate_cameras.append(row[0][5])
+                elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
+                    if not bu_results.widescreen_cameras:
+                        bu_results.widescreen_cameras = []
+                    bu_results.widescreen_cameras.append(row[0][5])
+
+        print(f"OUT Database.get_base_unit_by_name: {bu_results}")
+        return bu_results
 
     def get_notes(self, item_type: str, item_ref: int) -> List[model.Notes]:
         """
@@ -125,7 +183,7 @@ class Database:
         )
         note_list = []
         # Open a cursor to perform database operations
-        with self.connection.cursor() as cur:
+        with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
                 f"SELECT * from notes WHERE item_type='{item_type}' AND "
@@ -165,7 +223,7 @@ class Database:
         print("IN Database.get_maintenance_tasks")
         maint_list = []
         # Open a cursor to perform database operations
-        with self.connection.cursor() as cur:
+        with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
                 f"SELECT * from maintenance WHERE item_type='{item_type}' "
@@ -196,7 +254,7 @@ class Database:
         # Open a cursor to perform database operations
         print("IN get_cameras")
         camera_list = []
-        with self.connection.cursor() as cur:
+        with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
                 "select (cameras.id, cameras.name, cameras.type, "
@@ -220,6 +278,41 @@ class Database:
 
         print("OUT get_cameras")
         return camera_list
+    
+    def get_available_cameras(self) -> List[model.CameraQueryResult]:
+        """
+        This method returns a list of all cameras not associated with a base 
+        unit.
+
+        Returns
+        -------
+        List[model.CameraQueryResult]
+            a list of all cameras
+        """
+        # Open a cursor to perform database operations
+        print("IN Database.get_available_cameras")
+        camera_list = []
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute(
+                "select (id, name, type) from cameras where base_unit_ref is null;"
+            )
+            # Fetch the results
+            for cur_row in cur:
+                row = cur_row[0]
+                print(f"row={row}")
+                camera_type = model.CameraType.from_str(row[2])
+                camera = model.CameraQueryResult(
+                    id=row[0],
+                    name=row[1],
+                    type=camera_type.value,
+                    base_unit=None,
+                    location=None,
+                )
+                camera_list.append(camera)
+
+        print("OUT Database.gget_available_cameras")
+        return camera_list
 
     def get_cameras_for_bu(
         self, base_unit_ref: int
@@ -239,7 +332,7 @@ class Database:
         """
         # Open a cursor to perform database operations
         camera_list: List[Any] = []
-        with self.connection.cursor() as cur:
+        with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
                 "select (cameras.id, cameras.name, cameras.type, "
@@ -276,7 +369,7 @@ class Database:
         """
         # Open a cursor to perform database operations
         other_list = []
-        with self.connection.cursor() as cur:
+        with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
                 "select (other_items.id, other_items.name, base_units.name, "
@@ -294,6 +387,34 @@ class Database:
 
         return other_list
 
+    def get_available_other_items(self) -> List[model.OtherItemQueryResult]:
+        """
+        Returns a list of all of the other items not associated with a base 
+        unit.
+
+        Returns
+        -------
+        List[model.OtherItemQueryResult]
+            A list of all of the other items.
+        """
+        # Open a cursor to perform database operations
+        other_list = []
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute(
+                "select (other_items.id, other_items.name) "
+                + "from other_items where base_unit_ref is null;"
+            )
+            # Fetch the results
+            for curr_row in cur:
+                row = curr_row[0]
+                other = model.OtherItemQueryResult(
+                    id=row[0], name=row[1], base_unit=None, location=None
+                )
+                other_list.append(other)
+
+        return other_list
+    
     def get_other_items_for_bu(
         self, base_unit_ref: int
     ) -> List[model.OtherItemQueryResult]:
@@ -312,7 +433,7 @@ class Database:
         """
         # Open a cursor to perform database operations
         other_list = []
-        with self.connection.cursor() as cur:
+        with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
                 "select (other_items.id, other_items.name, base_units.name, "
@@ -336,10 +457,7 @@ class Database:
         name: str,
         location: int,
         has_new_mast_bearing: Optional[bool] = False,
-        has_new_feet: Optional[bool] = False,
-        face_camera: Optional[str] = None,
-        license_plate_camera: Optional[str] = None,
-        widescreen_camera: Optional[str] = None,
+        has_new_feet: Optional[bool] = False
     ):
         """
         Create a base unit in the database.
@@ -354,15 +472,9 @@ class Database:
             True if base unit has a new mast bearing.
         has_new_feet : Optional[bool], optional
             True if base unit has a new feet.
-        face_camera : Optional[str], optional
-            The name of the face camera in the base unit
-        license_plate_camera : Optional[str], optional
-            The name of the license plate camera in the base unit.
-        widescreen_camera : Optional[str], optional
-            the name of the widescreen camer in the base unit.
         """
         print("IN create_base_unit")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(
                 "insert into base_units (name, location, "
@@ -370,59 +482,7 @@ class Database:
                 + f"values('{name}', {location}, {has_new_mast_bearing}, "
                 + f"{has_new_feet})"
             )
-            self.connection.commit()
-
-            cursor.execute(
-                f"SELECT id from base_units WHERE name='{name}' LIMIT 1"
-            )
-            record = cursor.fetchone()
-            bu_id = record[0]
-
-            if face_camera:
-                cursor.execute(
-                    f"update cameras set base_unit_ref={bu_id} WHERE "
-                    + f"name='{face_camera}'"
-                )
-                cursor.execute(
-                    f"select id from cameras WHERE name='{face_camera}' LIMIT 1"
-                )
-                record = cursor.fetchone()
-                camera_id = record[0]
-                cursor.execute(
-                    f"update base_units set face_camera_ref={camera_id} "
-                    + f"WHERE id={bu_id}"
-                )
-            if license_plate_camera:
-                cursor.execute(
-                    f"update cameras set base_unit_ref={bu_id} WHERE "
-                    + f"name='{license_plate_camera}'"
-                )
-                cursor.execute(
-                    "select id from cameras WHERE "
-                    + f"name='{license_plate_camera}' LIMIT 1"
-                )
-                record = cursor.fetchone()
-                camera_id = record[0]
-                cursor.execute(
-                    "update base_units set "
-                    + f"license_plate_camera_ref={camera_id} WHERE id={bu_id}"
-                )
-            if widescreen_camera:
-                cursor.execute(
-                    f"update cameras set base_unit_ref={bu_id} "
-                    + f"WHERE name='{widescreen_camera}'"
-                )
-                cursor.execute(
-                    "select id from cameras WHERE "
-                    + f"name='{widescreen_camera}' LIMIT 1"
-                )
-                record = cursor.fetchone()
-                camera_id = record[0]
-                cursor.execute(
-                    "update base_units set "
-                    + f"wide_screen_camera_ref={camera_id} WHERE id={bu_id}"
-                )
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
         print("OUT create_base_unit")
 
     def create_camera(
@@ -442,7 +502,7 @@ class Database:
 
         """
         print("IN create_camera")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             try:
                 # Execute a command
                 camera_type_enum = model.CameraType.from_str_value(camera_type)
@@ -467,36 +527,14 @@ class Database:
                         f"update cameras set base_unit_ref={bu_id} "
                         + f"WHERE id={camera_id}"
                     )
-                    if camera_type_enum == model.CameraType.FACE_CAMERA:
-                        cursor.execute(
-                            "update base_units set "
-                            + f"face_camera_ref={camera_id} WHERE id={bu_id}"
-                        )
-                    elif (
-                        camera_type_enum
-                        == model.CameraType.LICENSE_PLATE_CAMERA
-                    ):
-                        cursor.execute(
-                            "update base_units set "
-                            + f"license_plate_camera_ref={camera_id} "
-                            + f"WHERE id={bu_id}"
-                        )
-                    elif (
-                        camera_type_enum == model.CameraType.WIDE_SCREEN_CAMERA
-                    ):
-                        cursor.execute(
-                            "update base_units set "
-                            + f"wide_screen_camera_ref={camera_id} "
-                            + f"WHERE id={bu_id}"
-                        )
             except Exception as e:
                 # If any statement fails, roll back all changes within
                 # the transaction
-                self.connection.rollback()
+                self.connection.rollback() # pylint: disable=no-member
                 print(f"Transaction failed: {e}")
                 raise e
             finally:
-                self.connection.commit()
+                self.connection.commit() # pylint: disable=no-member
         print("OUT create_camera")
 
     def create_other_item(self, name: str, base_unit: Optional[str] = None):
@@ -515,7 +553,7 @@ class Database:
         e
         """
         print("IN create_other_item")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             try:
                 # Execute a command
                 cursor.execute(
@@ -542,11 +580,11 @@ class Database:
             except Exception as e:
                 # If any statement fails, roll back all changes within the
                 # transaction
-                self.connection.rollback()
+                self.connection.rollback() # pylint: disable=no-member
                 print(f"Transaction failed: {e}")
                 raise e
             finally:
-                self.connection.commit()
+                self.connection.commit() # pylint: disable=no-member
 
         print("OUT create_other_item")
 
@@ -569,7 +607,7 @@ class Database:
         """
         print("IN add_maintenance_task")
 
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(
                 "insert into maintenance (description, last_done, item_type, "
@@ -577,7 +615,7 @@ class Database:
                 + f"values('{description}', '{last_done}', '{item_type}', "
                 + f"{item_ref})"
             )
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
 
         print("OUT add_maintenance_task")
 
@@ -595,13 +633,13 @@ class Database:
             An integer reference to the item assciated with the note.
         """
         print("IN add_note")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(
                 "insert into notes (description, date, item_type, item_ref) "
                 + f"values('{description}', now(), '{item_type}', {item_ref})"
             )
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
 
         print("OUT add_note")
 
@@ -615,10 +653,10 @@ class Database:
             The integer identifier of the Note object.
         """
         print("IN delete_note")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(f"delete from notes where id={id}")
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
         print("OUT delete_note")
 
     def delete_maintenance_task(self, id: int) -> None:
@@ -631,10 +669,10 @@ class Database:
             The identifier of the associated item.
         """
         print("IN delete_maintenance_task")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(f"delete from maintenance where id={id}")
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
         print("OUT delete_maintenance_task")
 
     def delete_other_item(self, other_id: int) -> None:
@@ -647,7 +685,7 @@ class Database:
             The identifier of the associated item.
         """
         print("IN delete_other_item")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(f"delete from other_items where id={other_id}")
             cursor.execute(
@@ -658,9 +696,29 @@ class Database:
                 "delete from maintenance where item_type="
                 + f"'{model.ItemType.OTHER.name}' and item_ref={other_id}"
             )
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
         print("OUT delete_other_item")
 
+    def remove_other_item(self, other_id: int) -> None:
+        """
+        Remove an other item from base unit.
+
+        Parameters
+        ----------
+        other_id : int
+            The identifier of the associated item.
+        """
+        print("IN remove_other_item")
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            # Execute a command
+            cursor.execute(
+                    "update other_items set base_unit_ref=NULL "
+                    + f"where id={other_id}"
+                )
+            
+            self.connection.commit() # pylint: disable=no-member
+        print("OUT remove_other_item")
+ 
     def delete_camera(
         self, camera_id: int, type: str, base_unit: Optional[str] = None
     ) -> None:
@@ -677,7 +735,7 @@ class Database:
             The base unit where the camera is installed
         """
         print("IN delete_camera")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(f"delete from cameras where id={camera_id}")
             cursor.execute(
@@ -688,36 +746,38 @@ class Database:
                 "delete from maintenance where item_type="
                 + f"'{model.ItemType.CAMERA.name}' and item_ref={camera_id}"
             )
-            camera_type = model.CameraType.from_str_value(type)
-            if base_unit and camera_type == model.CameraType.FACE_CAMERA:
-                cursor.execute(
-                    "update base_units set face_camera_ref=NULL where "
-                    + f"name='{base_unit}'"
-                )
-            elif (
-                base_unit
-                and camera_type == model.CameraType.LICENSE_PLATE_CAMERA
-            ):
-                cursor.execute(
-                    "update base_units set license_plate_camera_ref=NULL "
-                    + f"where name='{base_unit}'"
-                )
-            elif (
-                base_unit and camera_type == model.CameraType.WIDE_SCREEN_CAMERA
-            ):
-                cursor.execute(
-                    "update base_units set wide_screen_camera_ref=NULL "
-                    + f"where name='{base_unit}'"
-                )
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
         print("OUT delete_camera")
+    
+    
+    def remove_camera(
+        self, camera_id: int, type: str, base_unit: Optional[str] = None
+    ) -> None:
+        """
+        Remove  a camera from the base unit.
+
+        Parameters
+        ----------
+        camera_id : int
+            Integer identifier of the object.
+        type : str
+            The type of camera (face, widescreen, license plate, etc)
+        base_unit : Optional[str], optional
+            The base unit where the camera is installed
+        """
+        print("IN remove_camera")
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            # Execute a command
+            cursor.execute(
+                    "update cameras set base_unit_ref=NULL "
+                    + f"where id={camera_id}"
+                )
+            self.connection.commit() # pylint: disable=no-member
+        print("OUT remove_camera")
 
     def delete_base_unit(
         self,
-        bu_id: int,
-        face_camera: Optional[str] = None,
-        license_plate_camera: Optional[str] = None,
-        widescreen_camera: Optional[str] = None,
+        bu_id: int
     ) -> None:
         """
         Deleta a base unit object from the database.
@@ -726,15 +786,9 @@ class Database:
         ----------
         bu_id : int
             An integer identifier of the base unit.
-        face_camera : Optional[str], optional
-            The name of the face camera installed in the base unit.
-        license_plate_camera : Optional[str], optional
-            The name of the license plate installed in the base unit
-        widescreen_camera : Optional[str], optional
-            The name of the wide screen camera installed in the base unit
         """
         print("IN delete_base_unit")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(f"delete from base_units where id={bu_id}")
             cursor.execute(
@@ -745,29 +799,15 @@ class Database:
                 "delete from maintenance where item_type="
                 + f"'{model.ItemType.BASE_UNIT.name}' and item_ref={bu_id}"
             )
-            if face_camera:
-                cursor.execute(
-                    "update cameras set base_unit_ref=NULL where name="
-                    + f"'{license_plate_camera}' and type="
-                    + f"'{model.CameraType.LICENSE_PLATE_CAMERA.name}'"
-                )
-            if license_plate_camera:
-                cursor.execute(
-                    "update cameras set base_unit_ref=NULL where "
-                    + f"name='{face_camera}' and type="
-                    + f"'{model.CameraType.FACE_CAMERA.name}'"
-                )
-            if widescreen_camera:
-                cursor.execute(
-                    "update cameras set base_unit_ref=NULL where "
-                    + f"name='{widescreen_camera}' and type="
-                    + f"'{model.CameraType.WIDE_SCREEN_CAMERA.name}'"
-                )
+            cursor.execute(
+                "update cameras set base_unit_ref=NULL where " + 
+                f"base_unit_ref={bu_id}"
+            )
             cursor.execute(
                 "update other_items set base_unit_ref=NULL where "
                 + f"base_unit_ref={bu_id}"
             )
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
         print("OUT delete_base_unit")
 
     def update_other_item(self, name: str, base_unit: str) -> None:
@@ -782,7 +822,7 @@ class Database:
             The name of the base unit where the item is installed.
         """
         print("IN update_other_item")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             cursor.execute(
                 f"SELECT id from base_units WHERE name='{base_unit}' LIMIT 1"
             )
@@ -794,7 +834,7 @@ class Database:
                 f"update other_items set base_unit_ref={bu_id} where "
                 + f"name='{name}'"
             )
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
         print("OUT update_other_item")
 
     def update_camera(self, name: str, base_unit: str) -> None:
@@ -809,7 +849,7 @@ class Database:
             The name of the base unit where the camera is installed.
         """
         print("IN update_camera")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             cursor.execute(
                 f"SELECT id from base_units WHERE name='{base_unit}' LIMIT 1"
             )
@@ -820,7 +860,8 @@ class Database:
             cursor.execute(
                 f"update cameras set base_unit_ref={bu_id} where name='{name}'"
             )
-            self.connection.commit()
+
+            self.connection.commit() # pylint: disable=no-member
         print("OUT update_camera")
 
     def update_base_unit(
@@ -848,14 +889,14 @@ class Database:
             An indicator of if the base unit has a new mast bearing.
         """
         print("IN update_base_unit")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(
                 f"update base_units set location={location}, "
                 + f"has_new_feet={has_new_feet}, "
                 + f"has_new_mast_bearing={has_new_mast_bearing} where id={id}"
             )
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
         print("OUT update_base_unit")
 
     def get_has_new_mast_bearing(self) -> List[model.BaseUnitQueryResult]:
@@ -870,7 +911,7 @@ class Database:
         print("IN Database.get_has_new_mast_bearing")
         bu_dict: Dict[Any, Any] = {}
         # Open a cursor to perform database operations
-        with self.connection.cursor() as cur:
+        with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
                 "select (base_units.id, base_units.name, base_units.location, "
@@ -900,11 +941,17 @@ class Database:
                     + f"{model.CameraType.FACE_CAMERA.name}"
                 )
                 if camera_type == model.CameraType.FACE_CAMERA:
-                    bu_results.face_camera = row[0][5]
+                    if not bu_results.face_cameras:
+                        bu_results.face_cameras = []
+                    bu_results.face_cameras.append(row[0][5])
                 elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
-                    bu_results.license_plate_camera = row[0][5]
+                    if not bu_results.license_plate_cameras:
+                        bu_results.license_plate_cameras = []
+                    bu_results.license_plate_cameras.append(row[0][5])
                 elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
-                    bu_results.widescreen_camera = row[0][5]
+                    if not bu_results.widescreen_cameras:
+                        bu_results.widescreen_cameras = []
+                    bu_results.widescreen_cameras.append(row[0][5])
 
         print(
             f"OUT Database.get_has_new_mast_bearing: {list(bu_dict.values())}"
@@ -923,7 +970,7 @@ class Database:
         print("IN Database.get_has_new_feet")
         bu_dict: Dict[Any, Any] = {}
         # Open a cursor to perform database operations
-        with self.connection.cursor() as cur:
+        with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
                 "select (base_units.id, base_units.name, base_units.location, "
@@ -953,11 +1000,17 @@ class Database:
                     + f"{model.CameraType.FACE_CAMERA.name}"
                 )
                 if camera_type == model.CameraType.FACE_CAMERA:
-                    bu_results.face_camera = row[0][5]
+                    if not bu_results.face_cameras:
+                        bu_results.face_cameras = []
+                    bu_results.face_cameras.append(row[0][5])
                 elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
-                    bu_results.license_plate_camera = row[0][5]
+                    if not bu_results.license_plate_cameras:
+                        bu_results.license_plate_cameras = []
+                    bu_results.license_plate_cameras.append(row[0][5])
                 elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
-                    bu_results.widescreen_camera = row[0][5]
+                    if not bu_results.widescreen_cameras:
+                        bu_results.widescreen_cameras = []
+                    bu_results.widescreen_cameras.append(row[0][5])
 
         print(f"OUT Database.get_has_new_feet: {list(bu_dict.values())}")
         return list(bu_dict.values())
@@ -974,7 +1027,7 @@ class Database:
         print("IN Database.get_expired_maintenance_tasks")
         maint_list = []
         # Open a cursor to perform database operations
-        with self.connection.cursor() as cur:
+        with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
                 "SELECT * from maintenance WHERE last_done <= CURRENT_DATE "
@@ -1023,10 +1076,10 @@ class Database:
             The integer identifier of the maintenance task.
         """
         print("IN complete_maintenance_task")
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(
                 f"update maintenance set last_done=now() where id={id}"
             )
-            self.connection.commit()
+            self.connection.commit() # pylint: disable=no-member
         print("OUT complete_maintenance_task")

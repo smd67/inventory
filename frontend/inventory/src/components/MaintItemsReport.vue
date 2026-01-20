@@ -63,7 +63,6 @@ maintenance tasks whose last due date is >= 6 months.
   // Table headers
   const headers = ref([
     {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
-    {title: 'Status', value: 'status' , sortable: true},
     {title: 'Last Done', value: 'last_done_date' , sortable: true},
     {title: 'Type', value: 'item_type' , sortable: true},
     {title: 'Name', value: 'item_name' , sortable: true},
@@ -120,22 +119,25 @@ maintenance tasks whose last due date is >= 6 months.
 
     event.preventDefault();
 
-    let face_camera = "NONE";
-    if ('face_camera' in item && item.face_camera != null) {
-      face_camera = item.face_camera;
+    let face_cameras = [];
+    if ('face_cameras' in item && item.face_cameras != null) {
+      face_cameras = item.face_cameras;
     }
-    let license_plate_camera = "NONE";
-    if ('license_plate_camera' in item && item.license_plate_camera != null) {
-      license_plate_camera = item.license_plate_camera;
+    let license_plate_cameras = [];
+    if ('license_plate_cameras' in item && item.license_plate_cameras != null) {
+      license_plate_cameras = item.license_plate_cameras;
     }
-    let widescreen_camera = "NONE";
-    if ('widescreen_camera' in item && item.widescreen_camera != null) {
-      widescreen_camera = item.widescreen_camera;
+    let widescreen_cameras = [];
+    if ('widescreen_cameras' in item && item.widescreen_cameras != null) {
+      widescreen_cameras = item.widescreen_cameras;
     }
 
-    router.push({name: 'base-unit', params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet, face_camera: face_camera, license_plate_camera: license_plate_camera, widescreen_camera: widescreen_camera}}).catch(failure => {
-      console.log('An unexpected navigation failure occurred:', failure);
-    });
+    router.push(
+      {
+        name: 'base-unit',
+        query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, widescreen_cameras: widescreenCameras.value },
+        params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet}
+      });
     console.log("OUT navigateToDetails");
   };
 
@@ -207,6 +209,7 @@ maintenance tasks whose last due date is >= 6 months.
 
   .outer-div {
     width: 100%;
+    padding-top: 30px;
   }
    /* Specific styles for screens smaller than 600px */
   @media (max-width: 600px) {

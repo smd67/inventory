@@ -6,7 +6,7 @@ in the database.
   <div class="my-division">
       <div class="spinner" v-if="loading"></div>
   </div>
-  <div style="width: 80%;">
+  <div class="outer-div">
     <v-container class="table-container">
       <v-row>
         <div style="color: green; font-size: 24px;">
@@ -37,21 +37,6 @@ in the database.
               label="Has new mast bearing?"
               :key="hasNewMastBearingKey"
             ></v-checkbox>
-            <v-text-field
-              v-model="face_camera"
-              label="Face Camera (optional)"
-              :key="faceCameraKey"
-            ></v-text-field>
-            <v-text-field
-              v-model="license_plate_camera"
-              label="License Plate Camera (optional)"
-              :key="licensePlateCameraKey"
-            ></v-text-field>
-            <v-text-field
-              v-model="widescreen_camera"
-              label="Widescreen Camera (optional)"
-              :key="widescreenCameraKey"
-            ></v-text-field>
             <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
@@ -79,18 +64,12 @@ in the database.
   const location = ref(null);
   const has_new_feet = ref(false);
   const has_new_mast_bearing = ref(false);
-  const face_camera = ref(null);
-  const license_plate_camera = ref(null);
-  const widescreen_camera = ref(null);
   const router = useRouter();
   const route = useRoute();
   const nameKey = ref(0);
   const locationKey = ref(0);
   const hasNewFeetKey = ref(0);
   const hasNewMastBearingKey = ref(0);
-  const faceCameraKey = ref(0);
-  const licensePlateCameraKey = ref(0);
-  const widescreenCameraKey = ref(0);
 
   // Watcher to reset data when path changes
   watch(
@@ -105,12 +84,6 @@ in the database.
       hasNewFeetKey.value += 1;
       has_new_mast_bearing.value = false;
       hasNewMastBearingKey.value += 1;
-      face_camera.value = null;
-      faceCameraKey.value += 1;
-      license_plate_camera.value = null;
-      licensePlateCameraKey.value += 1;
-      widescreen_camera.value = null;
-      widescreenCameraKey.value += 1;
       console.log("OUT Create.watch.refresh");
     }
   );
@@ -141,9 +114,6 @@ in the database.
         location: location.value,
         has_new_mast_bearing: has_new_mast_bearing.value,
         has_new_feet: has_new_feet.value,
-        face_camera: face_camera.value,
-        license_plate_camera: license_plate_camera.value,
-        widescreen_camera: widescreen_camera.value
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
@@ -165,11 +135,6 @@ in the database.
   };
 </script>
 <style scoped>
-  .detail-container {
-    border: 1px solid green;
-    width: 70%;
-  }
-
   .detail-sheet { 
     width: 95%;
   }
@@ -179,15 +144,11 @@ in the database.
   }
 
   .outer-div {
-    padding-right: 25%;
+    width: 80%;
+    padding-top: 30px;
   }
    /* Specific styles for screens smaller than 600px */
   @media (max-width: 600px) {
-    .detail-container {
-      border: 1px solid green;
-      width: 100%; /* Take up full width on mobile */
-      padding: 0 1em; /* Add some padding */
-    }
     .detail-sheet { 
       width: 99%
     }
@@ -195,7 +156,7 @@ in the database.
       width: 100%
     }
     .outer-div {
-      padding-right: 0%;
+      width: 100%;
     }
   }
 </style>

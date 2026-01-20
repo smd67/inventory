@@ -36,6 +36,25 @@ def get_base_units() -> List[model.BaseUnitQueryResult]:
     results = db.get_base_units()
     return results
 
+@app.get("/get-base-units-names")
+def get_base_units_names() -> List[str]:
+    """
+    Query to retrieve base unit names from the database.
+
+    Returns
+    -------
+    List[str]
+        A list of base model names currently provisioned.
+    """
+    db = Database()
+    results = db.get_base_units()
+    return [result.name for result in results]
+
+@app.post("/get-base-unit-by-name")
+def get_base_unit_by_name(query: model.BaseUnitQueryByName) -> model.BaseUnitQueryByNameResult:
+    db = Database()
+    results = db.get_base_unit_by_name(query.name)
+    return results
 
 @app.get("/get-has-new-mast-bearing")
 def get_has_new_mast_bearing() -> List[model.BaseUnitQueryResult]:
@@ -128,7 +147,23 @@ def get_cameras() -> List[model.CameraQueryResult]:
     print("IN Endpoint.get_cameras")
     db = Database()
     camera_list = db.get_cameras()
-    print(f"OUT Endpoint.get_cameras. note_list={camera_list}")
+    print(f"OUT Endpoint.get_cameras. camera_list={camera_list}")
+    return camera_list
+
+@app.get("/get-available-cameras")
+def get_available_cameras() -> List[model.CameraQueryResult]:
+    """
+    Return all of the cameras from the database not associated with a base unit.
+
+    Returns
+    -------
+    List[model.CameraQueryResult]
+        A list of camera items from the database.
+    """
+    print("IN Endpoint.get_available_cameras")
+    db = Database()
+    camera_list = db.get_available_cameras()
+    print(f"OUT Endpoint.get_available_cameras. camera_list={camera_list}")
     return camera_list
 
 
@@ -172,6 +207,21 @@ def get_other_items() -> List[model.OtherItemQueryResult]:
     print(f"OUT Endpoint.get_other_items. note_list={other_items_list}")
     return other_items_list
 
+@app.get("/get-available-other-items")
+def get_available_other_items() -> List[model.OtherItemQueryResult]:
+    """
+    Return all of the other items from the database not associated with a base unit.
+
+    Returns
+    -------
+    List[model.OtherItemQueryResult]
+        A list of all other items in the database.
+    """
+    print("IN Endpoint.get_available_other_items")
+    db = Database()
+    other_items_list = db.get_available_other_items()
+    print(f"OUT Endpoint.get_available_other_items. other_items_list={other_items_list}")
+    return other_items_list
 
 @app.post("/get-other-items-for-bu")
 def get_other_items_for_bu(
@@ -436,6 +486,32 @@ def delete_other_item(query: model.OtherItemDelete) -> None:
         )
     print("OUT delete-other-item")
 
+@app.post("/remove-other-item")
+def remove_other_item(query: model.OtherItemDelete) -> None:
+    """
+    Remove an other item from the base unit.
+
+    Parameters
+    ----------
+    query : model.OtherItemDelete
+        A query with all of the parameters to delete an other item.
+
+    Raises
+    ------
+    HTTPException
+        Used to return a 500 internal server error
+    """
+    print(f"IN remove-other-item query={query}")
+    try:
+        db = Database()
+        db.remove_other_item(query.id)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print("OUT remove-other-item")
 
 @app.post("/delete-camera")
 def delete_camera(query: model.CameraDelete) -> None:
@@ -464,6 +540,32 @@ def delete_camera(query: model.CameraDelete) -> None:
         )
     print("OUT delete-camera")
 
+@app.post("/remove-camera")
+def remove_camera(query: model.CameraDelete) -> None:
+    """
+    Remove a camera from the base unit.
+
+    Parameters
+    ----------
+    query : model.CameraDelete
+        A query with all of the parameters to delete a camera.
+
+    Raises
+    ------
+    HTTPException
+        Used to return a 500 internal server error
+    """
+    print(f"IN remove-camera query={query}")
+    try:
+        db = Database()
+        db.remove_camera(query.id, query.type, query.base_unit)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print("OUT remove-camera")
 
 @app.post("/delete-base-unit")
 def delete_base_unit(query: model.BaseUnitDelete) -> None:

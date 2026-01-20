@@ -5,7 +5,7 @@ the frontend, backend, and database.
 
 from datetime import date
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
 
@@ -115,9 +115,6 @@ class BaseUnit(BaseModel):
     id: int
     name: str
     location: int
-    face_camera_ref: Optional[int] = 0
-    license_plate_camera_ref: Optional[int] = 0
-    widescreen_camera_ref: Optional[int] = 0
 
 
 class BaseUnitQueryResult(BaseModel):
@@ -130,10 +127,23 @@ class BaseUnitQueryResult(BaseModel):
     location: int
     has_new_mast_bearing: Optional[bool] = False
     has_new_feet: Optional[bool] = False
-    face_camera: Optional[str] = None
-    license_plate_camera: Optional[str] = None
-    widescreen_camera: Optional[str] = None
+    face_cameras: Optional[List[str]] = None
+    license_plate_cameras: Optional[List[str]] = None
+    widescreen_cameras: Optional[List[str]] = None
 
+class BaseUnitQueryByNameResult(BaseModel):
+    """
+    Base unit definitiion for ui.
+    """
+
+    id: int
+    name: str
+    location: int
+    has_new_mast_bearing: Optional[bool] = False
+    has_new_feet: Optional[bool] = False
+    face_cameras: Optional[List[str]] = []
+    license_plate_cameras: Optional[List[str]] = []
+    widescreen_cameras: Optional[List[str]] = []
 
 class BaseUnitCreate(BaseModel):
     """
@@ -144,9 +154,6 @@ class BaseUnitCreate(BaseModel):
     location: int
     has_new_mast_bearing: Optional[bool] = False
     has_new_feet: Optional[bool] = False
-    face_camera: Optional[str] = None
-    license_plate_camera: Optional[str] = None
-    widescreen_camera: Optional[str] = None
 
 
 class BaseUnitDelete(BaseModel):
@@ -155,9 +162,6 @@ class BaseUnitDelete(BaseModel):
     """
 
     id: int
-    face_camera: Optional[str] = None
-    license_plate_camera: Optional[str] = None
-    widescreen_camera: Optional[str] = None
 
 
 class BaseUnitUpdate(BaseModel):
@@ -171,6 +175,11 @@ class BaseUnitUpdate(BaseModel):
     has_new_feet: bool
     has_new_mast_bearing: bool
 
+class BaseUnitQueryByName(BaseModel):
+    """
+    Query a Base Unit by name
+    """
+    name: str
 
 # Camera models
 class Camera(BaseModel):
