@@ -7,8 +7,7 @@ This file is the vue component implementation a confirmation dialog.
       <v-card-title class="headline" :class="options.color">
         {{ title }}
       </v-card-title>
-      <v-card-text>
-        {{ message }}
+      <v-card-text class="text-pre-wrap" v-html="message">
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>

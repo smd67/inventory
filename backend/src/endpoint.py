@@ -272,10 +272,7 @@ def create_base_unit(query: model.BaseUnitCreate) -> None:
             query.name,
             query.location,
             query.has_new_mast_bearing,
-            query.has_new_feet,
-            face_camera=query.face_camera,
-            license_plate_camera=query.license_plate_camera,
-            widescreen_camera=query.widescreen_camera,
+            query.has_new_feet
         )
     except Exception as e:
         print(f"An unexpected exception e={e} has occured")
@@ -374,6 +371,38 @@ def add_maintenance_task(query: model.MaintenanceTaskCreate) -> None:
         )
     print("OUT add-maintenance-task")
 
+
+@app.post("/add-maintenance-task-by-name")
+def add_maintenance_task_by_name(query: model.MaintenanceTaskCreateByName) -> None:
+    """
+    Add a maintenance task to the database.
+
+    Parameters
+    ----------
+    query : model.MaintenanceTaskCreateByName
+        Query with the parameters to create a maintenance task.
+
+    Raises
+    ------
+    HTTPException
+        Used to return a 500 internal server error
+    """
+    print(f"IN add-maintenance-task-by-name query={query}")
+    try:
+        db = Database()
+        db.add_maintenance_task_by_name(
+            query.description,
+            query.last_done_date,
+            query.item_type,
+            query.item_name,
+        )
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print("OUT add-maintenance-task-by-name")
 
 @app.post("/delete-maintenance-task")
 def delete_maintenance_task(query: model.MaintenanceTaskDelete) -> None:
@@ -585,12 +614,7 @@ def delete_base_unit(query: model.BaseUnitDelete) -> None:
     print(f"IN delete-base-unit query={query}")
     try:
         db = Database()
-        db.delete_base_unit(
-            query.id,
-            query.face_camera,
-            query.license_plate_camera,
-            query.widescreen_camera,
-        )
+        db.delete_base_unit(query.id)
     except Exception as e:
         print(f"An unexpected exception e={e} has occured")
         raise HTTPException(

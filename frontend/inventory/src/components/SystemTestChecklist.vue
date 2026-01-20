@@ -85,6 +85,7 @@ maintenance tasks whose last due date is >= 6 months.
                 <v-tabs-window-item 
                   v-for="top_item in faceCameras" 
                   :value="`face_camera_tab_${top_item}`"
+                  :key="top_item.id"
                 >
                   <v-card flat v-if="activeTab === `face_camera_tab_${top_item}`">
                     <v-card-text>
@@ -96,6 +97,7 @@ maintenance tasks whose last due date is >= 6 months.
                           :label="item.label"
                           :value="`${item.value}_${top_item}`"
                           class="grid-item"
+                          :key="item.id"
                         ></v-checkbox>
                       </div>
                     </v-card-text>
@@ -242,7 +244,7 @@ maintenance tasks whose last due date is >= 6 months.
                       <div class="checkbox-grid">
                         <!-- Another Checkbox Group in Tab 10 -->
                         <v-checkbox
-                          v-for="item in mastCheckBox"
+                          v-for="item in mastCheckbox"
                           v-model="mastItems"
                           :label="item.label"
                           :value="item.value"
@@ -357,7 +359,7 @@ maintenance tasks whose last due date is >= 6 months.
       {id: 1, label: "RS485 adapter is functioning", value: "adapter_is_functioning"},
       {id: 2, label: "RS485 ip set to 192.168.1.17", value: "ip_set_correctly"}
     ]);
-    const mastCheckBox = ref([
+    const mastCheckbox = ref([
       {id: 1, label: "Fully extends (6.0m)", value: "mast_fully_extends"},
       {id: 2, label: "Has a mark at 6.0m", value: "mast_mark_Correct"},
       {id: 3, label: "Fully extends in", value: "mast_fully_extends_in"},
@@ -414,7 +416,7 @@ maintenance tasks whose last due date is >= 6 months.
         console.log("IN SystemTestChecklist.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
         if(newFullPath.includes("/system-test-checklist")){
           technicianName.value = props.technician_name;
-          reportDate.value = props.date;
+          reportDate.value = props.report_date;
           baseUnitName.value = props.base_unit;
           faceCameras.value = route.query.face_cameras;
           licensePlateCameras.value = route.query.license_plate_cameras;
@@ -428,7 +430,7 @@ maintenance tasks whose last due date is >= 6 months.
     onMounted(async () => {
       console.log('IN SystemTestChecklist.onMounted');
       technicianName.value = props.technician_name;
-      reportDate.value = props.date;
+      reportDate.value = props.report_date;
       baseUnitName.value = props.base_unit;
       faceCameras.value = route.query.face_cameras;
       licensePlateCameras.value = route.query.license_plate_cameras;
@@ -443,16 +445,422 @@ maintenance tasks whose last due date is >= 6 months.
     console.log("OUT SystemTestChecklist.goBack");
   };
 
+  const generateDialogText = () => {
+    console.log("IN SystemTestChecklist.generateDialogText");
+    let baseDialog = 'Are you sure you want to submit this checklist?';
+    const expectedGeneral = new Set(generalCheckbox.value.map(item => item.value));
+    const missingGeneral = expectedGeneral.difference(new Set(generalItems.value));
+    const labelsGeneral = generalCheckbox.value.filter(item => missingGeneral.has(item.value)).map(item => item.label);
+    
+    let expectedFaceCameraVals = [];
+    for (const camera of faceCameras.value) {
+      console.log("camera=" + camera);
+      const cameraVals = faceCameraCheckbox.value.map(item => item.value + '_' + camera);
+      expectedFaceCameraVals = [...expectedFaceCameraVals, ...cameraVals];
+    }
+    const expectedFaceCamera = new Set(expectedFaceCameraVals);
+    const missingFaceCamera = expectedFaceCamera.difference(new Set(faceCameraItems.value));
+
+    let expectedLicensePlateCameraVals = [];
+    for (const camera of licensePlateCameras.value) {
+      const cameraVals = licensePlateCameraCheckbox.value.map(item => item.value + '_' + camera);
+      expectedLicensePlateCameraVals = [...expectedLicensePlateCameraVals, ...cameraVals];
+    }
+    const expectedLicensePlateCamera = new Set(expectedLicensePlateCameraVals);
+    const missingLicensePlateCamera = expectedLicensePlateCamera.difference(new Set(licensePlateCameraItems.value));
+
+
+    let expectedWidescreenCameraVals = [];
+    for (const camera of widescreenCameras.value) {
+      const cameraVals = widescreenCameraCheckbox.value.map(item => item.value + '_' + camera);
+      expectedWidescreenCameraVals = [...expectedWidescreenCameraVals, ...cameraVals];
+    }
+    const expectedWidescreenCamera = new Set(expectedWidescreenCameraVals);
+    const missingWidescreenCamera = expectedWidescreenCamera.difference(new Set(widescreenCameraItems.value));
+
+    let expectedLiDarVals = [];
+    for (const camera of widescreenCameras.value) {
+      const cameraVals = liDarCheckbox.value.map(item => item.value + '_' + camera);
+      expectedLiDarVals = [...expectedLiDarVals, ...cameraVals];
+    }
+    const expectedLiDar = new Set(expectedLiDarVals);
+    const missingLiDar = expectedLiDar.difference(new Set(liDarItems.value));
+
+    let expectedWidescreenActuatorsVals = [];
+    for (const camera of widescreenCameras.value) {
+      const cameraVals = widescreenActuatorsCheckbox.value.map(item => item.value + '_' + camera);
+      expectedWidescreenActuatorsVals = [...expectedWidescreenActuatorsVals, ...cameraVals];
+    }
+    const expectedWidescreenActuators = new Set(expectedWidescreenActuatorsVals);
+    const missingWidescreenActuators = expectedWidescreenActuators.difference(new Set(widescreenActuatorsItems.value));
+
+    const expectedBoom = new Set(boomCheckbox.value.map(item => item.value));
+    const missingBoom = expectedBoom.difference(new Set(boomItems.value));
+    const labelsBoom = boomCheckbox.value.filter(item => missingBoom.has(item.value)).map(item => item.label);
+
+    const expectedRadar = new Set(radarCheckbox.value.map(item => item.value));
+    const missingRadar = expectedRadar.difference(new Set(radarItems.value));
+    const labelsRadar = radarCheckbox.value.filter(item => missingRadar.has(item.value)).map(item => item.label);
+
+    const expectedWindMeter = new Set(windMeterCheckbox.value.map(item => item.value));
+    const missingWindMeter = expectedWindMeter.difference(new Set(windMeterItems.value));
+    const labelsWindMeter = windMeterCheckbox.value.filter(item => missingWindMeter.has(item.value)).map(item => item.label);
+
+    const expectedMast = new Set(mastCheckbox.value.map(item => item.value));
+    const missingMast = expectedMast.difference(new Set(mastItems.value));
+    const labelsMast = mastCheckbox.value.filter(item => missingMast.has(item.value)).map(item => item.label);
+
+    if(labelsGeneral.length > 0 || labelsBoom.length > 0 || labelsRadar.length > 0 || labelsWindMeter.length > 0 || labelsMast.length > 0 || missingFaceCamera.length > 0 || missingLicensePlateCamera.length > 0 || missingWidescreenCamera.length > 0|| missingLiDar.size > 0){
+       baseDialog =  baseDialog + ' The following checks are missing\n';
+    }
+    if(labelsGeneral.length > 0){
+      baseDialog =  baseDialog + '<b>General</b>: ' + labelsGeneral.join(', ') + '\n';
+    }
+    if(labelsBoom.length > 0){
+      baseDialog =  baseDialog + '<b>Boom</b>: ' + labelsBoom.join(', ') + '\n';
+    }
+    if(labelsRadar.length > 0){
+      baseDialog =  baseDialog + '<b>Radar</b>: ' + labelsRadar.join(', ') + '\n';
+    }
+    if(labelsMast.length > 0){
+      baseDialog =  baseDialog + '<b>Mast</b>: ' + labelsMast.join(', ') + '\n';
+    }
+
+    if(labelsWindMeter.length > 0){
+      baseDialog =  baseDialog + '<b>Wind Meter</b>: ' + labelsWindMeter.join(', ') + '\n';
+    }
+
+    if(missingFaceCamera.size > 0){
+      for (const camera of faceCameras.value) {
+        const missingFaceCameraList = [...missingFaceCamera];
+        const missingForCamera = new Set(missingFaceCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = faceCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        baseDialog =  baseDialog + '<b>Face Camera - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
+      }
+    }
+
+    if(missingLicensePlateCamera.size > 0){
+      for (const camera of licensePlateCameras.value) {
+        const missingLicensePlateCameraList = [...missingLicensePlateCamera];
+        const missingForCamera = new Set(missingLicensePlateCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = licensePlateCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        baseDialog =  baseDialog + '<b>License Plate Camera - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
+      }
+    }
+
+    if(missingWidescreenCamera.size > 0){
+      for (const camera of widescreenCameras.value) {
+        const missingWidescreenCameraList = [...missingWidescreenCamera];
+        const missingForCamera = new Set(missingWidescreenCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = widescreenCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        baseDialog =  baseDialog + '<b>Widescreen Camera - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
+      }
+    }
+
+    if(missingLiDar.size > 0){
+      for (const camera of widescreenCameras.value) {
+        const missingLiDarList = [...missingLiDar];
+        const missingForCamera = new Set(missingLiDarList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = liDarCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        baseDialog =  baseDialog + '<b>LiDar - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
+      }
+    }
+
+    if(missingWidescreenActuators.size > 0){
+      for (const camera of widescreenCameras.value) {
+        const missingWidescreenActuatorsList = [...missingWidescreenActuators];
+        const missingForCamera = new Set(missingWidescreenActuatorsList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = widescreenActuatorsCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        baseDialog =  baseDialog + '<b>Widescreen Actuators - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
+      }
+    }
+    console.log("OUT SystemTestChecklist.generateDialogText. baseDialog=" + baseDialog);
+    return baseDialog;
+  }
+
+  const generateMaintTasks = (descriptions, itemType, itemName, subsystem) => {
+    for (const description of descriptions) {
+      addMaintTask(subsystem + ': ' + description, itemType, itemName);
+    }
+  };
+
+  const generateReport = (location) => {
+    console.log("IN SystemTestChecklist.generateReport");
+
+    let reportStr = 'System Test Checklist Executed\n';
+    reportStr = reportStr + "=========================\n"
+    reportStr =     reportStr + 'Technician Name: ' + technicianName.value + '\n';
+    reportStr =     reportStr + 'Location:        ' + location + '\n';
+    reportStr =     reportStr + 'Report Date:     ' + reportDate.value + '\n';
+    
+    const expectedGeneral = new Set(generalCheckbox.value.map(item => item.value));
+    const missingGeneral = expectedGeneral.difference(new Set(generalItems.value));
+    const labelsGeneral = generalCheckbox.value.filter(item => missingGeneral.has(item.value)).map(item => item.label);
+    
+    let expectedFaceCameraVals = [];
+    for (const camera of faceCameras.value) {
+      console.log("camera=" + camera);
+      const cameraVals = faceCameraCheckbox.value.map(item => item.value + '_' + camera);
+      expectedFaceCameraVals = [...expectedFaceCameraVals, ...cameraVals];
+    }
+    const expectedFaceCamera = new Set(expectedFaceCameraVals);
+    const missingFaceCamera = expectedFaceCamera.difference(new Set(faceCameraItems.value));
+
+    let expectedLicensePlateCameraVals = [];
+    for (const camera of licensePlateCameras.value) {
+      const cameraVals = licensePlateCameraCheckbox.value.map(item => item.value + '_' + camera);
+      expectedLicensePlateCameraVals = [...expectedLicensePlateCameraVals, ...cameraVals];
+    }
+    const expectedLicensePlateCamera = new Set(expectedLicensePlateCameraVals);
+    const missingLicensePlateCamera = expectedLicensePlateCamera.difference(new Set(licensePlateCameraItems.value));
+
+
+    let expectedWidescreenCameraVals = [];
+    for (const camera of widescreenCameras.value) {
+      const cameraVals = widescreenCameraCheckbox.value.map(item => item.value + '_' + camera);
+      expectedWidescreenCameraVals = [...expectedWidescreenCameraVals, ...cameraVals];
+    }
+    const expectedWidescreenCamera = new Set(expectedWidescreenCameraVals);
+    const missingWidescreenCamera = expectedWidescreenCamera.difference(new Set(widescreenCameraItems.value));
+
+    let expectedLiDarVals = [];
+    for (const camera of widescreenCameras.value) {
+      const cameraVals = liDarCheckbox.value.map(item => item.value + '_' + camera);
+      expectedLiDarVals = [...expectedLiDarVals, ...cameraVals];
+    }
+    const expectedLiDar = new Set(expectedLiDarVals);
+    const missingLiDar = expectedLiDar.difference(new Set(liDarItems.value));
+
+    let expectedWidescreenActuatorsVals = [];
+    for (const camera of widescreenCameras.value) {
+      const cameraVals = widescreenActuatorsCheckbox.value.map(item => item.value + '_' + camera);
+      expectedWidescreenActuatorsVals = [...expectedWidescreenActuatorsVals, ...cameraVals];
+    }
+    const expectedWidescreenActuators = new Set(expectedWidescreenActuatorsVals);
+    const missingWidescreenActuators = expectedWidescreenActuators.difference(new Set(widescreenActuatorsItems.value));
+
+    const expectedBoom = new Set(boomCheckbox.value.map(item => item.value));
+    const missingBoom = expectedBoom.difference(new Set(boomItems.value));
+    const labelsBoom = boomCheckbox.value.filter(item => missingBoom.has(item.value)).map(item => item.label);
+
+    const expectedRadar = new Set(radarCheckbox.value.map(item => item.value));
+    const missingRadar = expectedRadar.difference(new Set(radarItems.value));
+    const labelsRadar = radarCheckbox.value.filter(item => missingRadar.has(item.value)).map(item => item.label);
+
+    const expectedWindMeter = new Set(windMeterCheckbox.value.map(item => item.value));
+    const missingWindMeter = expectedWindMeter.difference(new Set(windMeterItems.value));
+    const labelsWindMeter = windMeterCheckbox.value.filter(item => missingWindMeter.has(item.value)).map(item => item.label);
+
+    const expectedMast = new Set(mastCheckbox.value.map(item => item.value));
+    const missingMast = expectedMast.difference(new Set(mastItems.value));
+    const labelsMast = mastCheckbox.value.filter(item => missingMast.has(item.value)).map(item => item.label);
+
+    const totalExpected = expectedMast.size + expectedWindMeter.size + expectedRadar.size +
+      expectedBoom.size + expectedWidescreenActuators.size + expectedLiDar.size +
+      expectedWidescreenCamera.size + expectedLicensePlateCamera.size + expectedFaceCamera.size +
+      expectedGeneral.size;
+    const totalUnchecked = missingMast.size + missingWindMeter.size + missingRadar.size +
+      missingBoom.size + missingWidescreenActuators.size + missingLiDar.size +
+      missingWidescreenCamera.size + missingLicensePlateCamera.size + missingFaceCamera.size +
+      missingGeneral.size;
+    const totalChecked = totalExpected - totalUnchecked;
+
+    reportStr =     reportStr + 'Total Tests:     ' + totalExpected + '\n';
+    reportStr =     reportStr + 'Total Passed:    ' + totalChecked + '\n';
+    reportStr =     reportStr + 'Total Failed:    ' + totalUnchecked + '\n';
+    reportStr =     reportStr + 'Percent Passed:  ' + ((totalChecked / totalExpected) * 100.0) + '\n';
+    reportStr =     reportStr + 'Percent Failed:  ' + ((totalUnchecked / totalExpected) * 100.0) + '\n';
+
+    reportStr = reportStr + "\nFailed Tests\n";
+    reportStr = reportStr + "=========================\n"
+
+    if(labelsGeneral.length > 0){
+      reportStr =  reportStr + 'General: ' + labelsGeneral.join(', ') + '\n';
+      generateMaintTasks(labelsGeneral, 'BASE_UNIT', baseUnitName.value, 'General');
+    }
+
+
+    if(labelsBoom.length > 0){
+      reportStr =  reportStr + 'Boom: ' + labelsBoom.join(', ') + '\n';
+      generateMaintTasks(labelsBoom, 'BASE_UNIT', baseUnitName.value, 'Boom');
+    }
+    if(labelsRadar.length > 0){
+      reportStr =  reportStr + 'Radar: ' + labelsRadar.join(', ') + '\n';
+      generateMaintTasks(labelsRadar, 'BASE_UNIT', baseUnitName.value, 'Radar');
+    }
+    if(labelsMast.length > 0){
+      reportStr =  reportStr + 'Mast: ' + labelsMast.join(', ') + '\n';
+      generateMaintTasks(labelsMast, 'BASE_UNIT', baseUnitName.value, 'Mast');
+    }
+    if(labelsWindMeter.length > 0){
+      reportStr =  reportStr + 'Wind Meter: ' + labelsWindMeter.join(', ') + '\n';
+      generateMaintTasks(labelsWindMeter, 'BASE_UNIT', baseUnitName.value, 'Wind Meter');
+    }
+
+    if(missingFaceCamera.size > 0){
+      for (const camera of faceCameras.value) {
+        const missingFaceCameraList = [...missingFaceCamera];
+        const missingForCamera = new Set(missingFaceCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = faceCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'Face Camera');
+        reportStr =  reportStr + 'Face Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
+      }
+    }
+
+    if(missingLicensePlateCamera.size > 0){
+      for (const camera of licensePlateCameras.value) {
+        const missingLicensePlateCameraList = [...missingLicensePlateCamera];
+        const missingForCamera = new Set(missingLicensePlateCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = licensePlateCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'License Plate Camera');
+        reportStr =  reportStr + 'License Plate Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
+      }
+    }
+
+    if(missingWidescreenCamera.size > 0){
+      for (const camera of widescreenCameras.value) {
+        const missingWidescreenCameraList = [...missingWidescreenCamera];
+        const missingForCamera = new Set(missingWidescreenCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = widescreenCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'Widescreen Camera');
+        reportStr =  reportStr + 'Widescreen Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
+      }
+    }
+
+    if(missingLiDar.size > 0){
+      for (const camera of widescreenCameras.value) {
+        const missingLiDarList = [...missingLiDar];
+        const missingForCamera = new Set(missingLiDarList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = liDarCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'LiDar');
+        reportStr =  reportStr + 'LiDar - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
+      }
+    }
+
+    if(missingWidescreenActuators.size > 0){
+      for (const camera of widescreenCameras.value) {
+        const missingWidescreenActuatorsList = [...missingWidescreenActuators];
+        const missingForCamera = new Set(missingWidescreenActuatorsList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = widescreenActuatorsCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'Widescreen Actuators');
+        reportStr =  reportStr + 'Widescreen Actuators - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
+      }
+    }   
+    console.log("OUT SystemTestChecklist.generateReport.");
+    return reportStr;
+  }
+
   // Go back to previous page
   const handleSubmit = async () => {
     console.log("IN SystemTestChecklist.handleSubmit. widescreenCameraItems=" + widescreenCameraItems.value);
+    
+    const dialogText = generateDialogText();
     const result = await confirmDialog.value.open(
-      'Confirm Update',
-      'Are you sure you want to submit this checklist?',
+      'Confirm Submit',
+      dialogText,
       { color: 'red lighten-3' }
     );
-
+    if (result) {
+      const bu = await fetchBaseUnitByName();
+      const description = generateReport(bu.location);
+      await sendNote(bu.id, description);
+    } else {
+      console.log("Submit cancelled");
+    }
+    
     console.log("OUT SystemTestChecklist.handleSubmit");
+  };
+
+  // This method handles the REST call to insert the note into the database.
+  const sendNote = async (bu_id, description) => {
+    console.log('IN SystemTestChecklist.sendNote');
+    const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+    const requestBody = {
+        description: description,
+        item_type: "BASE_UNIT",
+        item_ref: bu_id
+    };
+    console.log("requestBody=" + JSON.stringify(requestBody));
+    try {
+        const response = await api.post('/add-note', requestBody, config);
+        console.log("status=" + response.status);
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        console.error('Error inserting data:', e);
+        // Call the dialog's open function using the template ref
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error inserting data:' + e,
+          { color: 'red lighten-3' }
+        );
+    }
+    console.log('OUT SystemTestChecklist.sendNote');
+  };
+
+  // This method handles the REST call to insert the maintenance task.
+  const addMaintTask = async (description, itemType, itemName) => {
+    console.log('IN SystemTestChecklist.addMaintTask');
+    const config = {
+      headers: {
+          'Content-Type': 'application/json'
+      }
+    };
+    const requestBody = {
+      last_done_date: reportDate.value,
+      description: description,
+      item_type: itemType,
+      item_name: itemName
+    };
+    console.log("requestBody=" + JSON.stringify(requestBody));
+    try {
+        const response = await api.post('/add-maintenance-task-by-name', requestBody, config);
+        console.log("status=" + response.status);
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        console.error('Error inserting data:', e);
+        // Call the dialog's open function using the template ref
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error inserting data:' + e,
+          { color: 'red lighten-3' }
+        );
+    }
+    console.log('OUT SystemTestChecklist.addMaintTask');
+  };
+
+  const fetchBaseUnitByName = async () => {
+    console.log("IN SystemTestChecklist.fetchBaseUnitByName");
+
+    const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+    const requestBody = {
+      name: baseUnitName.value
+    };
+    let target_bu = null;
+    try {
+        const response = await api.post('/get-base-unit-by-name', requestBody, config);
+        target_bu = response.data;
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        console.log("error=" + e)
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching other-items:' + e,
+            { color: 'red lighten-3' }
+          );
+    }
+    console.log("OUT SystemTestChecklist.fetchBaseUnitByName");
+    return target_bu;
   };
 </script>
 

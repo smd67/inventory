@@ -455,7 +455,7 @@ upper right for generating reports.
     // Call the dialog's open function using the template ref
     const result = await confirmDialog.value.open(
       'Confirm Deletion',
-      'Are you sure you want to delete this base unit?',
+      'Are you sure you want to delete the base unit ' + item.name + '?',
       { color: 'red lighten-3' }
     );
 
@@ -518,7 +518,7 @@ upper right for generating reports.
     // Call the dialog's open function using the template ref
     const result = await confirmDialog.value.open(
       'Confirm Deletion',
-      'Are you sure you want to delete this camera?',
+      'Are you sure you want to delete the camera ' + item.name + '?',
       { color: 'red lighten-3' }
     );
 

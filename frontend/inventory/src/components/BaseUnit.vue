@@ -226,6 +226,11 @@ cameras, notes, other items, or maintenance tasks.
               </v-menu>
             </td>
           </template>
+          <template v-slot:item.description="{ item }">
+            <div class="pre-wrap-cell">
+              {{ item.description }}
+            </div>
+          </template>
         </v-data-table>
       </v-row>
     </v-container>
@@ -330,7 +335,7 @@ cameras, notes, other items, or maintenance tasks.
   // Table headers
   const headers = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
-    {title: 'Description', value: 'description' , sortable: true},
+    {title: 'Description', value: 'description' ,  sortable: true},
     // ... other headers
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
@@ -481,7 +486,7 @@ cameras, notes, other items, or maintenance tasks.
     // Call the dialog's open function using the template ref
     const result = await confirmDialog.value.open(
       'Confirm Removal',
-      'Are you sure you want to remove this camera from the base unit?',
+      'Are you sure you want to remove the camera ' + item.name + ' from the base unit?',
       { color: 'red lighten-3' }
     );
 
@@ -858,6 +863,10 @@ cameras, notes, other items, or maintenance tasks.
   .outer-div {
     width: 80%;
     padding-top: 30px;
+  }
+
+  .pre-wrap-cell {
+    white-space: pre-wrap; /* or pre-line */
   }
 
    /* Specific styles for screens smaller than 600px */

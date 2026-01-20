@@ -619,6 +619,69 @@ class Database:
 
         print("OUT add_maintenance_task")
 
+    def add_maintenance_task_by_name(
+        self, description: str, last_done: str, item_type: str, item_name: str
+    ) -> None:
+        """
+        Add a maintenance task to the database.
+
+        Parameters
+        ----------
+        description : str
+            The name of the maintenance task
+        last_done : str
+            The date the task was last done in string format
+        item_type : str
+            The type of item the task is associated with.
+        item_ref : int
+            An integer reference to the associated object.
+        """
+        print("IN add_maintenance_task_by_name")
+
+        
+
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+
+            item_type_enum = model.ItemType.from_str(item_type)
+            if item_type_enum == model.ItemType.BASE_UNIT:
+                cursor.execute(
+                    f"SELECT id from base_units WHERE name='{item_name}' "
+                    + "LIMIT 1"
+                )
+            elif item_type_enum == model.ItemType.CAMERA:
+                cursor.execute(
+                    f"SELECT id from cameras WHERE name='{item_name}' "
+                    + "LIMIT 1"
+                )
+            elif item_type_enum == model.ItemType.OTHER:
+                cursor.execute(
+                    f"SELECT id from other_items WHERE name='{item_name}' "
+                    + "LIMIT 1"
+                )
+            record = cursor.fetchone()
+            item_ref = record[0]
+
+            if last_done:
+                # Execute a command
+                cursor.execute(
+                    "insert into maintenance (description, last_done, item_type, "
+                    + "item_ref) "
+                    + f"values('{description}', '{last_done}', '{item_type}', "
+                    + f"{item_ref})"
+                )
+            else:
+                # Execute a command
+                cursor.execute(
+                    "insert into maintenance (description, last_done, item_type, "
+                    + "item_ref) "
+                    + f"values('{description}', now(), '{item_type}', "
+                    + f"{item_ref})"
+                )
+            self.connection.commit() # pylint: disable=no-member
+
+        print("OUT add_maintenance_task_by_name")
+
+
     def add_note(self, description: str, item_type: str, item_ref: int) -> None:
         """
         Add a note to the given item.

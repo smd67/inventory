@@ -384,6 +384,15 @@ class MaintenanceTaskCreate(BaseModel):
     item_type: str
     item_ref: int
 
+class MaintenanceTaskCreateByName(BaseModel):
+    """
+    Query to create a Maintenance Task.
+    """
+
+    last_done_date: Optional[str] = None
+    description: str
+    item_type: str
+    item_name: str
 
 class MaintenanceTaskDelete(BaseModel):
     """

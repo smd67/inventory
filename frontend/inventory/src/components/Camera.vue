@@ -94,6 +94,11 @@ notes or maintenance tasks.
               </v-list>
             </v-menu>
           </template>
+          <template v-slot:item.description="{ item }">
+            <div class="pre-wrap-cell">
+              {{ item.description }}
+            </div>
+          </template>
         </v-data-table>
       </v-row>
     </v-container>
@@ -465,6 +470,10 @@ notes or maintenance tasks.
   .outer-div {
     width: 80%;
     padding-top: 30px;
+  }
+
+  .pre-wrap-cell {
+    white-space: pre-wrap; /* or pre-line */
   }
 
    /* Specific styles for screens smaller than 600px */

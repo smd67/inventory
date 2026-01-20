@@ -87,6 +87,11 @@ This file is the vue component implementation for an other items detail screen.
               </v-list>
             </v-menu>
           </template>
+          <template v-slot:item.description="{ item }">
+            <div class="pre-wrap-cell">
+              {{ item.description }}
+            </div>
+          </template>
         </v-data-table>
       </v-row>
     </v-container>
@@ -450,6 +455,11 @@ This file is the vue component implementation for an other items detail screen.
     width: 80%;
     padding-top: 30px;
   }
+
+  .pre-wrap-cell {
+    white-space: pre-wrap; /* or pre-line */
+  }
+
    /* Specific styles for screens smaller than 600px */
   @media (max-width: 600px) {
     .detail-container {
