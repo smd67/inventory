@@ -28,11 +28,12 @@ in the database.
               label="Camera Type"
               :key="cameraTypeKey"
             ></v-select>
-            <v-text-field
+            <v-select
               v-model="baseUnit"
+              :items="baseUnitNames"
               label="Base Unit (optional)"
               :key="baseUnitKey"
-            ></v-text-field>
+            ></v-select>
             <div class="d-flex justify-center align-center" style="padding-top: 20px; ; gap: 16px;">
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
@@ -64,6 +65,7 @@ in the database.
   const loading = ref(true);
   const name = ref(null);
   const baseUnit = ref(null);
+  const baseUnitNames = ref(null);
   const cameraType = ref(null)
   const cameraTypes = ref(['Face Camera', 'License Plate Camera', 'Wide Screen Camera', 'Other']);
   const router = useRouter();
@@ -84,6 +86,7 @@ in the database.
       nameKey.value += 1;
       cameraType.value = null;
       cameraTypeKey.value += 1;
+      fetchBaseUnitNames();
       console.log("OUT CreateCamera.watch.refresh");
     }
   );
@@ -97,6 +100,7 @@ in the database.
     nameKey.value += 1;
     cameraType.value = null;
     cameraTypeKey.value += 1;
+    fetchBaseUnitNames();
     console.log('OUT onMounted');
   });
 
@@ -138,6 +142,29 @@ in the database.
     goBack();
     console.log('OUT handleSubmit');
   };
+
+  // Retrieve base units from the database.
+  const fetchBaseUnitNames = async () => {
+    const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    try {
+        const response = await api.get('/get-base-units-names', config);
+        baseUnitNames.value = response.data;
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching data:' + e,
+            { color: 'red lighten-3' }
+          );
+    }
+  };
+
 </script>
 <style scoped>
   .detail-container {

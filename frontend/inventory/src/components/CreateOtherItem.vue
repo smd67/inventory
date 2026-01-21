@@ -21,10 +21,11 @@ in the database.
               v-model="name"
               label="Name"
             ></v-text-field>
-            <v-text-field
+            <v-select
               v-model="baseUnit"
+              :items="baseUnitNames"
               label="Base Unit (optional)"
-            ></v-text-field>
+            ></v-select>
             <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
@@ -56,6 +57,7 @@ in the database.
   const loading = ref(true);
   const name = ref(null);
   const baseUnit = ref(null);
+  const baseUnitNames = ref(null);
   const router = useRouter();
   const route = useRoute();
   const errorDialog = ref(null);
@@ -69,6 +71,7 @@ in the database.
         baseUnit.value = props.base_unit;
         name.value = null;
       }
+      fetchBaseUnitNames();
       console.log('OUT CreateOtherItem.watch.refresh. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
     }
   );
@@ -76,6 +79,7 @@ in the database.
   onMounted(async () => {
     console.log('IN onMounted');
     baseUnit.value = props.base_unit;
+    fetchBaseUnitNames();
     console.log('OUT onMounted');
   });
 
@@ -112,6 +116,27 @@ in the database.
     }
     goBack();
     console.log('OUT handleSubmit');
+  };
+  // Retrieve base units from the database.
+  const fetchBaseUnitNames = async () => {
+    const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    try {
+        const response = await api.get('/get-base-units-names', config);
+        baseUnitNames.value = response.data;
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching data:' + e,
+            { color: 'red lighten-3' }
+          );
+    }
   };
 </script>
 <style scoped>
