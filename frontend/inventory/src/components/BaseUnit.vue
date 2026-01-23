@@ -298,7 +298,7 @@ cameras, notes, other items, or maintenance tasks.
   // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
   import ConfirmDialog from './ConfirmDialog.vue';
 
@@ -505,6 +505,8 @@ cameras, notes, other items, or maintenance tasks.
       try {
           const response = await api.post('/remove-camera', requestBody, config);
           loading.value = false;
+          activity_log('Camera', item.name, 'Removed from Base Unit ' + name.value);
+          activity_log('Base Unit', name.value, 'Removed Camera ' + item.name + ' from Base Unit ' + name.value);
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
@@ -526,7 +528,7 @@ cameras, notes, other items, or maintenance tasks.
   // Update a camera 
   const updateCamera = (item) => {
     console.log("IN updateCamera");
-    router.push({name: 'update-camera', params: {name: item.name}}).catch(failure => {
+    router.push({name: 'update-camera', params: {name: item.name, base_unit_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT updateCamera");
@@ -563,6 +565,9 @@ cameras, notes, other items, or maintenance tasks.
       try {
           const response = await api.post('/remove-other-item', requestBody, config);
           loading.value = false;
+          activity_log('Other Item', item.name, 'Removed from Base Unit ' + name.value);
+          activity_log('Base Unit', name.value, 'Removed Other Item ' + item.name + ' from Base Unit ' + name.value);
+
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)

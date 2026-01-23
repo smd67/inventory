@@ -52,9 +52,8 @@ in the database.
 <script setup>
   // Imports
   import { ref, onMounted, watch } from 'vue';
-  import axios from 'axios';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Data
@@ -119,6 +118,12 @@ in the database.
     try {
         const response = await api.post('/create-base-unit', requestBody, config);
         console.log("status=" + response.status);
+        activity_log('Base Unit', 
+                     name.value, 
+                     "Created Base Unit: " + name.value + 
+                     " at location=" + location.value +
+                     ", has_new_mast_bearing=" + has_new_mast_bearing.value +
+                     ", has_new_feet=" + has_new_feet.value);
         loading.value = false;
     } catch (e) {
         loading.value = false;

@@ -44,7 +44,7 @@ other item.
   // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Properties passed in to component
@@ -112,6 +112,14 @@ other item.
         const response = await api.post('/update-other-item', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
+        if(props.base_unit != baseUnit.value){
+            activity_log('Base Unit', 
+                          baseUnit.value, 
+                          "Other Item " + name.value + " moved to Base Unit " + baseUnit.value);
+            activity_log('Other Item', 
+                          name.value, 
+                          "Moved to Base Unit " + baseUnit.value);
+        }
     } catch (e) {
         loading.value = false;
         console.error('Error updating data:', e);

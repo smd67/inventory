@@ -3,7 +3,7 @@ This file contains enumerations and models that define the communication between
 the frontend, backend, and database.
 """
 
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 from typing import Optional, List
 
@@ -41,7 +41,28 @@ class ItemType(str, Enum):
             return ItemType.CAMERA
         else:
             return ItemType.OTHER
+    
+    @staticmethod
+    def from_str_value(label: str):
+        """
+        Converts the enumerated value string to an enum
 
+        Parameters
+        ----------
+        label : str
+            The string value to convert
+
+        Returns
+        -------
+        CameraType
+            An enumerated value converted from the string.
+        """
+        if label == ItemType.BASE_UNIT.value:
+            return ItemType.BASE_UNIT
+        elif label == ItemType.CAMERA.value:
+            return ItemType.CAMERA
+        elif label == ItemType.OTHER.value:
+            return ItemType.OTHER
 
 class CameraType(str, Enum):
     """
@@ -408,3 +429,19 @@ class MaintenanceTaskUpdate(BaseModel):
     """
 
     id: int
+
+# ActivityLog models
+class ActivityLogCreate(BaseModel):
+    item_type: ItemType
+    item_name: str
+    description: str
+
+class ActivityLogQuery(BaseModel):
+    item_type: str
+    item_name: str
+
+class ActivityLogQueryResult(BaseModel):
+    date: datetime
+    item_type: str
+    item_name: str
+    description: str

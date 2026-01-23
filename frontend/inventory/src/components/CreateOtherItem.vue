@@ -105,6 +105,14 @@ in the database.
         const response = await api.post('/create-other-item', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
+        let logStr = "Created Other Item: " + name.value;
+        if(baseUnit.value != null) {
+          logStr +=  ", base_unit=" + baseUnit.value;
+          activity_log('Base Unit', 
+                       baseUnit.value, 
+                       'Added Other Item ' + name.value + ' to Base Unit ' + baseUnit.value);
+        }
+        activity_log('Camera', name.value, logStr);
     } catch (e) {
         loading.value = false;
         console.error('Error updating data:', e);

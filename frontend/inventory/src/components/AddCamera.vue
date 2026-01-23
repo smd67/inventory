@@ -45,7 +45,7 @@ in the database.
   // Imports
   import { ref, onMounted, defineProps, watch, computed } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Properties passed into component
@@ -146,7 +146,7 @@ in the database.
     return cameraList;
   });
 
-  // Handle REST call to create a camera object in the database.
+  // Handle REST call to update a camera object in the database.
   // Submit updates to database through a REST call.
   const handleSubmit = async () => {
     console.log('IN handleSubmit camera=' + camera.value + '; baseUnitName=' + baseUnitName.value);
@@ -164,6 +164,12 @@ in the database.
     try {
         const response = await api.post('/update-camera', requestBody, config);
         console.log("status=" + response.status);
+        activity_log('Base Unit', 
+                     baseUnitName.value, 
+                     'Adding camera ' + camera.value + ' to Base Unit ' + baseUnitName.value);
+        activity_log('Camera', 
+                     camera.value, 
+                     'Added to Base Unit ' + baseUnitName.value);
         loading.value = false;
     } catch (e) {
         loading.value = false;

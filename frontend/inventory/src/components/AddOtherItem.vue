@@ -40,7 +40,7 @@ in the database.
   // Imports
   import { ref, onMounted, defineProps, watch, computed } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Properties passed into component
@@ -142,6 +142,12 @@ in the database.
         const response = await api.post('/update-other-item', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
+        activity_log('Base Unit', 
+                     baseUnitName.value, 
+                     'Adding Other Item ' + otherItem.value + ' to Base Unit ' + baseUnitName.value);
+        activity_log('Other Item', 
+                     otherItem.value, 
+                     'Added to Base Unit ' + baseUnitName.value);
     } catch (e) {
         loading.value = false;
         console.error('Error updating data:', e);

@@ -281,7 +281,7 @@ maintenance tasks whose last due date is >= 6 months.
     // Imports
     import { ref, onMounted, defineProps, watch } from 'vue';
     import { useRouter, useRoute } from 'vue-router';
-    import api from "../api";
+     import api, {activity_log} from "../api";
     import ErrorDialog from './ErrorDialog.vue';
     import ConfirmDialog from './ConfirmDialog.vue';
 
@@ -599,7 +599,6 @@ maintenance tasks whose last due date is >= 6 months.
     
     let expectedFaceCameraVals = [];
     for (const camera of faceCameras.value) {
-      console.log("camera=" + camera);
       const cameraVals = faceCameraCheckbox.value.map(item => item.value + '_' + camera);
       expectedFaceCameraVals = [...expectedFaceCameraVals, ...cameraVals];
     }
@@ -679,7 +678,6 @@ maintenance tasks whose last due date is >= 6 months.
       generateMaintTasks(labelsGeneral, 'BASE_UNIT', baseUnitName.value, 'General');
     }
 
-
     if(labelsBoom.length > 0){
       reportStr =  reportStr + 'Boom: ' + labelsBoom.join(', ') + '\n';
       generateMaintTasks(labelsBoom, 'BASE_UNIT', baseUnitName.value, 'Boom');
@@ -745,7 +743,73 @@ maintenance tasks whose last due date is >= 6 months.
         generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'Widescreen Actuators');
         reportStr =  reportStr + 'Widescreen Actuators - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
-    }   
+    }
+    for (const item of missingGeneral) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "General Test: " + item + " has failed");
+    }
+    for (const item of missingFaceCamera) {
+      const lastIndex = item.lastIndexOf('_');
+      const test_item = item.slice(0, lastIndex);
+      const camera_item = item.slice(lastIndex + 1);
+      activity_log('Camera', 
+                    camera_item, 
+                    "Face Camera Test: " + test_item + " has failed");
+    }
+    for (const item of missingLicensePlateCamera) {
+      const lastIndex = item.lastIndexOf('_');
+      const test_item = item.slice(0, lastIndex);
+      const camera_item = item.slice(lastIndex + 1);
+      activity_log('Camera', 
+                    camera_item, 
+                    "License Plate Camera Test: " + test_item + " has failed");
+    }
+    for (const item of missingWidescreenCamera) {
+      const lastIndex = item.lastIndexOf('_');
+      const test_item = item.slice(0, lastIndex);
+      const camera_item = item.slice(lastIndex + 1);
+      activity_log('Camera', 
+                    camera_item, 
+                    "Widescreen Camera Test: " + test_item + " has failed");
+    }
+    for (const item of missingLiDar) {
+      const lastIndex = item.lastIndexOf('_');
+      const test_item = item.slice(0, lastIndex);
+      const camera_item = item.slice(lastIndex + 1);
+      activity_log('Camera', 
+                    camera_item, 
+                  "LiDar Test: " + test_item + " has failed");
+    }
+    for (const item of missingWidescreenActuators) {
+      const lastIndex = item.lastIndexOf('_');
+      const test_item = item.slice(0, lastIndex);
+      const camera_item = item.slice(lastIndex + 1);
+      activity_log('Camera', 
+                    camera_item, 
+                  "Widescreen Acuators Test: " + test_item + " has failed");
+    }
+    for (const item of missingBoom) {
+      activity_log('Base Unit', 
+                    props.base_unit, 
+                    "Boom Test: " + item + " has failed");
+    }
+    for (const item of missingRadar) {
+      activity_log('Base Unit', 
+                    props.base_unit, 
+                    "Radar: " + item + " has failed");
+    }
+    for (const item of missingWindMeter) {
+      activity_log('Base Unit', 
+                    props.base_unit, 
+                    "Wind Meter: " + item + " has failed");
+    }
+    for (const item of missingMast) {
+      activity_log('Base Unit', 
+                    props.base_unit, 
+                    "Mast: " + item + " has failed");
+    }
+
     console.log("OUT SystemTestChecklist.generateReport.");
     return reportStr;
   }
@@ -764,6 +828,76 @@ maintenance tasks whose last due date is >= 6 months.
       const bu = await fetchBaseUnitByName();
       const description = generateReport(bu.location);
       await sendNote(bu.id, description);
+      activity_log('Base Unit', 
+                    props.base_unit, 
+                    "System Test Checklist Executed");
+      
+      for (const item of generalItems.value) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "General Test: " + item + " has passed");
+      }
+      for (const item of faceCameraItems.value) {
+        const lastIndex = item.lastIndexOf('_');
+        const test_item = item.slice(0, lastIndex);
+        const camera_item = item.slice(lastIndex + 1);
+        activity_log('Camera', 
+                     camera_item, 
+                     "Face Camera Test: " + test_item + " has passed");
+      }
+      for (const item of licensePlateCameraItems.value) {
+        const lastIndex = item.lastIndexOf('_');
+        const test_item = item.slice(0, lastIndex);
+        const camera_item = item.slice(lastIndex + 1);
+        activity_log('Camera', 
+                     camera_item, 
+                     "License Plate Camera Test: " + test_item + " has passed");
+      }
+      for (const item of widescreenCameraItems.value) {
+        const lastIndex = item.lastIndexOf('_');
+        const test_item = item.slice(0, lastIndex);
+        const camera_item = item.slice(lastIndex + 1);
+        activity_log('Camera', 
+                     camera_item, 
+                     "Widescreen Camera Test: " + test_item + " has passed");
+      }
+      for (const item of liDarItems.value) {
+        const lastIndex = item.lastIndexOf('_');
+        const test_item = item.slice(0, lastIndex);
+        const camera_item = item.slice(lastIndex + 1);
+        activity_log('Camera', 
+                     camera_item, 
+                    "LiDar Test: " + test_item + " has passed");
+      }
+      for (const item of widescreenActuatorsItems.value) {
+        const lastIndex = item.lastIndexOf('_');
+        const test_item = item.slice(0, lastIndex);
+        const camera_item = item.slice(lastIndex + 1);
+        activity_log('Camera', 
+                     camera_item, 
+                    "Widescreen Acuators Test: " + test_item + " has passed");
+      }
+      for (const item of boomItems.value) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "Boom Test: " + item + " has passed");
+      }
+      for (const item of radarItems.value) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "Radar: " + item + " has passed");
+      }
+      for (const item of windMeterItems.value) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "Wind Meter: " + item + " has passed");
+      }
+      for (const item of mast.value) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "Mast: " + item + " has passed");
+      }
+
     } else {
       console.log("Submit cancelled");
     }

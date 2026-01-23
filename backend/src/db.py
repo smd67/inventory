@@ -4,6 +4,7 @@ This file contains a common database class.
 
 import os
 from typing import Any, Dict, List, Optional
+from datetime import datetime
 
 import model
 import psycopg
@@ -449,6 +450,8 @@ class Database:
                     id=row[0], name=row[1], base_unit=row[2], location=row[3]
                 )
                 other_list.append(other)
+
+        return other_list
 
         return other_list
 
@@ -1146,3 +1149,63 @@ class Database:
             )
             self.connection.commit() # pylint: disable=no-member
         print("OUT complete_maintenance_task")
+
+    def activity_log(self, item_type: str, item_name: str, description: str):
+        print("IN Database.activity_log")
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            item_type_enum = model.ItemType.from_str_value(item_type)
+            try:
+                # Execute a command
+                cursor.execute(
+                    "insert into activity_log (item_type, item_name, description) "
+                    + f"values('{item_type_enum.name}', '{item_name}', '{description}')"
+                )
+
+            except Exception as e:
+                # If any statement fails, roll back all changes within the
+                # transaction
+                self.connection.rollback() # pylint: disable=no-member
+                print(f"Transaction failed: {e}")
+                raise e
+            finally:
+                self.connection.commit() # pylint: disable=no-member
+
+        print("OUT Database.activity_log")
+
+    def get_activity_log(self, item_type: str, item_name: str) -> \
+        List[model.ActivityLogQueryResult]:
+        print("IN Database.get_activity_log")
+        activity_log_list:  List[model.ActivityLogQueryResult] = []
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            item_type_enum = model.ItemType.from_str_value(item_type)
+            try:
+                item_type_enum = model.ItemType.from_str_value(item_type)
+                # Execute a command
+                cursor.execute(
+                    "select date, item_type, item_name, description " 
+                    + "from activity_log "
+                    + f"where item_type='{item_type_enum.name}' and "
+                    + f"item_name='{item_name}' order by date ASC"
+                )
+                format_str = "%Y-%m-%d %H:%M:%S.%f%z"
+                # Fetch the results
+                for row in cursor:
+                    item_type_enum = model.ItemType.from_str(row[1])
+                    log = model.ActivityLogQueryResult(
+                        date = row[0],
+                        item_type=item_type_enum.value, 
+                        item_name=row[2],
+                        description=row[3],
+                    )
+                    activity_log_list.append(log)
+            except Exception as e:
+                # If any statement fails, roll back all changes within the
+                # transaction
+                self.connection.rollback() # pylint: disable=no-member
+                print(f"Transaction failed: {e}")
+                raise e
+            finally:
+                self.connection.commit() # pylint: disable=no-member
+        print("OUT Database.get_activity_log")
+        return activity_log_list
+        

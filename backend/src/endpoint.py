@@ -755,3 +755,34 @@ def complete_maintenance_task(query: model.MaintenanceTaskUpdate) -> None:
             detail=f"An unexpected exception e={e} has occured",
         )
     print("OUT complete-maintenance-task")
+
+@app.post("/activity-log")
+def activity_log(query: model.ActivityLogCreate) -> None:
+    print(f"IN Endpoint.activity_log query={query}")
+    try:
+        db = Database()
+        db.activity_log(query.item_type, query.item_name, query.description)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print(f"OUT Endpoint.activity_log")
+
+@app.post("/get-activity-log")
+def get_activity_log(query: model.ActivityLogQuery) -> None:
+    print(f"IN Endpoint.get_activity_log query={query}")
+    results = []
+    try:
+        db = Database()
+        results = db.get_activity_log(query.item_type, query.item_name)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print("OUT Endpoint.get_activity_log")
+    return results
+    
