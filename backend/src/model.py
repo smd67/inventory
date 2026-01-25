@@ -368,10 +368,11 @@ class MaintenanceTask(BaseModel):
     """
 
     id: int
-    last_done_date: date
+    last_done_date: Optional[date] = None
     description: str
     item_type: ItemType
     item_ref: int
+    due_date: Optional[date] = None
 
 
 class MaintenanceTaskQueryResult(BaseModel):
@@ -380,11 +381,11 @@ class MaintenanceTaskQueryResult(BaseModel):
     """
 
     id: int
-    last_done_date: date
+    last_done_date: Optional[date] = None
     description: str
     item_type: str
     item_name: str
-
+    due_date: Optional[date] = None
 
 class MaintenanceTaskQuery(BaseModel):
     """
@@ -400,7 +401,7 @@ class MaintenanceTaskCreate(BaseModel):
     Query to create a Maintenance Task.
     """
 
-    last_done_date: str
+    due_date: str
     description: str
     item_type: str
     item_ref: int
@@ -410,7 +411,7 @@ class MaintenanceTaskCreateByName(BaseModel):
     Query to create a Maintenance Task.
     """
 
-    last_done_date: Optional[str] = None
+    due_date: str
     description: str
     item_type: str
     item_name: str
@@ -419,7 +420,6 @@ class MaintenanceTaskDelete(BaseModel):
     """
     Query to delete a maintenance task.
     """
-
     id: int
 
 
@@ -427,14 +427,15 @@ class MaintenanceTaskUpdate(BaseModel):
     """
     Query to update a maintenance task.
     """
-
     id: int
+    due_date: str
 
 # ActivityLog models
 class ActivityLogCreate(BaseModel):
     item_type: ItemType
     item_name: str
     description: str
+    technician_name: Optional[str] = None
 
 class ActivityLogQuery(BaseModel):
     item_type: str
@@ -445,3 +446,4 @@ class ActivityLogQueryResult(BaseModel):
     item_type: str
     item_name: str
     description: str
+    technician_name: Optional[str] = None

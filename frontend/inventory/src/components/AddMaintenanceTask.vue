@@ -21,7 +21,11 @@ task to the database.
               v-model="description"
               label="Description"
             ></v-text-field>
-            <v-date-input v-model="lastDone" label="Last Done"></v-date-input>
+            <v-text-field
+              v-model="technicianName"
+              label="Technician Name"
+            ></v-text-field>
+            <v-date-input v-model="dueDate" label="Due Date"></v-date-input>
             <div class="d-flex justify-center align-center" style="padding-top: 20px; ; gap: 16px;">
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
@@ -39,7 +43,7 @@ task to the database.
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import { VDateInput } from 'vuetify/labs/VDateInput'
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Data
@@ -47,7 +51,9 @@ task to the database.
   const description = ref(null);
   const itemType = ref(null);
   const itemRef = ref(0);
-  const lastDone = ref(null);
+  const itemName = ref(null);
+  const dueDate = ref(null);
+  const technicianName = ref(null);
   const router = useRouter();
   const route = useRoute();
   const errorDialog = ref(null);
@@ -62,19 +68,29 @@ task to the database.
       type: String,
       default: "",
     },
+    item_name : {
+      type: String,
+      default: "",
+    }
   });
+
+  const itemTypeMap = {
+    "BASE_UNIT": "Base Unit",
+    "CAMERA": "Camera",
+    "OTHER": "Other Item"
+  };
 
   // Watch method to reset cached data 
   watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
-      console.log("IN AddMaintenanceTask.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
-      if(newFullPath.includes("/add-maintenance-task")){
-        itemType.value = props.item_type;
-        itemRef.value = props.item_ref;
-        description.value = null;
-        lastDone.value = null;
-      }
+    () => [route.params.item_ref, route.params.item_type, route.params.item_name],
+    async refresh => {
+      console.log("IN AddMaintenanceTask.watch.refresh");
+      itemType.value = props.item_type;
+      itemRef.value = props.item_ref;
+      itemName.value = props.item_name;
+      description.value = null;
+      dueDate.value = null;
+      technicianName.value = null;
       console.log('OUT AddMaintenanceTask.watch.refresh. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
     }
   );
@@ -84,6 +100,9 @@ task to the database.
     console.log('IN AddMaintenaceTask.onMounted');
     itemType.value = props.item_type;
     itemRef.value = props.item_ref;
+    itemName.value = props.item_name;
+    dueDate.value = null;
+    technicianName.value = null;
     console.log('OUT AddMaintenaceTask.onMounted. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
   });
 
@@ -103,7 +122,7 @@ task to the database.
       }
     };
     const requestBody = {
-      last_done_date: lastDone.value,
+      due_date: dueDate.value,
       description: description.value,
       item_type: itemType.value,
       item_ref: itemRef.value
@@ -112,6 +131,10 @@ task to the database.
     try {
         const response = await api.post('/add-maintenance-task', requestBody, config);
         console.log("status=" + response.status);
+        activity_log(itemTypeMap[itemType.value], 
+                     itemName.value, 
+                     "Maintenance task openend: " + description.value,
+                     technicianName.value);
         loading.value = false;
     } catch (e) {
         loading.value = false;

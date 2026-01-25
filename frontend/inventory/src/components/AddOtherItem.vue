@@ -67,11 +67,12 @@ in the database.
   
   // Watcher to reset data when path changes
   watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
+    () => [route.params.base_unit_id, route.params.base_unit_name],
+    async refresh => {
       console.log("IN AddOtherItem.watch.refresh");
       baseUnitRef.value = props.base_unit_id;
       baseUnitName.value = props.base_unit_name;
+      otherItem.value = null;
       fetchAvailableOtherItems();
       console.log("OUT AddOtherItem.watch.refresh");
     }
@@ -82,7 +83,7 @@ in the database.
     console.log('IN AddOtherItem.onMounted');
     baseUnitRef.value = props.base_unit_id;
     baseUnitName.value = props.base_unit_name;
-
+    otherItem.value = null;
     fetchAvailableOtherItems();
     console.log('OUT AddOtherItem.onMounted. baseUnitRef=' + baseUnitRef.value + ', baseUnitName=' + baseUnitName.value);
   });

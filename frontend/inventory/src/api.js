@@ -5,7 +5,7 @@ const api = axios.create({
 });
 
 // This method handles the REST call to insert the note into the database.
-export const activity_log = async (item_type, item_name, description) => {
+export const activity_log = async (item_type, item_name, description, technician_name=null) => {
   console.log('IN activity_log');
   const config = {
       headers: {
@@ -16,6 +16,7 @@ export const activity_log = async (item_type, item_name, description) => {
       item_type: item_type,
       item_name: item_name,
       description: description,
+      technician_name
   };
   console.log("requestBody=" + JSON.stringify(requestBody));
   try {

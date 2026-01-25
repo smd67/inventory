@@ -192,6 +192,7 @@ This file is the vue component implementation for an other items detail screen.
   const maintHeaders = ref([
     {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
     {title: 'Last Done', value: 'last_done_date' , sortable: true},
+    {title: 'Due Date', value: 'due_date' , sortable: true},
     // ... other headers
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
@@ -218,9 +219,13 @@ This file is the vue component implementation for an other items detail screen.
   
   // fetch the user information when params change
   watch(
-    () => route.params.id,
+    () => [route.params.id, route.params.name, route.params.base_unit, route.params.location],
     async refresh => {
       console.log("IN watch.refresh. props=" + JSON.stringify(props));
+      id.value = props.id;
+      name.value = props.name;
+      location.value = props.location;
+      baseUnit.value = props.base_unit;
       fetchNotes();
       notesKey.value += 1;
       fetchMaintTasks();
@@ -252,7 +257,7 @@ This file is the vue component implementation for an other items detail screen.
   // Add a maintnenance task to the database
   const addMaintenanceTask = () => {
     console.log("IN addMaintenanceTask");
-    router.push({name: 'add-maintenance-task', params: {item_type: 'OTHER', item_ref: id.value}}).catch(failure => {
+    router.push({name: 'add-maintenance-task', params: {item_type: 'OTHER', item_ref: id.value, item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT addMaintenanceTask");
@@ -261,7 +266,7 @@ This file is the vue component implementation for an other items detail screen.
   // Update a maintenance task
   const updateMaintenanceTask = (item) => {
     console.log("IN updateMaintenanceTask. item=" + JSON.stringify(item));
-    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, last_done_date: item.last_done_date}}).catch(failure => {
+    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, item_type: 'Other Item', item_name: item.name}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT updateMaintenanceTask");

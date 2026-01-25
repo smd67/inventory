@@ -71,10 +71,10 @@ camera.
   const errorDialog = ref(null);
 
   // A watcher that updates data when the path changes.
-  watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
-      console.log("IN UpdateCamera.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
+   watch(
+    () => [route.params.name, route.params.base_unit_name],
+    async refresh => {
+      console.log("IN UpdateCamera.watch.refresh");
       baseUnit.value = props.base_unit;
       baseUnitKey.value += 1;
       name.value = props.name;

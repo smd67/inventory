@@ -74,8 +74,8 @@ in the database.
 
   // Watcher to reset data when path changes
   watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
+    () => [route.params.id, route.params.base_unit_name],
+    async refresh => {
       console.log("IN AddCamera.watch.refresh");
       baseUnitRef.value = props.base_unit_id;
       baseUnitName.value = props.base_unit_name;

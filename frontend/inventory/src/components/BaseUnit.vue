@@ -343,6 +343,7 @@ cameras, notes, other items, or maintenance tasks.
   const maintHeaders = ref([
     {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
     {title: 'Last Done', value: 'last_done_date' , sortable: true},
+    {title: 'Due Date', value: 'due_date' , sortable: true},
     // ... other headers
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
@@ -385,19 +386,31 @@ cameras, notes, other items, or maintenance tasks.
   });
 
   // Reset data on path change
+ // Reset data on path change
   watch(
     // fetch the user information when params change
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
       console.log("IN BaseUnit.watch.refresh newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
-      fetchCameras();
-      cameraKey.value += 1;
-      fetchNotes();
-      notesKey.value += 1;
-      fetchMaintTasks();
-      maintKey.value += 1;
-      fetchOther();
-      otherKey.value += 1;
+      console.log("name=" + name.value + "; props.name=" + props.name);
+      if(oldFullPath.includes("/prototype")){
+        id.value = props.id;
+        name.value = props.name;
+        location.value = props.location;
+        has_new_feet.value = (props.has_new_feet === 'true');
+        has_new_mast_bearing.value = (props.has_new_mast_bearing === 'true');
+        faceCameras.value = route.query.face_cameras;
+        licensePlateCameras.value = route.query.license_plate_cameras;
+        widescreenCameras.value = route.query.widescreen_cameras;
+        fetchCameras();
+        cameraKey.value += 1;
+        fetchNotes();
+        notesKey.value += 1;
+        fetchMaintTasks();
+        maintKey.value += 1;
+        fetchOther();
+        otherKey.value += 1;
+      }
       console.log("OUT BaseUnit.watch.refresh");
     }
   )
@@ -598,7 +611,7 @@ cameras, notes, other items, or maintenance tasks.
   // Add a mintenance task to database
   const addMaintenanceTask = () => {
     console.log("IN addMaintenanceTask");
-    router.push({name: 'add-maintenance-task', params: {item_type: 'BASE_UNIT', item_ref: id.value}}).catch(failure => {
+    router.push({name: 'add-maintenance-task', params: {item_type: 'BASE_UNIT', item_ref: id.value, item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT addMaintenanceTask");
@@ -607,7 +620,7 @@ cameras, notes, other items, or maintenance tasks.
   // Update a maintenance task
   const updateMaintenanceTask = (item) => {
     console.log("IN updateMaintenanceTask. item=" + JSON.stringify(item));
-    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, last_done_date: item.last_done_date}}).catch(failure => {
+    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, item_type: 'Base Unit', item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT updateMaintenanceTask");

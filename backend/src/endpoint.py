@@ -359,7 +359,7 @@ def add_maintenance_task(query: model.MaintenanceTaskCreate) -> None:
         db = Database()
         db.add_maintenance_task(
             query.description,
-            query.last_done_date,
+            query.due_date,
             query.item_type,
             query.item_ref,
         )
@@ -392,7 +392,7 @@ def add_maintenance_task_by_name(query: model.MaintenanceTaskCreateByName) -> No
         db = Database()
         db.add_maintenance_task_by_name(
             query.description,
-            query.last_done_date,
+            query.due_date,
             query.item_type,
             query.item_name,
         )
@@ -747,7 +747,7 @@ def complete_maintenance_task(query: model.MaintenanceTaskUpdate) -> None:
     print(f"IN complete-maintenance-task query={query}")
     try:
         db = Database()
-        db.complete_maintenance_task(query.id)
+        db.complete_maintenance_task(query.id, query.due_date)
     except Exception as e:
         print(f"An unexpected exception e={e} has occured")
         raise HTTPException(
@@ -761,7 +761,10 @@ def activity_log(query: model.ActivityLogCreate) -> None:
     print(f"IN Endpoint.activity_log query={query}")
     try:
         db = Database()
-        db.activity_log(query.item_type, query.item_name, query.description)
+        db.activity_log(query.item_type,
+                        query.item_name, 
+                        query.description,
+                        query.technician_name)
     except Exception as e:
         print(f"An unexpected exception e={e} has occured")
         raise HTTPException(

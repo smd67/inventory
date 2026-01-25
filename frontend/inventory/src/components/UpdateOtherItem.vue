@@ -67,8 +67,8 @@ other item.
 
   // A watcher that resets data when the full path changes.
   watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
+    () => [route.params.name],
+    async refresh => {
       console.log("IN UpdateOtherItem.watch.refresh");
       baseUnit.value = props.base_unit;
       baseUnitKey.value += 1;

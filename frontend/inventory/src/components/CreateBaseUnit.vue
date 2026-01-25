@@ -75,14 +75,16 @@ in the database.
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
       console.log("IN Create.watch.refresh");
-      name.value = null;
-      nameKey.value += 1;
-      location.value = null;
-      locationKey.value += 1;
-      has_new_feet.value = false;
-      hasNewFeetKey.value += 1;
-      has_new_mast_bearing.value = false;
-      hasNewMastBearingKey.value += 1;
+      if(oldFullPath.includes("/prototype")){
+        name.value = null;
+        nameKey.value += 1;
+        location.value = null;
+        locationKey.value += 1;
+        has_new_feet.value = false;
+        hasNewFeetKey.value += 1;
+        has_new_mast_bearing.value = false;
+        hasNewMastBearingKey.value += 1;
+      }
       console.log("OUT Create.watch.refresh");
     }
   );

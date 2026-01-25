@@ -77,6 +77,7 @@
   const headers = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
     {title: 'Description', value: 'description' , sortable: true},
+    {title: 'Technician Name', value: 'technician_name' , sortable: true},
   ]);
   
   // fetch the user information when params change

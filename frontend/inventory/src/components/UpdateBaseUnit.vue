@@ -101,9 +101,9 @@ unit.
 
   // A watcher to reset data when the path changes.
   watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
-      console.log("IN UpdateBaseUnit.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
+    () => [route.params.name, route.params.id, route.params.location, route.params.has_new_feet, route.params.has_new_mast_bearing],
+    async refresh => {
+      console.log("IN UpdateBaseUnit.watch.refresh");
       name.value = props.name;
       nameKey.value += 1;
       location.value = props.location;

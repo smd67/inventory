@@ -19,21 +19,25 @@ the current time.
         <v-sheet class="pa-4 text-right detail-sheet">
           <v-text-field
             v-model="description"
-            label="Description"
+            label="Description of Task"
             :key="descriptionKey"
             readonly
           ></v-text-field>
           <v-text-field
-            v-model="lastDoneDate"
-            :key="lastDoneDateKey"
-            label="Last Done Date"
-            readonly
+            v-model="technicianName"
+            label="Technician Name"
           ></v-text-field>
+          <v-date-input
+            v-model="dueDate" 
+            label="New Due Date"
+            :key="dueDateKey"
+          ></v-date-input>
           <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
             <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
             <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" @click="completeTask">Complete</v-btn>
           </div>
         </v-sheet>
+        
       </v-row>
     </v-container>
     <ErrorDialog ref="errorDialog"></ErrorDialog>
@@ -45,10 +49,11 @@ the current time.
   // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
   import ConfirmDialog from './ConfirmDialog.vue';
-  
+  import { VDateInput } from 'vuetify/labs/VDateInput'
+
   // Properties passed in to component.
   const props = defineProps({
     id: {
@@ -59,37 +64,45 @@ the current time.
       type: String,
       default: null,
     },
-    last_done_date: {
+    item_type: {
       type: String,
-      default: null
-    }
+      default: null,
+    },
+    item_name: {
+      type: String,
+      default: null,
+    },
   });
 
   // Data
   const loading = ref(true);
   const id = ref(null);
   const description = ref(null);
-  const lastDoneDate = ref(null);
+  const dueDate = ref(null);
+  const itemType = ref(null);
+  const itemName = ref(null);
+  const technicianName = ref(null);
   const router = useRouter();
   const route = useRoute();
   const descriptionKey = ref(0);
-  const lastDoneDateKey = ref(0);
+  const dueDateKey = ref(0);
   const errorDialog = ref(null);
   const confirmDialog = ref(null);
 
   // Watcher that resets data when the routing path changes.
   watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
-      console.log("IN UpdateMaintenanceTask.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
-      if(newFullPath.includes("/update-maintenance-task")){
+      () => [route.params.id, route.description, route.params.item_type,  route.params.item_name],
+      async refresh => {
+        console.log("IN UpdateMaintenanceTask.watch.refresh");
         description.value = props.description;
         descriptionKey.value += 1;
-        lastDoneDate.value = props.last_done_date;
-        lastDoneDateKey.value += 1;
+        dueDate.value = new Date().toISOString().slice(0, 10);
+        dueDateKey.value += 1;
         id.value = props.id;
-      }
-      console.log('OUT UpdateMaintenanceTask.watch.refresh. id=' + id.value + '; description=' + description.value);
+        itemType.value = props.item_type;
+        itemName.value = props.item_name;
+        technicianName.value = null;
+        console.log('OUT UpdateMaintenanceTask.watch.refresh. id=' + id.value + '; description=' + description.value);
     }
   );
 
@@ -97,10 +110,13 @@ the current time.
   onMounted(async () => {
     console.log('IN UpdateMaintenanceTask.onMounted');
     id.value = props.id;
+    itemType.value = props.item_type;
+    itemName.value = props.item_name;
     description.value = props.description;
     descriptionKey.value += 1;
-    lastDoneDate.value = props.last_done_date;
-    lastDoneDateKey.value += 1;
+    dueDate.value = new Date().toISOString().slice(0, 10);
+    dueDateKey.value += 1;
+    technicianName.value = null;
     console.log('OUT UpdateMaintenanceTask.onMounted');
   });
 
@@ -116,7 +132,7 @@ the current time.
     console.log('IN completeTask');
     const result = await confirmDialog.value.open(
       'Confirm Completion',
-      'Are you sure you want to complete this task?',
+      'Are you sure that you have completed this task?',
       { color: 'red lighten-3' }
     );
 
@@ -127,13 +143,18 @@ the current time.
           }
       };
       const requestBody = {
-          id: id.value
+          id: id.value,
+          due_date: dueDate.value
       };
       console.log("requestBody=" + JSON.stringify(requestBody));
       try {
           const response = await api.post('/complete-maintenance-task', requestBody, config);
           console.log("status=" + response.status);
           loading.value = false;
+          activity_log(itemType.value, 
+                      itemName.value, 
+                      "Maintenance task completed. Description - " + description.value + ". By - " + technicianName.value,
+                      technicianName.value);
       } catch (e) {
           loading.value = false;
           console.error('Error updating data:', e);

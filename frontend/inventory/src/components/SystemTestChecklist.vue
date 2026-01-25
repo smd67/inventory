@@ -281,7 +281,7 @@ maintenance tasks whose last due date is >= 6 months.
     // Imports
     import { ref, onMounted, defineProps, watch } from 'vue';
     import { useRouter, useRoute } from 'vue-router';
-     import api, {activity_log} from "../api";
+    import api, {activity_log} from "../api";
     import ErrorDialog from './ErrorDialog.vue';
     import ConfirmDialog from './ConfirmDialog.vue';
 
@@ -411,17 +411,25 @@ maintenance tasks whose last due date is >= 6 months.
     // fetch the user information when params change
     // Watch method to reset cached data 
     watch(
-      () => route.fullPath,
-      async (newFullPath, oldFullPath) => {
-        console.log("IN SystemTestChecklist.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
-        if(newFullPath.includes("/system-test-checklist")){
-          technicianName.value = props.technician_name;
-          reportDate.value = props.report_date;
-          baseUnitName.value = props.base_unit;
-          faceCameras.value = route.query.face_cameras;
-          licensePlateCameras.value = route.query.license_plate_cameras;
-          widescreenCameras.value = route.query.widescreen_cameras;
-        }
+      () => [route.params.technician_name, route.params.base_unit, route.params.report_date],
+      async refresh => {
+        console.log("IN SystemTestChecklist.watch.refresh");
+        technicianName.value = props.technician_name;
+        reportDate.value = props.report_date;
+        baseUnitName.value = props.base_unit;
+        faceCameras.value = route.query.face_cameras;
+        licensePlateCameras.value = route.query.license_plate_cameras;
+        widescreenCameras.value = route.query.widescreen_cameras;
+        generalItems.value = []; 
+        boomItems.value = []; 
+        faceCameraItems.value = []; 
+        licensePlateCameraItems.value = [];
+        widescreenCameraItems.value = [];
+        liDarItems.value = [];
+        widescreenActuatorsItems.value = [];
+        radarItems.value = [];
+        windMeterItems.value = [];
+        mastItems.value = [];
         console.log('OUT SystemTestChecklist.watch.refresh baseUnitName=' + baseUnitName.value + '; faceCameras=' + faceCameras.value + '; licensePlateCameras=' + licensePlateCameras.value + '; widescreenCameras=' + widescreenCameras.value);
       }
     );
@@ -435,6 +443,16 @@ maintenance tasks whose last due date is >= 6 months.
       faceCameras.value = route.query.face_cameras;
       licensePlateCameras.value = route.query.license_plate_cameras;
       widescreenCameras.value = route.query.widescreen_cameras;
+      generalItems.value = []; 
+      boomItems.value = []; 
+      faceCameraItems.value = []; 
+      licensePlateCameraItems.value = [];
+      widescreenCameraItems.value = [];
+      liDarItems.value = [];
+      widescreenActuatorsItems.value = [];
+      radarItems.value = [];
+      windMeterItems.value = [];
+      mastItems.value = [];
       console.log('OUT SystemTestChecklist.onMounted baseUnitName=' + baseUnitName.value + '; faceCameras=' + faceCameras.value + '; licensePlateCameras=' + licensePlateCameras.value + '; widescreenCameras=' + widescreenCameras.value);
     });
 
@@ -534,7 +552,7 @@ maintenance tasks whose last due date is >= 6 months.
       for (const camera of faceCameras.value) {
         const missingFaceCameraList = [...missingFaceCamera];
         const missingForCamera = new Set(missingFaceCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = faceCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        const labelsForCamera = faceCameraCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
         baseDialog =  baseDialog + '<b>Face Camera - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
       }
     }
@@ -543,7 +561,7 @@ maintenance tasks whose last due date is >= 6 months.
       for (const camera of licensePlateCameras.value) {
         const missingLicensePlateCameraList = [...missingLicensePlateCamera];
         const missingForCamera = new Set(missingLicensePlateCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = licensePlateCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        const labelsForCamera = licensePlateCameraCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
         baseDialog =  baseDialog + '<b>License Plate Camera - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
       }
     }
@@ -552,7 +570,7 @@ maintenance tasks whose last due date is >= 6 months.
       for (const camera of widescreenCameras.value) {
         const missingWidescreenCameraList = [...missingWidescreenCamera];
         const missingForCamera = new Set(missingWidescreenCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = widescreenCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        const labelsForCamera = widescreenCameraCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
         baseDialog =  baseDialog + '<b>Widescreen Camera - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
       }
     }
@@ -561,7 +579,7 @@ maintenance tasks whose last due date is >= 6 months.
       for (const camera of widescreenCameras.value) {
         const missingLiDarList = [...missingLiDar];
         const missingForCamera = new Set(missingLiDarList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = liDarCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        const labelsForCamera = liDarCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
         baseDialog =  baseDialog + '<b>LiDar - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
       }
     }
@@ -570,7 +588,7 @@ maintenance tasks whose last due date is >= 6 months.
       for (const camera of widescreenCameras.value) {
         const missingWidescreenActuatorsList = [...missingWidescreenActuators];
         const missingForCamera = new Set(missingWidescreenActuatorsList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = widescreenActuatorsCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        const labelsForCamera = widescreenActuatorsCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
         baseDialog =  baseDialog + '<b>Widescreen Actuators - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
       }
     }
@@ -596,7 +614,9 @@ maintenance tasks whose last due date is >= 6 months.
     const expectedGeneral = new Set(generalCheckbox.value.map(item => item.value));
     const missingGeneral = expectedGeneral.difference(new Set(generalItems.value));
     const labelsGeneral = generalCheckbox.value.filter(item => missingGeneral.has(item.value)).map(item => item.label);
-    
+    const passGeneral = new Set(generalItems.value);
+    const labelsGeneralPass = generalCheckbox.value.filter(item => passGeneral.has(item.value)).map(item => item.label);
+
     let expectedFaceCameraVals = [];
     for (const camera of faceCameras.value) {
       const cameraVals = faceCameraCheckbox.value.map(item => item.value + '_' + camera);
@@ -641,18 +661,27 @@ maintenance tasks whose last due date is >= 6 months.
     const expectedBoom = new Set(boomCheckbox.value.map(item => item.value));
     const missingBoom = expectedBoom.difference(new Set(boomItems.value));
     const labelsBoom = boomCheckbox.value.filter(item => missingBoom.has(item.value)).map(item => item.label);
+    const passBoom = new Set(boomItems.value);
+    const labelsBoomPass = boomCheckbox.value.filter(item => passBoom.has(item.value)).map(item => item.label);
+
 
     const expectedRadar = new Set(radarCheckbox.value.map(item => item.value));
     const missingRadar = expectedRadar.difference(new Set(radarItems.value));
     const labelsRadar = radarCheckbox.value.filter(item => missingRadar.has(item.value)).map(item => item.label);
+    const passRadar = new Set(radarItems.value);
+    const labelsRadarPass = radarCheckbox.value.filter(item => passRadar.has(item.value)).map(item => item.label);
 
     const expectedWindMeter = new Set(windMeterCheckbox.value.map(item => item.value));
     const missingWindMeter = expectedWindMeter.difference(new Set(windMeterItems.value));
     const labelsWindMeter = windMeterCheckbox.value.filter(item => missingWindMeter.has(item.value)).map(item => item.label);
+    const passWindMeter = new Set(windMeterItems.value);
+    const labelsWindMeterPass = windMeterCheckbox.value.filter(item => passWindMeter.has(item.value)).map(item => item.label);
 
     const expectedMast = new Set(mastCheckbox.value.map(item => item.value));
     const missingMast = expectedMast.difference(new Set(mastItems.value));
     const labelsMast = mastCheckbox.value.filter(item => missingMast.has(item.value)).map(item => item.label);
+    const passMast = new Set(mastItems.value);
+    const labelsMastPass = mastCheckbox.value.filter(item => passMast.has(item.value)).map(item => item.label);
 
     const totalExpected = expectedMast.size + expectedWindMeter.size + expectedRadar.size +
       expectedBoom.size + expectedWidescreenActuators.size + expectedLiDar.size +
@@ -699,9 +728,28 @@ maintenance tasks whose last due date is >= 6 months.
       for (const camera of faceCameras.value) {
         const missingFaceCameraList = [...missingFaceCamera];
         const missingForCamera = new Set(missingFaceCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = faceCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        const labelsForCamera = faceCameraCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
+        for (const camera_item of labelsForCamera) {
+          activity_log('Camera', 
+                       camera, 
+                       "Face Camera Test: " + camera_item + " has failed",
+                       technicianName.value);
+        }
+        console.log("Start => processing activity log for face cameras");
+        const passForCamera = new Set(faceCameraItems.value.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        console.log("passForCamera=" + [...passForCamera]);
+        const labelsForCameraPass = faceCameraCheckbox.value.filter(item => passForCamera.has(item.value)).map(item => item.label);
+        console.log("labelsForCameraPass=" + labelsForCameraPass);
+        for (const camera_item of labelsForCameraPass) {
+          activity_log('Camera', 
+                      camera, 
+                      "Face Camera Test: " + camera_item + " has passed",
+                      technicianName.value);
+        }
+        console.log("Done => processing activity log for face cameras");
         generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'Face Camera');
         reportStr =  reportStr + 'Face Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
+   
       }
     }
 
@@ -709,7 +757,21 @@ maintenance tasks whose last due date is >= 6 months.
       for (const camera of licensePlateCameras.value) {
         const missingLicensePlateCameraList = [...missingLicensePlateCamera];
         const missingForCamera = new Set(missingLicensePlateCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = licensePlateCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        const labelsForCamera = licensePlateCameraCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
+        for (const camera_item of labelsForCamera) {
+          activity_log('Camera', 
+                      camera, 
+                      "License Plate Camera Test: " + camera_item + " has failed",
+                      technicianName.value);
+        }
+        const passForCamera = new Set(licensePlateCameraItems.value.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCameraPass = licensePlateCameraCheckbox.value.filter(item => passForCamera.has(item.value)).map(item => item.label);
+        for (const camera_item of labelsForCameraPass) {
+          activity_log('Camera', 
+                      camera, 
+                      "License Plate Camera Test: " + camera_item + " has passed",
+                      technicianName.value);
+        }
         generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'License Plate Camera');
         reportStr =  reportStr + 'License Plate Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
@@ -719,7 +781,21 @@ maintenance tasks whose last due date is >= 6 months.
       for (const camera of widescreenCameras.value) {
         const missingWidescreenCameraList = [...missingWidescreenCamera];
         const missingForCamera = new Set(missingWidescreenCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = widescreenCameraCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        const labelsForCamera = widescreenCameraCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
+        for (const camera_item of labelsForCamera) {
+          activity_log('Camera', 
+                      camera, 
+                      "Widescreen Camera Test: " + camera_item + " has failed",
+                      technicianName.value);
+        }
+        const passForCamera = new Set(widescreenCameraItems.value.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCameraPass = widescreenCameraCheckbox.value.filter(item => passForCamera.has(item.value)).map(item => item.label);
+        for (const camera_item of labelsForCameraPass) {
+          activity_log('Camera', 
+                      camera, 
+                      "Widescreen Camera Test: " + camera_item + " has passed",
+                      technicianName.value);
+        }
         generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'Widescreen Camera');
         reportStr =  reportStr + 'Widescreen Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
@@ -729,7 +805,21 @@ maintenance tasks whose last due date is >= 6 months.
       for (const camera of widescreenCameras.value) {
         const missingLiDarList = [...missingLiDar];
         const missingForCamera = new Set(missingLiDarList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = liDarCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        const labelsForCamera = liDarCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
+        for (const camera_item of labelsForCamera) {
+          activity_log('Camera', 
+                      camera, 
+                      "LiDar Test: " + camera_item + " has failed",
+                      technicianName.value);
+        }
+        const passForCamera = new Set(liDarItems.value.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCameraPass = liDarCheckbox.value.filter(item => passForCamera.has(item.value)).map(item => item.label);
+        for (const camera_item of labelsForCameraPass) {
+          activity_log('Camera', 
+                      camera, 
+                      "LiDar Test: " + camera_item + " has passed",
+                      technicianName.value);
+        }
         generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'LiDar');
         reportStr =  reportStr + 'LiDar - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
@@ -739,77 +829,85 @@ maintenance tasks whose last due date is >= 6 months.
       for (const camera of widescreenCameras.value) {
         const missingWidescreenActuatorsList = [...missingWidescreenActuators];
         const missingForCamera = new Set(missingWidescreenActuatorsList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = widescreenActuatorsCheckbox.value.filter(item => missingForCamera .has(item.value)).map(item => item.label);
+        const labelsForCamera = widescreenActuatorsCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
+        for (const camera_item of labelsForCamera) {
+          activity_log('Camera', 
+                      camera, 
+                      "Widescreen Actuators Test: " + camera_item + " has failed",
+                      technicianName.value);
+        }
+        const passForCamera = new Set(widescreenActuatorsItems.value.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCameraPass = widescreenActuatorsCheckbox.value.filter(item => passForCamera.has(item.value)).map(item => item.label);
+        for (const camera_item of labelsForCameraPass) {
+          activity_log('Camera', 
+                      camera, 
+                      "Widescreen Actuators Test: " + camera_item + " has passed",
+                      technicianName.value);
+        }
         generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'Widescreen Actuators');
         reportStr =  reportStr + 'Widescreen Actuators - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
     }
-    for (const item of missingGeneral) {
+    for (const item of labelsGeneral) {
         activity_log('Base Unit', 
                      props.base_unit, 
-                     "General Test: " + item + " has failed");
+                     "General Test: " + item + " has failed",
+                     technicianName.value);
     }
-    for (const item of missingFaceCamera) {
-      const lastIndex = item.lastIndexOf('_');
-      const test_item = item.slice(0, lastIndex);
-      const camera_item = item.slice(lastIndex + 1);
-      activity_log('Camera', 
-                    camera_item, 
-                    "Face Camera Test: " + test_item + " has failed");
+    for (const item of labelsGeneralPass) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "General Test: " + item + " has passed",
+                     technicianName.value);
     }
-    for (const item of missingLicensePlateCamera) {
-      const lastIndex = item.lastIndexOf('_');
-      const test_item = item.slice(0, lastIndex);
-      const camera_item = item.slice(lastIndex + 1);
-      activity_log('Camera', 
-                    camera_item, 
-                    "License Plate Camera Test: " + test_item + " has failed");
-    }
-    for (const item of missingWidescreenCamera) {
-      const lastIndex = item.lastIndexOf('_');
-      const test_item = item.slice(0, lastIndex);
-      const camera_item = item.slice(lastIndex + 1);
-      activity_log('Camera', 
-                    camera_item, 
-                    "Widescreen Camera Test: " + test_item + " has failed");
-    }
-    for (const item of missingLiDar) {
-      const lastIndex = item.lastIndexOf('_');
-      const test_item = item.slice(0, lastIndex);
-      const camera_item = item.slice(lastIndex + 1);
-      activity_log('Camera', 
-                    camera_item, 
-                  "LiDar Test: " + test_item + " has failed");
-    }
-    for (const item of missingWidescreenActuators) {
-      const lastIndex = item.lastIndexOf('_');
-      const test_item = item.slice(0, lastIndex);
-      const camera_item = item.slice(lastIndex + 1);
-      activity_log('Camera', 
-                    camera_item, 
-                  "Widescreen Acuators Test: " + test_item + " has failed");
-    }
-    for (const item of missingBoom) {
+    for (const item of labelsBoom) {
       activity_log('Base Unit', 
                     props.base_unit, 
-                    "Boom Test: " + item + " has failed");
+                    "Boom Test: " + item + " has failed",
+                    technicianName.value);
     }
-    for (const item of missingRadar) {
+    for (const item of labelsBoomPass) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "Boom Test: " + item + " has passed",
+                     technicianName.value);
+    }
+    for (const item of labelsRadar) {
       activity_log('Base Unit', 
                     props.base_unit, 
-                    "Radar: " + item + " has failed");
+                    "Radar: " + item + " has failed",
+                    technicianName.value);
     }
-    for (const item of missingWindMeter) {
+    for (const item of labelsRadarPass) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "Radar Test: " + item + " has passed",
+                     technicianName.value);
+    }
+    for (const item of labelsWindMeter) {
       activity_log('Base Unit', 
                     props.base_unit, 
-                    "Wind Meter: " + item + " has failed");
+                    "Wind Meter: " + item + " has failed",
+                    technicianName.value);
     }
-    for (const item of missingMast) {
+    for (const item of labelsWindMeterPass) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "Wind Meter Test: " + item + " has passed",
+                     technicianName.value);
+    }
+    for (const item of labelsMast) {
       activity_log('Base Unit', 
                     props.base_unit, 
-                    "Mast: " + item + " has failed");
+                    "Mast: " + item + " has failed",
+                    technicianName.value);
     }
-
+    for (const item of labelsMastPass) {
+        activity_log('Base Unit', 
+                     props.base_unit, 
+                     "Mast Test: " + item + " has passed",
+                     technicianName.value);
+    }
     console.log("OUT SystemTestChecklist.generateReport.");
     return reportStr;
   }
@@ -826,82 +924,17 @@ maintenance tasks whose last due date is >= 6 months.
     );
     if (result) {
       const bu = await fetchBaseUnitByName();
-      const description = generateReport(bu.location);
-      await sendNote(bu.id, description);
       activity_log('Base Unit', 
                     props.base_unit, 
-                    "System Test Checklist Executed");
-      
-      for (const item of generalItems.value) {
-        activity_log('Base Unit', 
-                     props.base_unit, 
-                     "General Test: " + item + " has passed");
-      }
-      for (const item of faceCameraItems.value) {
-        const lastIndex = item.lastIndexOf('_');
-        const test_item = item.slice(0, lastIndex);
-        const camera_item = item.slice(lastIndex + 1);
-        activity_log('Camera', 
-                     camera_item, 
-                     "Face Camera Test: " + test_item + " has passed");
-      }
-      for (const item of licensePlateCameraItems.value) {
-        const lastIndex = item.lastIndexOf('_');
-        const test_item = item.slice(0, lastIndex);
-        const camera_item = item.slice(lastIndex + 1);
-        activity_log('Camera', 
-                     camera_item, 
-                     "License Plate Camera Test: " + test_item + " has passed");
-      }
-      for (const item of widescreenCameraItems.value) {
-        const lastIndex = item.lastIndexOf('_');
-        const test_item = item.slice(0, lastIndex);
-        const camera_item = item.slice(lastIndex + 1);
-        activity_log('Camera', 
-                     camera_item, 
-                     "Widescreen Camera Test: " + test_item + " has passed");
-      }
-      for (const item of liDarItems.value) {
-        const lastIndex = item.lastIndexOf('_');
-        const test_item = item.slice(0, lastIndex);
-        const camera_item = item.slice(lastIndex + 1);
-        activity_log('Camera', 
-                     camera_item, 
-                    "LiDar Test: " + test_item + " has passed");
-      }
-      for (const item of widescreenActuatorsItems.value) {
-        const lastIndex = item.lastIndexOf('_');
-        const test_item = item.slice(0, lastIndex);
-        const camera_item = item.slice(lastIndex + 1);
-        activity_log('Camera', 
-                     camera_item, 
-                    "Widescreen Acuators Test: " + test_item + " has passed");
-      }
-      for (const item of boomItems.value) {
-        activity_log('Base Unit', 
-                     props.base_unit, 
-                     "Boom Test: " + item + " has passed");
-      }
-      for (const item of radarItems.value) {
-        activity_log('Base Unit', 
-                     props.base_unit, 
-                     "Radar: " + item + " has passed");
-      }
-      for (const item of windMeterItems.value) {
-        activity_log('Base Unit', 
-                     props.base_unit, 
-                     "Wind Meter: " + item + " has passed");
-      }
-      for (const item of mast.value) {
-        activity_log('Base Unit', 
-                     props.base_unit, 
-                     "Mast: " + item + " has passed");
-      }
+                    "System Test Checklist Executed",
+                    technicianName.value);
 
+      const description = generateReport(bu.location);
+      await sendNote(bu.id, description);
     } else {
       console.log("Submit cancelled");
     }
-    
+    router.go(-2);
     console.log("OUT SystemTestChecklist.handleSubmit");
   };
 
@@ -945,7 +978,7 @@ maintenance tasks whose last due date is >= 6 months.
       }
     };
     const requestBody = {
-      last_done_date: reportDate.value,
+      due_date: reportDate.value,
       description: description,
       item_type: itemType,
       item_name: itemName
