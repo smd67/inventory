@@ -402,15 +402,15 @@ cameras, notes, other items, or maintenance tasks.
         faceCameras.value = route.query.face_cameras;
         licensePlateCameras.value = route.query.license_plate_cameras;
         widescreenCameras.value = route.query.widescreen_cameras;
-        fetchCameras();
-        cameraKey.value += 1;
-        fetchNotes();
-        notesKey.value += 1;
-        fetchMaintTasks();
-        maintKey.value += 1;
-        fetchOther();
-        otherKey.value += 1;
       }
+      fetchCameras();
+      cameraKey.value += 1;
+      fetchNotes();
+      notesKey.value += 1;
+      fetchMaintTasks();
+      maintKey.value += 1;
+      fetchOther();
+      otherKey.value += 1;
       console.log("OUT BaseUnit.watch.refresh");
     }
   )

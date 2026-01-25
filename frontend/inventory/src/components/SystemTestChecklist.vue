@@ -931,10 +931,10 @@ maintenance tasks whose last due date is >= 6 months.
 
       const description = generateReport(bu.location);
       await sendNote(bu.id, description);
+      router.go(-2);
     } else {
       console.log("Submit cancelled");
     }
-    router.go(-2);
     console.log("OUT SystemTestChecklist.handleSubmit");
   };
 

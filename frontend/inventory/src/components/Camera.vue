@@ -231,15 +231,18 @@ notes or maintenance tasks.
   // Watcher to reset data when path changes.
   
 
-  watch(
-    () => [route.params.id, route.params.name, route.params.camera_type, route.params.base_unit, route.params.location],
-    async refresh => {
+   watch(
+    // fetch the user information when params change
+    () => route.fullPath,
+    async (newFullPath, oldFullPath) => {
       console.log('IN Camera.watch.refresh');
-      id.value = props.id;
-      name.value = props.name;
-      location.value = props.location;
-      baseUnit.value = props.base_unit;
-      cameraType.value = props.camera_type;
+      if(oldFullPath.includes("/prototype") || oldFullPath.includes("/base-unit")){
+        id.value = props.id;
+        name.value = props.name;
+        location.value = props.location;
+        baseUnit.value = props.base_unit;
+        cameraType.value = props.camera_type;
+      }
       fetchNotes();
       notesKey.value += 1;
       fetchMaintTasks();
@@ -282,7 +285,7 @@ notes or maintenance tasks.
   // Update a maintenance task
   const updateMaintenanceTask = (item) => {
     console.log("IN updateMaintenanceTask. item=" + JSON.stringify(item));
-    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, item_type: 'Camera', item_name: item.name}}).catch(failure => {
+    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, item_type: 'Camera', item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT updateMaintenanceTask");
