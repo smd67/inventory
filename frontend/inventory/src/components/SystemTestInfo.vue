@@ -63,7 +63,7 @@ prior to performing a system test checklist.
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
       console.log("IN SystemTestInfo.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
-      if(newFullPath.includes("/system-test-info")){
+      if(oldFullPath.includes("/prototype")){
         technicianName.value = null;
         reportDate.value = new Date().toISOString().slice(0, 10);
         baseUnit.value = null;

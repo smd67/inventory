@@ -102,6 +102,9 @@ upper right for generating reports.
                 <v-list-item @click="updateBaseUnit(item)">
                   <v-list-item-title>Update</v-list-item-title>
                 </v-list-item>
+                <v-list-item @click="baseUnitHistoryReport(item)">
+                  <v-list-item-title>History</v-list-item-title>
+                </v-list-item>
               </v-list>
             </v-menu>
           </template>
@@ -162,6 +165,9 @@ upper right for generating reports.
                 <v-list-item @click="updateCamera(item)">
                   <v-list-item-title>Update</v-list-item-title>
                 </v-list-item>
+                <v-list-item @click="cameraHistoryReport(item)">
+                  <v-list-item-title>History</v-list-item-title>
+                </v-list-item>
               </v-list>
             </v-menu>
           </template>
@@ -221,6 +227,9 @@ upper right for generating reports.
                 <v-list-item @click="updateOtherItem(item)">
                   <v-list-item-title>Update</v-list-item-title>
                 </v-list-item>
+                <v-list-item @click="otherItemHistoryReport(item)">
+                  <v-list-item-title>History</v-list-item-title>
+                </v-list-item>
               </v-list>
             </v-menu>
           </template>
@@ -237,7 +246,7 @@ upper right for generating reports.
   import { ref, onMounted, watch, onUnmounted, computed } from 'vue';
   import { VDataTable } from 'vuetify/components';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ConfirmDialog from './ConfirmDialog.vue';
   import ErrorDialog from './ErrorDialog.vue';
   
@@ -250,9 +259,6 @@ upper right for generating reports.
   const baseUnitsTable = ref([]);
   const camerasTable = ref([]);
   const otherItemsTable = ref([]);
-  const faceCameras = ref([]);
-  const licensePlateCameras = ref([]);
-  const widescreenCameras = ref([]);
 
   const loading = ref(true);
   const router = useRouter();
@@ -503,6 +509,14 @@ upper right for generating reports.
     console.log("OUT updateBaseUnit");
   };
 
+  const baseUnitHistoryReport = (item) => {
+    console.log("IN baseUnitHistoryReport name=" + item.name);
+    router.push({name: 'report-history', params: {item_type: 'Base Unit', item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT baseUnitHistoryReport");
+  }
+
   // Create a camera object in the database.
   const createCamera = () => {
     console.log("IN createCamera");
@@ -518,7 +532,7 @@ upper right for generating reports.
     // Call the dialog's open function using the template ref
     const result = await confirmDialog.value.open(
       'Confirm Deletion',
-      'Are you sure you want to delete the camera ' + item.name + '?',
+      'Are you sure you want to delete the camera' + item.name + '?',
       { color: 'red lighten-3' }
     );
 
@@ -537,6 +551,8 @@ upper right for generating reports.
       try {
           const response = await api.post('/delete-camera', requestBody, config);
           loading.value = false;
+          activity_log('Camera', item.name, 'Removed from Base Unit ' + item.base_unit + ' and deleted from database');
+          activity_log('Base Unit', item.base_unit, 'Removed Camera ' + item.name + ' from Base Unit ' + item.base_unit + ' and deleted from database');
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
@@ -556,12 +572,20 @@ upper right for generating reports.
     console.log("OUT deleteCamera");
   };
   const updateCamera = (item) => {
-    console.log("IN updateCamera");
-    router.push({name: 'update-camera', params: {name: item.name}}).catch(failure => {
+    console.log("IN updateCamera item=" + JSON.stringify(item));
+    router.push({name: 'update-camera', params: {name: item.name, base_unit_name: item.base_unit}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT updateCamera");
   };
+
+  const cameraHistoryReport = (item) => {
+    console.log("IN cameraHistoryReport name=" + item.name);
+    router.push({name: 'report-history', params: {item_type: 'Camera', item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT cameraHistoryReport");
+  }
 
   // Create an other item in the database.
   const createOtherItem = () => {
@@ -594,6 +618,8 @@ upper right for generating reports.
       try {
           const response = await api.post('/delete-other-item', requestBody, config);
           loading.value = false;
+          activity_log('Other Item', item.name, 'Removed from Base Unit ' + item.base_unit + ' and deleted from database');
+          activity_log('Base Unit', item.base_unit, 'Removed Other Item ' + item.name + ' from Base Unit ' + item.base_unit + ' and deleted from database');
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
@@ -621,6 +647,14 @@ upper right for generating reports.
     });
     console.log("OUT updateOtherItem");
   };
+
+  const otherItemHistoryReport = (item) => {
+    console.log("IN otherItemHistoryReport");
+    router.push({name: 'report-history', params: {item_type: 'Other Item', item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT otherItemHistoryReport");
+  }
 
   // Retrieve base units from the database.
   const fetchBaseUnits = async () => {
@@ -729,6 +763,28 @@ upper right for generating reports.
   }
 </style>
 <style scoped>
+  /* Add basic styling for the table if needed */
+  .my-division {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 100px;
+  }
+  .spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
   .tools-menu-container {
     position: absolute;
     top: 0; /* Aligns to the top edge of the parent */

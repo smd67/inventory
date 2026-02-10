@@ -50,7 +50,7 @@ in the database.
   // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Properties passed into component
@@ -77,8 +77,8 @@ in the database.
 
   // Watcher to reset data when path changes
   watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
+    () => [route.params.base_unit],
+    async refresh => {
       console.log("IN CreateCamera.watch.refresh");
       baseUnit.value = props.base_unit;
       baseUnitKey.value += 1;
@@ -129,6 +129,16 @@ in the database.
         const response = await api.post('/create-camera', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
+        let logStr = "Created Camera: " + name.value + 
+                      ", type=" + cameraType.value;
+        if(baseUnit.value != null) {
+          logStr +=  ", base_unit=" + baseUnit.value;
+          activity_log('Base Unit', 
+                       baseUnit.value, 
+                       'Added Camera ' + name.value + ' to Base Unit ' + baseUnit.value);
+        }
+        activity_log('Camera', name.value, logStr);
+        
     } catch (e) {
         loading.value = false;
         console.error('Error inserting data:', e);

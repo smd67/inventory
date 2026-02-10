@@ -40,7 +40,7 @@ in the database.
   // Imports
   import { ref, onMounted, defineProps, watch, computed } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Properties passed into component
@@ -67,11 +67,12 @@ in the database.
   
   // Watcher to reset data when path changes
   watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
+    () => [route.params.base_unit_id, route.params.base_unit_name],
+    async refresh => {
       console.log("IN AddOtherItem.watch.refresh");
       baseUnitRef.value = props.base_unit_id;
       baseUnitName.value = props.base_unit_name;
+      otherItem.value = null;
       fetchAvailableOtherItems();
       console.log("OUT AddOtherItem.watch.refresh");
     }
@@ -82,7 +83,7 @@ in the database.
     console.log('IN AddOtherItem.onMounted');
     baseUnitRef.value = props.base_unit_id;
     baseUnitName.value = props.base_unit_name;
-
+    otherItem.value = null;
     fetchAvailableOtherItems();
     console.log('OUT AddOtherItem.onMounted. baseUnitRef=' + baseUnitRef.value + ', baseUnitName=' + baseUnitName.value);
   });
@@ -142,6 +143,12 @@ in the database.
         const response = await api.post('/update-other-item', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
+        activity_log('Base Unit', 
+                     baseUnitName.value, 
+                     'Adding Other Item ' + otherItem.value + ' to Base Unit ' + baseUnitName.value);
+        activity_log('Other Item', 
+                     otherItem.value, 
+                     'Added to Base Unit ' + baseUnitName.value);
     } catch (e) {
         loading.value = false;
         console.error('Error updating data:', e);

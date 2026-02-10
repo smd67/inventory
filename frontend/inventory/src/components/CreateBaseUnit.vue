@@ -52,9 +52,8 @@ in the database.
 <script setup>
   // Imports
   import { ref, onMounted, watch } from 'vue';
-  import axios from 'axios';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Data
@@ -76,14 +75,16 @@ in the database.
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
       console.log("IN Create.watch.refresh");
-      name.value = null;
-      nameKey.value += 1;
-      location.value = null;
-      locationKey.value += 1;
-      has_new_feet.value = false;
-      hasNewFeetKey.value += 1;
-      has_new_mast_bearing.value = false;
-      hasNewMastBearingKey.value += 1;
+      if(oldFullPath.includes("/prototype")){
+        name.value = null;
+        nameKey.value += 1;
+        location.value = null;
+        locationKey.value += 1;
+        has_new_feet.value = false;
+        hasNewFeetKey.value += 1;
+        has_new_mast_bearing.value = false;
+        hasNewMastBearingKey.value += 1;
+      }
       console.log("OUT Create.watch.refresh");
     }
   );
@@ -119,6 +120,12 @@ in the database.
     try {
         const response = await api.post('/create-base-unit', requestBody, config);
         console.log("status=" + response.status);
+        activity_log('Base Unit', 
+                     name.value, 
+                     "Created Base Unit: " + name.value + 
+                     " at location=" + location.value +
+                     ", has_new_mast_bearing=" + has_new_mast_bearing.value +
+                     ", has_new_feet=" + has_new_feet.value);
         loading.value = false;
     } catch (e) {
         loading.value = false;

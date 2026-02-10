@@ -23,11 +23,11 @@ camera.
               :key="nameKey"
               readonly
             ></v-text-field>
-            <v-text-field
+            <v-select
               v-model="baseUnit"
-              :key="baseUnitKey"
+              :items="baseUnitNames"
               label="Base Unit"
-            ></v-text-field>
+            ></v-select>
             <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
@@ -44,12 +44,16 @@ camera.
   // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log, fetchBaseUnitNames} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Properties passed in to the component
   const props = defineProps({
     name: {
+      type: String,
+      default: null,
+    },
+    base_unit_name: {
       type: String,
       default: null,
     }
@@ -63,19 +67,21 @@ camera.
   const route = useRoute();
   const nameKey = ref(0);
   const baseUnitKey = ref(0);
+  const baseUnitNames = ref([]);
   const errorDialog = ref(null);
 
   // A watcher that updates data when the path changes.
-  watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
-      console.log("IN UpdateCamera.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
+   watch(
+    () => [route.params.name, route.params.base_unit_name],
+    async refresh => {
+      console.log("IN UpdateCamera.watch.refresh");
       baseUnit.value = props.base_unit;
       baseUnitKey.value += 1;
       name.value = props.name;
       nameKey.value += 1;
-      baseUnit.value = null;
+      baseUnit.value = props.base_unit_name;
       baseUnitKey.value += 1;
+      baseUnitNames.value = await fetchBaseUnitNames();
       console.log("OUT UpdateCamera.watch.refresh");
     }
   );
@@ -85,9 +91,10 @@ camera.
     console.log('IN UpdateCamera.onMounted');
     name.value = props.name;
     nameKey.value += 1;
-    baseUnit.value = null;
+    baseUnit.value = props.base_unit_name;
     baseUnitKey.value += 1;
-    console.log('OUT UpdateCamera.onMounted');
+    baseUnitNames.value = await fetchBaseUnitNames();
+    console.log('OUT UpdateCamera.onMounted. baseUnit.value=' + baseUnit.value + "; props.base_unit_name=" +  props.base_unit_name);
   });
 
   // Go back to previous page.
@@ -114,6 +121,14 @@ camera.
         const response = await api.post('/update-camera', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
+        if(props.base_unit != baseUnit.value){
+            activity_log('Base Unit', 
+                          baseUnit.value, 
+                          "Camera " + name.value + " moved to Base Unit " + baseUnit.value);
+            activity_log('Camera', 
+                          name.value, 
+                          "Moved to Base Unit " + baseUnit.value);
+        }
     } catch (e) {
         loading.value = false;
         console.error('Error updating data:', e);

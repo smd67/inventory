@@ -63,14 +63,12 @@ database.
 
   // Resets data when path changes
   watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
-      console.log("IN AddNote.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
-      if(newFullPath.includes("/add-note")){
-        itemType.value = props.item_type;
-        itemRef.value = props.item_ref;
-        description.value = null;
-      }
+    () => [route.params.item_ref, route.params.item_type],
+    async refresh => {
+      console.log("IN AddNote.watch.refresh");
+      itemType.value = props.item_type;
+      itemRef.value = props.item_ref;
+      description.value = null;
       console.log('OUT AddNote.watch.refresh. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
     }
   );

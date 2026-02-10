@@ -4,6 +4,7 @@ This file contains a common database class.
 
 import os
 from typing import Any, Dict, List, Optional
+from datetime import datetime
 
 import model
 import psycopg
@@ -237,6 +238,7 @@ class Database:
                     last_done_date=row[2],
                     item_type=model.ItemType.from_str(row[3]),
                     item_ref=row[4],
+                    due_date=row[5]
                 )
                 maint_list.append(maint_task)
         print("OUT Database.get_maintenance_tasks")
@@ -452,6 +454,8 @@ class Database:
 
         return other_list
 
+        return other_list
+
     def create_base_unit(
         self,
         name: str,
@@ -589,7 +593,7 @@ class Database:
         print("OUT create_other_item")
 
     def add_maintenance_task(
-        self, description: str, last_done: str, item_type: str, item_ref: int
+        self, description: str, due_date: str, item_type: str, item_ref: int
     ) -> None:
         """
         Add a maintenance task to the database.
@@ -598,8 +602,8 @@ class Database:
         ----------
         description : str
             The name of the maintenance task
-        last_done : str
-            The date the task was last done in string format
+        due_date : str
+            The date the task is due in string format
         item_type : str
             The type of item the task is associated with.
         item_ref : int
@@ -610,9 +614,9 @@ class Database:
         with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(
-                "insert into maintenance (description, last_done, item_type, "
+                "insert into maintenance (description, due_date, item_type, "
                 + "item_ref) "
-                + f"values('{description}', '{last_done}', '{item_type}', "
+                + f"values('{description}', '{due_date}', '{item_type}', "
                 + f"{item_ref})"
             )
             self.connection.commit() # pylint: disable=no-member
@@ -620,7 +624,7 @@ class Database:
         print("OUT add_maintenance_task")
 
     def add_maintenance_task_by_name(
-        self, description: str, last_done: str, item_type: str, item_name: str
+        self, description: str, due_date: str, item_type: str, item_name: str
     ) -> None:
         """
         Add a maintenance task to the database.
@@ -629,8 +633,8 @@ class Database:
         ----------
         description : str
             The name of the maintenance task
-        last_done : str
-            The date the task was last done in string format
+        due_date : str
+            The date the task is due in string format
         item_type : str
             The type of item the task is associated with.
         item_ref : int
@@ -661,22 +665,13 @@ class Database:
             record = cursor.fetchone()
             item_ref = record[0]
 
-            if last_done:
-                # Execute a command
-                cursor.execute(
-                    "insert into maintenance (description, last_done, item_type, "
-                    + "item_ref) "
-                    + f"values('{description}', '{last_done}', '{item_type}', "
-                    + f"{item_ref})"
-                )
-            else:
-                # Execute a command
-                cursor.execute(
-                    "insert into maintenance (description, last_done, item_type, "
-                    + "item_ref) "
-                    + f"values('{description}', now(), '{item_type}', "
-                    + f"{item_ref})"
-                )
+            # Execute a command
+            cursor.execute(
+                "insert into maintenance (description, due_date, item_type, "
+                + "item_ref) "
+                + f"values('{description}', '{due_date}', '{item_type}', "
+                + f"{item_ref})"
+            )
             self.connection.commit() # pylint: disable=no-member
 
         print("OUT add_maintenance_task_by_name")
@@ -1123,12 +1118,13 @@ class Database:
                     last_done_date=row[2],
                     item_type=model.ItemType.from_str(row[3]).value,
                     item_name=item_name,
+                    due_date=row[5]
                 )
                 maint_list.append(maint_task)
         print("OUT Database.get_expired_maintenance_tasks")
         return maint_list
 
-    def complete_maintenance_task(self, id: int) -> None:
+    def complete_maintenance_task(self, id: int, due_date: str) -> None:
         """
         Complete a maintenance task by updating the last done date to the
         current date (now).
@@ -1142,7 +1138,82 @@ class Database:
         with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(
-                f"update maintenance set last_done=now() where id={id}"
+                f"update maintenance set last_done=now(), " 
+                + f"due_date='{due_date}' where id={id}"
             )
             self.connection.commit() # pylint: disable=no-member
         print("OUT complete_maintenance_task")
+
+    def activity_log(self, 
+                     item_type: str,
+                     item_name: str,
+                     description: str,
+                     technician_name: str):
+        print("IN Database.activity_log")
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            item_type_enum = model.ItemType.from_str_value(item_type)
+            try:
+                if technician_name:
+                    # Execute a command
+                    cursor.execute(
+                        "insert into activity_log (item_type, item_name, " 
+                        + "description, technician_name) "
+                        + f"values('{item_type_enum.name}', '{item_name}', "
+                        + f"'{description}', '{technician_name}')"
+                    )
+                else:
+                    cursor.execute(
+                        "insert into activity_log (item_type, item_name, " 
+                        + "description) "
+                        + f"values('{item_type_enum.name}', '{item_name}', " 
+                        + f"'{description}')"
+                    )
+
+            except Exception as e:
+                # If any statement fails, roll back all changes within the
+                # transaction
+                self.connection.rollback() # pylint: disable=no-member
+                print(f"Transaction failed: {e}")
+                raise e
+            finally:
+                self.connection.commit() # pylint: disable=no-member
+
+        print("OUT Database.activity_log")
+
+    def get_activity_log(self, item_type: str, item_name: str) -> \
+        List[model.ActivityLogQueryResult]:
+        print("IN Database.get_activity_log")
+        activity_log_list:  List[model.ActivityLogQueryResult] = []
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            item_type_enum = model.ItemType.from_str_value(item_type)
+            try:
+                item_type_enum = model.ItemType.from_str_value(item_type)
+                # Execute a command
+                cursor.execute(
+                    "select date, item_type, item_name, description, technician_name " 
+                    + "from activity_log "
+                    + f"where item_type='{item_type_enum.name}' and "
+                    + f"item_name='{item_name}' order by date ASC"
+                )
+                # Fetch the results
+                for row in cursor:
+                    item_type_enum = model.ItemType.from_str(row[1])
+                    log = model.ActivityLogQueryResult(
+                        date = row[0],
+                        item_type=item_type_enum.value, 
+                        item_name=row[2],
+                        description=row[3],
+                        technician_name=row[4]
+                    )
+                    activity_log_list.append(log)
+            except Exception as e:
+                # If any statement fails, roll back all changes within the
+                # transaction
+                self.connection.rollback() # pylint: disable=no-member
+                print(f"Transaction failed: {e}")
+                raise e
+            finally:
+                self.connection.commit() # pylint: disable=no-member
+        print("OUT Database.get_activity_log")
+        return activity_log_list
+        

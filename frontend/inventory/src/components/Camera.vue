@@ -199,6 +199,7 @@ notes or maintenance tasks.
   const maintHeaders = ref([
     {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
     {title: 'Last Done', value: 'last_done_date' , sortable: true},
+    {title: 'Due Date', value: 'due_date' , sortable: true},
     // ... other headers
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
@@ -228,15 +229,25 @@ notes or maintenance tasks.
   });
 
   // Watcher to reset data when path changes.
-  watch(
+  
+
+   watch(
+    // fetch the user information when params change
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
-      console.log('IN Camera.watch');
+      console.log('IN Camera.watch.refresh');
+      if(oldFullPath.includes("/prototype") || oldFullPath.includes("/base-unit")){
+        id.value = props.id;
+        name.value = props.name;
+        location.value = props.location;
+        baseUnit.value = props.base_unit;
+        cameraType.value = props.camera_type;
+      }
       fetchNotes();
       notesKey.value += 1;
       fetchMaintTasks();
       maintKey.value += 1;
-      console.log('OUT Camera.watch');
+      console.log('OUT Camera.watch.refresh');
     }
   );
 
@@ -265,7 +276,7 @@ notes or maintenance tasks.
   // Add a maintenance task to the camera.
   const addMaintenanceTask = () => {
     console.log("IN addMaintenanceTask");
-    router.push({name: 'add-maintenance-task', params: {item_type: 'CAMERA', item_ref: id.value}}).catch(failure => {
+    router.push({name: 'add-maintenance-task', params: {item_type: 'CAMERA', item_ref: id.value, item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT addMaintenanceTask");
@@ -274,7 +285,7 @@ notes or maintenance tasks.
   // Update a maintenance task
   const updateMaintenanceTask = (item) => {
     console.log("IN updateMaintenanceTask. item=" + JSON.stringify(item));
-    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, last_done_date: item.last_done_date}}).catch(failure => {
+    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, item_type: 'Camera', item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT updateMaintenanceTask");

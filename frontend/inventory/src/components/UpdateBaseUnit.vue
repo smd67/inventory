@@ -55,7 +55,7 @@ unit.
   // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
   import ConfirmDialog from './ConfirmDialog.vue';
 
@@ -88,8 +88,8 @@ unit.
   const name = ref(null);
   const id = ref(null);
   const location = ref(null);
-  const hasNewFeet = ref(null);
-  const hasNewMastBearing = ref(null);
+  const hasNewFeet = ref(false);
+  const hasNewMastBearing = ref(false);
   const router = useRouter();
   const route = useRoute();
   const nameKey = ref(0);
@@ -101,17 +101,17 @@ unit.
 
   // A watcher to reset data when the path changes.
   watch(
-    () => route.fullPath,
-    async (newFullPath, oldFullPath) => {
-      console.log("IN UpdateBaseUnit.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
+    () => [route.params.name, route.params.id, route.params.location, route.params.has_new_feet, route.params.has_new_mast_bearing],
+    async refresh => {
+      console.log("IN UpdateBaseUnit.watch.refresh");
       name.value = props.name;
       nameKey.value += 1;
-      location.value = null;
+      location.value = props.location;
       locationKey.value += 1;
       id.value = props.id;
-      hasNewFeet.value = props.has_new_feet;
+      hasNewFeet.value = (props.has_new_feet === 'true');
       hasNewFeetKey.value += 1;
-      hasNewMastBearing.value = props.has_new_mast_bearing;
+      hasNewMastBearing.value = (props.has_new_mast_bearing === 'true');
       hasNewMastBearingKey.value += 1;
       console.log("OUT UpdateBaseUnit.watch.refresh");
     }
@@ -119,17 +119,18 @@ unit.
 
   // Initialize data when component mounts.
   onMounted(async () => {
-    console.log('IN onMounted');
+    console.log('IN UpdateBaseUnit.onMounted');
     name.value = props.name;
     nameKey.value += 1;
     location.value = props.location;
     locationKey.value += 1;
     id.value = props.id;
-    hasNewFeet.value = props.has_new_feet;
+    hasNewFeet.value = (props.has_new_feet === 'true');
     hasNewFeetKey.value += 1;
-    hasNewMastBearing.value = props.has_new_mast_bearing;
+    hasNewMastBearing.value = (props.has_new_mast_bearing === 'true');
     hasNewMastBearingKey.value += 1;
-    console.log('OUT onMounted');
+    console.log("location=" + location.value + "; props.location=" + props.location);
+    console.log('OUT UpdateBaseUnit.onMounted. hasNewFeet=' + hasNewFeet.value + ":" + typeof hasNewFeet.value + "; hasNewMastBearing=" + hasNewMastBearing.value + ":" + typeof hasNewMastBearing.value);
   });
 
   // Go back to previous page.
@@ -165,6 +166,26 @@ unit.
         if (result) {
           const response = await api.post('/update-base-unit', requestBody, config);
           console.log("status=" + response.status);
+          console.log('hasNewFeet=' + hasNewFeet.value + ":" + typeof hasNewFeet.value + "; hasNewMastBearing=" + hasNewMastBearing.value + ":" + typeof hasNewMastBearing.value);
+
+          if(props.location !== location.value){
+            activity_log('Base Unit', 
+                          name.value, 
+                          "Location changed from: " + props.location +
+                          " to: " + location.value);
+          }
+          if((props.has_new_mast_bearing === 'true') !== hasNewMastBearing.value){
+            activity_log('Base Unit', 
+                          name.value, 
+                          "Has New Mast Bearing changed from: " + props.has_new_mast_bearing +
+                          " to: " + hasNewMastBearing.value);
+          }
+          if((props.has_new_feet === 'true') != hasNewFeet.value){
+            activity_log('Base Unit', 
+                          name.value, 
+                          "Has New Feet changed from: " + props.has_new_feet +
+                          " to: " + hasNewFeet.value);
+          }
           loading.value = false;
         }
     } catch (e) {
