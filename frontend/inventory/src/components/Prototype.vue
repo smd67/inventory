@@ -763,6 +763,28 @@ upper right for generating reports.
   }
 </style>
 <style scoped>
+  /* Add basic styling for the table if needed */
+  .my-division {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 100px;
+  }
+  .spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
   .tools-menu-container {
     position: absolute;
     top: 0; /* Aligns to the top edge of the parent */

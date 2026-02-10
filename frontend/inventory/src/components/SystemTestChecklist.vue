@@ -19,9 +19,13 @@ maintenance tasks whose last due date is >= 6 months.
           <v-card>
             <v-toolbar color="#4F9153" density="compact" :elevation="8" title="System Test Checklist">
             </v-toolbar>
-
-            <div class="d-flex flex-row">
-              <v-tabs v-model="activeTab" bg-color="#F5F5DC" direction="vertical">
+            <div :class="[$vuetify.display.mdAndUp ? 'd-flex flex-row' : '']">
+              <v-tabs 
+                v-model="activeTab" 
+                bg-color="#F5F5DC" 
+                :direction="$vuetify.display.mdAndUp ? 'vertical' : 'horizontal'"
+                :vertical="!$vuetify.display.mdAndUp"
+              >
                 <v-tab text="General" value="general_tab"></v-tab>
                 <v-tab
                   v-for="item in faceCameras"
@@ -67,9 +71,7 @@ maintenance tasks whose last due date is >= 6 months.
                 <v-tabs-window-item value="general_tab">
                   <v-card flat v-if="activeTab === 'general_tab'">
                     <v-card-text>
-                      <!-- Checkbox Group in Tab 1 -->
                       <div class="checkbox-grid">
-                        <!-- Another Checkbox Group in Tab 10 -->
                         <v-checkbox
                           v-for="item in generalCheckbox"
                           v-model="generalItems"
@@ -103,8 +105,6 @@ maintenance tasks whose last due date is >= 6 months.
                     </v-card-text>
                   </v-card>
                 </v-tabs-window-item>
-                
-                
                 <v-tabs-window-item 
                   v-for="top_item in licensePlateCameras" 
                   :value="`license_plate_camera_tab_${top_item }`"
@@ -125,8 +125,6 @@ maintenance tasks whose last due date is >= 6 months.
                     </v-card-text>
                   </v-card>
                 </v-tabs-window-item>
-
-
                 <v-tabs-window-item 
                   v-for="top_item in widescreenCameras"
                   :value="`widescreen_camera_tab_${top_item}`"
@@ -1081,6 +1079,11 @@ maintenance tasks whose last due date is >= 6 months.
     }
     .outer-div {
       width: 100%;
+    }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: 1fr; /* Creates two equal-width columns */
+      gap: 5px;
     }
   }
 </style>
