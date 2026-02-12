@@ -105,6 +105,63 @@ notes or maintenance tasks.
     <v-container  class="table-container">
       <v-row>
         <div style="color: green; font-size: 18px">
+          Issues
+        </div>
+      </v-row>
+      <v-row>
+        <v-data-table
+          :headers="issuesHeaders"
+          :items="issuesTable"
+          :search="issuesSearch"
+          item-value="date"
+          class="elevation-1"
+          :key="issuesKey"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="issuesSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="addIssue">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+          </template>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deleteIssue(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+          <template v-slot:item.description="{ item }">
+            <div class="pre-wrap-cell">
+              {{ item.description }}
+            </div>
+          </template>
+        </v-data-table>
+      </v-row>
+    </v-container>
+    <v-container  class="table-container">
+      <v-row>
+        <div style="color: green; font-size: 18px">
           Maintenance Tasks
         </div>
       </v-row>
@@ -166,7 +223,7 @@ notes or maintenance tasks.
   // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ConfirmDialog from './ConfirmDialog.vue';
   import ErrorDialog from './ErrorDialog.vue';
 
@@ -182,14 +239,24 @@ notes or maintenance tasks.
   const router = useRouter();
   const route = useRoute();
   const notesTable = ref([]);
+  const issuesTable = ref([]);
   const maintTable = ref([]);
   const notesSearch = ref('');
+  const issuesSearch = ref('');
   const maintSearch = ref('');
   const notesKey = ref(0);
+  const issuesKey = ref(0);
   const maintKey = ref(0);
   
   // Table headers 
   const notesHeaders = ref([
+    {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
+    {title: 'Description', value: 'description' , sortable: true},
+    // ... other headers
+    { text: 'Actions', value: 'actions', sortable: false }, // New actions column
+  ]);
+
+  const issuesHeaders = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
     {title: 'Description', value: 'description' , sortable: true},
     // ... other headers
@@ -245,6 +312,8 @@ notes or maintenance tasks.
       }
       fetchNotes();
       notesKey.value += 1;
+      fetchIssues();
+      issuesKey.value += 1;
       fetchMaintTasks();
       maintKey.value += 1;
       console.log('OUT Camera.watch.refresh');
@@ -261,6 +330,8 @@ notes or maintenance tasks.
     cameraType.value = props.camera_type;
     fetchNotes();
     notesKey.value += 1;
+    fetchIssues();
+    issuesKey.value += 1;
     fetchMaintTasks();
     maintKey.value += 1;
     console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; base_unit=' + baseUnit.value);
@@ -312,6 +383,7 @@ notes or maintenance tasks.
       };
       try {
           const response = await api.post('/delete-maintenance-task', requestBody, config);
+          activity_log('Camera', name.value, 'Maintenance Task Closed: ' + item.description);
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -335,7 +407,7 @@ notes or maintenance tasks.
   // Add a note and associate it with a camera.
   const addNote = () => {
     console.log("IN addNote");
-    router.push({name: 'add-note', params: {item_type: 'CAMERA', item_ref: id.value}}).catch(failure => {
+    router.push({name: 'add-note', params: {item_type: 'CAMERA', item_ref: id.value, item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT addNote");
@@ -406,6 +478,86 @@ notes or maintenance tasks.
           { color: 'red lighten-3' }
         );
     }
+  };
+
+
+  // Add a issue and associate it with a camera.
+  const addIssue = () => {
+    console.log("IN Camera.addIssue");
+    router.push({name: 'add-issue', params: {item_type: 'CAMERA', item_ref: id.value, item_name: name.value}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT Camera.addIssue");
+  }
+
+  // Delete an issue from the database.
+  const deleteIssue = async (item) => {
+    console.log("IN Camera.deleteIssue item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this issue?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+      };
+      try {
+          const response = await api.post('/delete-issue', requestBody, config);
+          activity_log('Camera', name.value, 'Issue Closed: ' + item.description);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          // Call the dialog's open function using the template ref
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting data:' + e,
+            { color: 'red lighten-3' }
+          );
+      }
+      console.log('Issue deleted!');
+      fetchIssues();
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT Camera.deleteIssue");
+  };
+
+  // Fetch all of the issues related to the camera.
+  const fetchIssues = async () => {
+    console.log("OUT Camera.fetchIssues");
+    const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+    const requestBody = {
+      item_type: 'Camera',
+      item_ref: id.value,
+    };
+    try {
+        const response = await api.post('/get-issues', requestBody, config);
+        issuesTable.value = response.data;
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        console.log("error=" + e)
+        // Call the dialog's open function using the template ref
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error fetching data:' + e,
+          { color: 'red lighten-3' }
+        );
+    }
+    console.log("OUT Camera.fetchIssues");
   };
 
   // Fetch all of the maintenance tasks related to the camera.

@@ -97,6 +97,63 @@ This file is the vue component implementation for an other items detail screen.
     </v-container>
     <v-container class="table-container">
       <v-row>
+        <div style="color: green; font-size: 18px">
+          Issues
+        </div>
+      </v-row>
+      <v-row>
+        <v-data-table
+          :headers="issuesHeaders"
+          :items="issuesTable"
+          :search="issuesSearch"
+          item-value="date"
+          class="elevation-1"
+          :key="issuesKey"
+        >
+          <!-- If you still want the default pagination controls alongside the search -->
+          <template v-slot:footer.prepend>
+            <v-text-field
+              v-model="issuesSearch"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              variant="outlined"
+              bg-color="#f5f5f5"
+              hide-details
+              class="flex-grow-1 mr-4"
+            ></v-text-field>
+            <!-- Add a v-spacer if needed to align items correctly with default footer content -->
+            <v-spacer></v-spacer>
+            <v-btn color="primary" dark small class="ma-2" @click="addIssue">
+              <v-icon left>mdi-plus</v-icon>
+              Add
+            </v-btn>
+          </template>
+          <!-- Use the specific slot name 'item.actions' -->
+          <template v-slot:item.actions="{ item }">
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                  <v-icon>mdi-dots-vertical</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item @click="deleteIssue(item)">
+                  <v-list-item-title>Delete</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </template>
+          <template v-slot:item.description="{ item }">
+            <div class="pre-wrap-cell">
+              {{ item.description }}
+            </div>
+          </template>
+        </v-data-table>
+      </v-row>
+    </v-container>
+    <v-container class="table-container">
+      <v-row>
         <div style="color: green; font-size: 18px;">
           Maintenance Tasks
         </div>
@@ -161,7 +218,7 @@ This file is the vue component implementation for an other items detail screen.
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import ConfirmDialog from './ConfirmDialog.vue';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Data
@@ -174,15 +231,25 @@ This file is the vue component implementation for an other items detail screen.
   const router = useRouter();
   const route = useRoute();
   const notesTable = ref([]);
+  const issuesTable = ref([]);
   const maintTable = ref([]);
   const notesSearch = ref('');
+  const issuesSearch = ref('');
   const maintSearch = ref('');
   const notesKey = ref(0);
+  const issuesKey = ref(0);
   const maintKey = ref(0);
   const confirmDialog = ref(null);
   
   // Table headers
   const notesHeaders = ref([
+    {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
+    {title: 'Description', value: 'description' , sortable: true},
+    // ... other headers
+    { text: 'Actions', value: 'actions', sortable: false }, // New actions column
+  ]);
+
+  const issuesHeaders = ref([
     {title: 'Date', align: 'start', value: 'date', sortable: true, value: 'date', class: 'blue lighten-5'},
     {title: 'Description', value: 'description' , sortable: true},
     // ... other headers
@@ -219,15 +286,20 @@ This file is the vue component implementation for an other items detail screen.
   
   // fetch the user information when params change
   watch(
-    () => [route.params.id, route.params.name, route.params.base_unit, route.params.location],
-    async refresh => {
+    // fetch the user information when params change
+    () => route.fullPath,
+    async (newFullPath, oldFullPath) => {
       console.log("IN watch.refresh. props=" + JSON.stringify(props));
-      id.value = props.id;
-      name.value = props.name;
-      location.value = props.location;
-      baseUnit.value = props.base_unit;
+      if(oldFullPath.includes("/prototype")){
+        id.value = props.id;
+        name.value = props.name;
+        location.value = props.location;
+        baseUnit.value = props.base_unit;
+      }
       fetchNotes();
       notesKey.value += 1;
+      fetchIssues();
+      issuesKey.value += 1;
       fetchMaintTasks();
       maintKey.value += 1;
     }
@@ -242,6 +314,8 @@ This file is the vue component implementation for an other items detail screen.
     baseUnit.value = props.base_unit;
     fetchNotes();
     notesKey.value += 1;
+    fetchIssues();
+    issuesKey.value += 1;
     fetchMaintTasks();
     maintKey.value += 1;
     console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; base_unit=' + baseUnit.value);
@@ -294,13 +368,14 @@ This file is the vue component implementation for an other items detail screen.
       };
       try {
           const response = await api.post('/delete-maintenance-task', requestBody, config);
+          activity_log('Other Item', name.value, 'Maintenance Task Closed: ' + item.description);
           loading.value = false;
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
           const result = await errorDialog.value.open(
             'Confirm Error',
-            'Error deleting note:' + e,
+            'Error deleting task:' + e,
             { color: 'red lighten-3' }
           );
       }
@@ -316,7 +391,7 @@ This file is the vue component implementation for an other items detail screen.
   // Add a note to the database
   const addNote = () => {
     console.log("IN addNote");
-    router.push({name: 'add-note', params: {item_type: 'OTHER', item_ref: id.value}}).catch(failure => {
+    router.push({name: 'add-note', params: {item_type: 'OTHER', item_ref: id.value, item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT addNote");
@@ -385,6 +460,83 @@ This file is the vue component implementation for an other items detail screen.
           { color: 'red lighten-3' }
         );
     }
+  };
+
+  // Add an issue to the database
+  const addIssue = () => {
+    console.log("IN OtherItem.addNote");
+    router.push({name: 'add-issue', params: {item_type: 'OTHER', item_ref: id.value, item_name: name.value}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT OtherItem.addIssue");
+  }
+
+  // Delete an issue from the database
+  const deleteIssue = async (item) => {
+    console.log("IN OtherItem.deleteIssue item=" + JSON.stringify(item));
+    // Call the dialog's open function using the template ref
+    const result = await confirmDialog.value.open(
+      'Confirm Deletion',
+      'Are you sure you want to delete this issue?',
+      { color: 'red lighten-3' }
+    );
+
+    if (result) {
+      const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      };
+      const requestBody = {
+        id: item.id,
+      };
+      try {
+          const response = await api.post('/delete-issue', requestBody, config);
+          activity_log('Other Item', name.value, 'Issue Closed: ' + item.description);
+          loading.value = false;
+      } catch (e) {
+          loading.value = false;
+          console.log("error=" + e)
+          const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error deleting issue:' + e,
+            { color: 'red lighten-3' }
+          );
+      }
+      console.log('Issue deleted!');
+      fetchNotes();
+    } else {
+      console.log('Deletion cancelled.');
+    }
+    console.log("OUT OtherItem.deleteIssue");
+  };
+
+  // Retrieve issues from the database through a REST call.
+  const fetchIssues = async () => {
+    console.log("IN OtherItem.fetchIssues");
+    const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+    const requestBody = {
+      item_type: 'Other Item',
+      item_ref: id.value,
+    };
+    try {
+        const response = await api.post('/get-issues', requestBody, config);
+        notesTable.value = response.data;
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        console.log("error=" + e)
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error fetching data:' + e,
+          { color: 'red lighten-3' }
+        );
+    }
+    console.log("OUT OtherItem.fetchIssues");
   };
 
   // Retrieve maintenance tasks from the database through a REST call.

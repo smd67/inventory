@@ -86,29 +86,6 @@ def get_has_new_feet() -> List[model.BaseUnitQueryResult]:
     return results
 
 
-@app.post("/get-notes")
-def get_notes(query: model.NotesQuery) -> List[model.Notes]:
-    """
-    Get the notes associated with an item.
-
-    Parameters
-    ----------
-    query : model.NotesQuery
-        A query that contains the type and reference for the item to get the
-        notes for.
-
-    Returns
-    -------
-    List[model.Notes]
-        A list of notes associated with the item.
-    """
-    print("IN Endpoint.get_notes")
-    db = Database()
-    note_list = db.get_notes(query.item_type, query.item_ref)
-    print(f"OUT Endpoint.get_notes. note_list={note_list}")
-    return note_list
-
-
 @app.post("/get-maint-tasks")
 def get_maint_tasks(
     query: model.MaintenanceTaskQuery,
@@ -432,60 +409,6 @@ def delete_maintenance_task(query: model.MaintenanceTaskDelete) -> None:
     print("OUT add-maintenance-task")
 
 
-@app.post("/add-note")
-def add_note(query: model.NotesCreate) -> None:
-    """
-    Add a note to the database.
-
-    Parameters
-    ----------
-    query : model.NotesCreate
-        A query with all of the parameters to create the note.
-
-    Raises
-    ------
-    HTTPException
-        Used to return a 500 internal server error
-    """
-    print(f"IN add-note query={query}")
-    try:
-        db = Database()
-        db.add_note(query.description, query.item_type, query.item_ref)
-    except Exception as e:
-        print(f"An unexpected exception e={e} has occured")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An unexpected exception e={e} has occured",
-        )
-    print("OUT add-note")
-
-
-@app.post("/delete-note")
-def delete_note(query: model.NotesDelete) -> None:
-    """
-    Delete a note from the database.
-
-    Parameters
-    ----------
-    query : model.NotesDelete
-        A query with all of the parameters to delete a note.
-
-    Raises
-    ------
-    HTTPException
-        Used to return a 500 internal server error
-    """
-    print(f"IN delete-note query={query}")
-    try:
-        db = Database()
-        db.delete_note(query.id)
-    except Exception as e:
-        print(f"An unexpected exception e={e} has occured")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"An unexpected exception e={e} has occured",
-        )
-    print("OUT delete-note")
 
 
 @app.post("/delete-other-item")
@@ -789,3 +712,189 @@ def get_activity_log(query: model.ActivityLogQuery) -> None:
     print("OUT Endpoint.get_activity_log")
     return results
     
+@app.post("/get-notes")
+def get_notes(query: model.NotesQuery) -> List[model.Notes]:
+    """
+    Get the notes associated with an item.
+
+    Parameters
+    ----------
+    query : model.NotesQuery
+        A query that contains the type and reference for the item to get the
+        notes for.
+
+    Returns
+    -------
+    List[model.Notes]
+        A list of notes associated with the item.
+    """
+    print("IN Endpoint.get_notes")
+    db = Database()
+    note_list = db.get_notes(query.item_type, query.item_ref)
+    print(f"OUT Endpoint.get_notes. note_list={note_list}")
+    return note_list
+
+@app.post("/add-note")
+def add_note(query: model.NotesCreate) -> None:
+    """
+    Add a note to the database.
+
+    Parameters
+    ----------
+    query : model.NotesCreate
+        A query with all of the parameters to create the note.
+
+    Raises
+    ------
+    HTTPException
+        Used to return a 500 internal server error
+    """
+    print(f"IN add-note query={query}")
+    try:
+        db = Database()
+        db.add_note(query.description, query.item_type, query.item_ref)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print("OUT add-note")
+
+
+@app.post("/delete-note")
+def delete_note(query: model.NotesDelete) -> None:
+    """
+    Delete a note from the database.
+
+    Parameters
+    ----------
+    query : model.NotesDelete
+        A query with all of the parameters to delete a note.
+
+    Raises
+    ------
+    HTTPException
+        Used to return a 500 internal server error
+    """
+    print(f"IN delete-note query={query}")
+    try:
+        db = Database()
+        db.delete_note(query.id)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print("OUT delete-note")
+
+
+@app.post("/get-issues")
+def get_issues(query: model.IssuesQuery) -> List[model.Issues]:
+    """
+    Get the issues associated with an item.
+
+    Parameters
+    ----------
+    query : model.IssuesQuery
+        A query that contains the type and reference for the item to get the
+        issues for.
+
+    Returns
+    -------
+    List[model.Issues]
+        A list of issues associated with the item.
+    """
+    print("IN Endpoint.get_issues")
+    db = Database()
+    item_type_enum = model.ItemType.from_str_value(query.item_type)
+    issues_list = db.get_issues(item_type_enum.name, query.item_ref)
+    print(f"OUT Endpoint.get_issues. issues_list={issues_list}")
+    return issues_list
+
+@app.post("/add-issue")
+def add_issue(query: model.IssuesCreate) -> None:
+    """
+    Add a issue to the database.
+
+    Parameters
+    ----------
+    query : model.IssuesCreate
+        A query with all of the parameters to create the issue.
+
+    Raises
+    ------
+    HTTPException
+        Used to return a 500 internal server error
+    """
+    print(f"IN add-issue query={query}")
+    try:
+        db = Database()
+        item_type_enum = model.ItemType.from_str_value(query.item_type)
+        db.add_issue(query.description, item_type_enum.name, query.item_ref)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print("OUT add-issue")
+
+
+@app.post("/add-issue-by-name")
+def add_issue_by_name(query: model.IssuesCreateByName) -> None:
+    """
+    Add a issue to the database by item name.
+
+    Parameters
+    ----------
+    query : model.IssuesCreate
+        A query with all of the parameters to create the issue.
+
+    Raises
+    ------
+    HTTPException
+        Used to return a 500 internal server error
+    """
+    print(f"IN add-issue-by-namew query={query}")
+    try:
+        db = Database()
+        db.add_issue_by_name(query.description, 
+                             query.item_type, 
+                             query.item_name)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print("OUT add-issue-by-name")
+
+
+@app.post("/delete-issue")
+def delete_issue(query: model.IssuesDelete) -> None:
+    """
+    Delete an issue from the database.
+
+    Parameters
+    ----------
+    query : model.IssuesDelete
+        A query with all of the parameters to delete an issue.
+
+    Raises
+    ------
+    HTTPException
+        Used to return a 500 internal server error
+    """
+    print(f"IN delete-issue query={query}")
+    try:
+        db = Database()
+        db.delete_issue(query.id)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print("OUT delete-issue")

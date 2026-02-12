@@ -105,6 +105,15 @@ upper right for generating reports.
                 <v-list-item @click="baseUnitHistoryReport(item)">
                   <v-list-item-title>History</v-list-item-title>
                 </v-list-item>
+                <v-list-item @click="viewBaseUnitNotes(item)">
+                  <v-list-item-title>Notes</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="viewBaseUnitIssues(item)">
+                  <v-list-item-title>Issues</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="viewBaseUnitMaintTasks(item)">
+                  <v-list-item-title>Maint Tasks</v-list-item-title>
+                </v-list-item>
               </v-list>
             </v-menu>
           </template>
@@ -168,6 +177,15 @@ upper right for generating reports.
                 <v-list-item @click="cameraHistoryReport(item)">
                   <v-list-item-title>History</v-list-item-title>
                 </v-list-item>
+                <v-list-item @click="viewCameraNotes(item)">
+                  <v-list-item-title>Notes</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="viewCameraIssues(item)">
+                  <v-list-item-title>Issues</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="viewCameraMaintTasks(item)">
+                  <v-list-item-title>Maint Tasks</v-list-item-title>
+                </v-list-item>
               </v-list>
             </v-menu>
           </template>
@@ -229,6 +247,15 @@ upper right for generating reports.
                 </v-list-item>
                 <v-list-item @click="otherItemHistoryReport(item)">
                   <v-list-item-title>History</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="viewOtherItemNotes(item)">
+                  <v-list-item-title>Notes</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="viewOtherItemIssues(item)">
+                  <v-list-item-title>Issues</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="viewOtherItemMaintTasks(item)">
+                  <v-list-item-title>Maint Tasks</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
@@ -516,6 +543,79 @@ upper right for generating reports.
     });
     console.log("OUT baseUnitHistoryReport");
   }
+
+  const viewBaseUnitNotes = (item) => {
+    console.log("IN Prototype.viewBaseUnitNotes");
+    router.push({name: 'view-notes', params: {item_type: 'BASE_UNIT', item_ref: item.id, item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT Prototype.viewBaseUnitNotes");
+  };
+
+  const viewCameraNotes = (item) => {
+    console.log("IN Prototype.viewCameraNotes");
+    router.push({name: 'view-notes', params: {item_type: 'CAMERA', item_ref: item.id, item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT Prototype.viewCameraNotes");
+  };
+
+  const viewOtherItemNotes = (item) => {
+    console.log("IN Prototype.viewOtherItemNotes");
+    router.push({name: 'view-notes', params: {item_type: 'OTHER', item_ref: item.id, item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT Prototype.viewOtherItemNotes");
+  };
+
+  const viewBaseUnitIssues = (item) => {
+    console.log("IN Prototype.viewBaseUnitIssues");
+    router.push({name: 'view-issues', params: {item_type: 'Base Unit', item_ref: item.id, item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT Prototype.viewBaseUnitIssues");
+  };
+
+  const viewCameraIssues = (item) => {
+    console.log("IN Prototype.viewCameraIssues");
+    router.push({name: 'view-issues', params: {item_type: 'Camera', item_ref: item.id, item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT Prototype.viewCameraIssues");
+  };
+
+  const viewOtherItemIssues = (item) => {
+    console.log("IN Prototype.viewOtherItemIssues");
+    router.push({name: 'view-issues', params: {item_type: 'Other Item', item_ref: item.id, item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT Prototype.viewOtherItemIssues");
+  };
+
+
+  const viewBaseUnitMaintTasks = (item) => {
+    console.log("IN Prototype.viewBaseUnitMaintTasks");
+    router.push({name: 'view-maint-tasks', params: {item_type: 'BASE_UNIT', item_ref: item.id, item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT Prototype.viewBaseUnitMaintTasks");
+  };
+
+  const viewCameraMaintTasks = (item) => {
+    console.log("IN Prototype.viewCameraMaintTasks");
+    router.push({name: 'view-maint-tasks', params: {item_type: 'CAMERA', item_ref: item.id, item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT Prototype.viewCameraMaintTasks");
+  };
+
+  const viewOtherItemMaintTasks = (item) => {
+    console.log("IN Prototype.viewOtherItemMaintTasks");
+    router.push({name: 'view-maint-tasks', params: {item_type: 'OTHER', item_ref: item.id, item_name: item.name}}).catch(failure => {
+      console.log('An unexpected navigation failure occurred:', failure);
+    });
+    console.log("OUT Prototype.viewOtherItemMaintTasks");
+  };
 
   // Create a camera object in the database.
   const createCamera = () => {

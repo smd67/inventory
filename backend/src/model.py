@@ -6,9 +6,7 @@ the frontend, backend, and database.
 from datetime import date, datetime
 from enum import Enum
 from typing import Optional, List
-
 from pydantic import BaseModel
-
 
 # Enumerated Types
 class ItemType(str, Enum):
@@ -125,41 +123,30 @@ class CameraType(str, Enum):
 
 # Model Definitions
 
-
 # BaseUnit models
 class BaseUnit(BaseModel):
     """
-    Base unit definition for db. The id is a unique field for internal use.
-    The _ref fields refer to ids in other tables.
+    Base unit base class.
     """
-
     id: int
     name: str
     location: int
 
 
-class BaseUnitQueryResult(BaseModel):
+class BaseUnitQueryResult(BaseUnit):
     """
     Base unit definitiion for ui.
     """
-
-    id: int
-    name: str
-    location: int
     has_new_mast_bearing: Optional[bool] = False
     has_new_feet: Optional[bool] = False
     face_cameras: Optional[List[str]] = None
     license_plate_cameras: Optional[List[str]] = None
     widescreen_cameras: Optional[List[str]] = None
 
-class BaseUnitQueryByNameResult(BaseModel):
+class BaseUnitQueryByNameResult(BaseUnit):
     """
     Base unit definitiion for ui.
     """
-
-    id: int
-    name: str
-    location: int
     has_new_mast_bearing: Optional[bool] = False
     has_new_feet: Optional[bool] = False
     face_cameras: Optional[List[str]] = []
@@ -170,7 +157,6 @@ class BaseUnitCreate(BaseModel):
     """
     Query to create a Base Unit
     """
-
     name: str
     location: int
     has_new_mast_bearing: Optional[bool] = False
@@ -181,18 +167,13 @@ class BaseUnitDelete(BaseModel):
     """
     Query to delete a base unit
     """
-
     id: int
 
 
-class BaseUnitUpdate(BaseModel):
+class BaseUnitUpdate(BaseUnit):
     """
     Query to update a base unit
     """
-
-    id: int
-    name: str
-    location: int
     has_new_feet: bool
     has_new_mast_bearing: bool
 
@@ -203,24 +184,25 @@ class BaseUnitQueryByName(BaseModel):
     name: str
 
 # Camera models
-class Camera(BaseModel):
+class CameraBase(BaseModel):
+    """
+    Base class for
+    """
+    id: int
+    name: str
+
+class Camera(CameraBase):
     """
     Camera definition for database
     """
-
-    id: int
-    name: str
     type: CameraType
     base_unit_ref: int
 
 
-class CameraQueryResult(BaseModel):
+class CameraQueryResult(CameraBase):
     """
     Camera definition for ui
     """
-
-    id: int
-    name: str
     type: str
     base_unit: Optional[str] = None
     location: Optional[str] = None
@@ -230,7 +212,6 @@ class CameraQuery(BaseModel):
     """
     Camera query
     """
-
     base_unit_ref: int
 
 
@@ -238,19 +219,15 @@ class CameraCreate(BaseModel):
     """
     Create a Camera
     """
-
     name: str
     camera_type: str
     base_unit: Optional[str] = None
 
 
-class CameraDelete(BaseModel):
+class CameraDelete(CameraBase):
     """
     Delete a Camera
     """
-
-    id: int
-    name: str
     type: str
     base_unit: Optional[str] = None
 
@@ -259,30 +236,30 @@ class CameraUpdate(BaseModel):
     """
     CameraItem update
     """
-
     name: str
     base_unit: str
 
 
 # Other Item models
-class OtherItem(BaseModel):
+class OtherItemBase(BaseModel):
+    """
+    Base class for Other Items
+    """
+    id: int
+    name: str
+
+class OtherItem(OtherItemBase):
     """
     Other types of generic items that may be in a base unit.
     """
-
-    id: int
-    name: str
     description: str
     base_unit_ref: int
 
 
-class OtherItemQueryResult(BaseModel):
+class OtherItemQueryResult(OtherItemBase):
     """
     OtherItem definition for ui
     """
-
-    id: int
-    name: str
     base_unit: Optional[str] = None
     location: Optional[str] = None
 
@@ -291,7 +268,6 @@ class OtherItemQuery(BaseModel):
     """
     OtherItem query
     """
-
     base_unit_ref: int
 
 
@@ -299,7 +275,6 @@ class OtherItemCreate(BaseModel):
     """
     OtherItem creation
     """
-
     name: str
     base_unit: Optional[str] = None
 
@@ -308,7 +283,6 @@ class OtherItemDelete(BaseModel):
     """
     Delete an OtherItem
     """
-
     id: int
 
 
@@ -316,7 +290,6 @@ class OtherItemUpdate(BaseModel):
     """
     OtherItem update
     """
-
     name: str
     base_unit: str
 
@@ -333,31 +306,31 @@ class Notes(BaseModel):
     item_type: ItemType
     item_ref: int
 
+class NotesQueryBase(BaseModel):
+    """
+    Base class for Notes queries
+    """
+    item_type: str
+    item_ref: int
 
-class NotesQuery(BaseModel):
+class NotesQuery(NotesQueryBase):
     """
     Return all notes for a base_unit, camera, or other item
     """
-
-    item_type: str
-    item_ref: int
+    pass
 
 
-class NotesCreate(BaseModel):
+class NotesCreate(NotesQueryBase):
     """
     Query to create a note
     """
-
     description: str
-    item_type: str
-    item_ref: int
 
 
 class NotesDelete(BaseModel):
     """
     Query to delete a note
     """
-
     id: int
 
 
@@ -366,7 +339,6 @@ class MaintenanceTask(BaseModel):
     """
     A maintenance task associated with a base unit, camera, or other item.
     """
-
     id: int
     last_done_date: Optional[date] = None
     description: str
@@ -374,47 +346,48 @@ class MaintenanceTask(BaseModel):
     item_ref: int
     due_date: Optional[date] = None
 
+class MaintenanceTaskQueryResultBase(BaseModel):
+    """
+    Base for maintenance task query results
+    """
+    item_type: str
+    item_name: str
 
-class MaintenanceTaskQueryResult(BaseModel):
+class MaintenanceTaskQueryResult(MaintenanceTaskQueryResultBase):
     """
     Results returned to UI from Maintenance Task Query.
     """
-
     id: int
     last_done_date: Optional[date] = None
     description: str
-    item_type: str
-    item_name: str
     due_date: Optional[date] = None
 
-class MaintenanceTaskQuery(BaseModel):
+class MaintenanceTaskQueryBase(BaseModel):
+    """
+    Base for maintenance task queries
+    """
+    item_type: str
+    item_ref: int
+
+class MaintenanceTaskQuery(MaintenanceTaskQueryBase):
     """
     Return all maintenance tasks for a base_unit, camera, or other item
     """
+    pass
 
-    item_type: str
-    item_ref: int
-
-
-class MaintenanceTaskCreate(BaseModel):
+class MaintenanceTaskCreate(MaintenanceTaskQueryBase):
     """
     Query to create a Maintenance Task.
     """
-
     due_date: str
     description: str
-    item_type: str
-    item_ref: int
 
-class MaintenanceTaskCreateByName(BaseModel):
+class MaintenanceTaskCreateByName(MaintenanceTaskQueryResultBase):
     """
     Query to create a Maintenance Task.
     """
-
     due_date: str
     description: str
-    item_type: str
-    item_name: str
 
 class MaintenanceTaskDelete(BaseModel):
     """
@@ -432,18 +405,79 @@ class MaintenanceTaskUpdate(BaseModel):
 
 # ActivityLog models
 class ActivityLogCreate(BaseModel):
+    """
+    Query to create an activity log entry
+    """
     item_type: ItemType
     item_name: str
     description: str
     technician_name: Optional[str] = None
 
-class ActivityLogQuery(BaseModel):
+class ActivityLogQueryBase(BaseModel):
+    """
+    Base class for Activity Log Queries
+    """
     item_type: str
     item_name: str
 
-class ActivityLogQueryResult(BaseModel):
+class ActivityLogQuery(ActivityLogQueryBase):
+    """
+    Query to return activity logs based on a name and type
+    """
+    pass 
+
+class ActivityLogQueryResult(ActivityLogQueryBase):
+    """
+    Results of an activity log query
+    """
     date: datetime
+    description: str
+    technician_name: Optional[str] = None
+
+
+# Issues Models
+class Issues(BaseModel):
+    """
+    Issues that may be associated with a base unit, camera, or other type.
+    """
+
+    id: int
+    date: date
+    description: str
+    item_type: ItemType
+    item_ref: int
+
+class IssuesQueryBase(BaseModel):
+    """
+    Base class for Issues queries
+    """
+    item_type: str
+    item_ref: int
+
+class IssuesQuery(IssuesQueryBase):
+    """
+    Return all Issues for a base_unit, camera, or other item
+    """
+    pass
+
+
+class IssuesCreate(IssuesQueryBase):
+    """
+    Query to create a note
+    """
+    description: str
+
+class IssuesCreateByName(BaseModel):
+    """
+    Query to create a note by item name
+    """
     item_type: str
     item_name: str
     description: str
-    technician_name: Optional[str] = None
+    date: date
+
+class IssuesDelete(BaseModel):
+    """
+    Query to delete a note
+    """
+    id: int

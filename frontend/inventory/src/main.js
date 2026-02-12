@@ -8,6 +8,12 @@
 import { registerPlugins } from '@/plugins'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
+// Composables
+import { createApp } from 'vue'
+
+// Styles
+import 'unfonts.css'
+
 // Components
 import App from './App.vue'
 import Prototype from './components/Prototype.vue'
@@ -31,13 +37,10 @@ import SystemTestInfo from './components/SystemTestInfo.vue'
 import AddCamera from './components/AddCamera.vue'
 import AddOtherItem from './components/AddOtherItem.vue'
 import HistoryReport from './components/HistoryReport.vue'
-
-// Composables
-import { createApp } from 'vue'
-
-// Styles
-import 'unfonts.css'
-
+import AddIssue from './components/AddIssue.vue'
+import Notes from './components/Notes.vue'
+import Issues from './components/Issues.vue'
+import MaintenanceTasks from './components/MaintenanceTasks.vue'
 
 
 // Define routes
@@ -55,8 +58,12 @@ const routes = [
   { path: '/add-other-item:base_unit_name:base_unit_id', name: 'add-other-item', component: AddOtherItem, props: true},
   { path: '/update-other-item:name', name: 'update-other-item', component: UpdateOtherItem, props: true },
   { path: '/add-maintenance-task:item_type:item_ref:item_name', name: 'add-maintenance-task', component: AddMaintenanceTask, props: true },
+  { path: '/view-maint-tasks:item_type:item_ref:item_name', name: 'view-maint-tasks', component: MaintenanceTasks, props: true },
   { path: '/update-maintenance-task:id:description:item_type:item_name', name: 'update-maintenance-task', component: UpdateMaintenanceTask, props: true },
-  { path: '/add-note:item_type:item_ref', name: 'add-note', component: AddNote, props: true },
+  { path: '/add-note:item_type:item_ref:item_name', name: 'add-note', component: AddNote, props: true },
+  { path: '/view-notes:item_type:item_ref:item_name', name: 'view-notes', component: Notes, props: true },
+  { path: '/add-issue:item_type:item_ref:item_name', name: 'add-issue', component: AddIssue, props: true }, 
+  { path: '/view-issues:item_type:item_ref:item_name', name: 'view-issues', component: Issues, props: true }, 
   { path: '/mast-bearing-report', name: 'mast-bearing-report', component: MastBearingReport },
   { path: '/new-feet-report', name: 'new-feet-report', component: NewFeetReport },
   { path: '/maint-items-report', name: 'maint-items-report', component: MaintItemsReport },

@@ -163,46 +163,6 @@ class Database:
         print(f"OUT Database.get_base_unit_by_name: {bu_results}")
         return bu_results
 
-    def get_notes(self, item_type: str, item_ref: int) -> List[model.Notes]:
-        """
-        This method returns all of the notes associated with a single item.
-
-        Parameters
-        ----------
-        item_type : str
-            The type of item (base unit, camera, or other)
-        item_ref : int
-            The integer identifier of the object.
-
-        Returns
-        -------
-        List[model.Notes]
-            A list of all of the notes associated with an item.
-        """
-        print(
-            f"IN Database.get_notes. item_type={item_type}; item_ref={item_ref}"
-        )
-        note_list = []
-        # Open a cursor to perform database operations
-        with self.connection.cursor() as cur: # pylint: disable=no-member
-            # Execute a command
-            cur.execute(
-                f"SELECT * from notes WHERE item_type='{item_type}' AND "
-                + f"item_ref={item_ref}"
-            )
-            # Fetch the results
-            for row in cur:
-                note = model.Notes(
-                    id=row[0],
-                    description=row[1],
-                    date=row[2],
-                    item_type=model.ItemType.from_str(row[3]),
-                    item_ref=row[4],
-                )
-                note_list.append(note)
-        print(f"OUT Database.get_notes. note_list={note_list}")
-        return note_list
-
     def get_maintenance_tasks(
         self, item_type: str, item_ref: int
     ) -> List[model.MaintenanceTask]:
@@ -676,47 +636,6 @@ class Database:
 
         print("OUT add_maintenance_task_by_name")
 
-
-    def add_note(self, description: str, item_type: str, item_ref: int) -> None:
-        """
-        Add a note to the given item.
-
-        Parameters
-        ----------
-        description : str
-            The text of the note.
-        item_type : str
-            The type of item associated with the note.
-        item_ref : int
-            An integer reference to the item assciated with the note.
-        """
-        print("IN add_note")
-        with self.connection.cursor() as cursor: # pylint: disable=no-member
-            # Execute a command
-            cursor.execute(
-                "insert into notes (description, date, item_type, item_ref) "
-                + f"values('{description}', now(), '{item_type}', {item_ref})"
-            )
-            self.connection.commit() # pylint: disable=no-member
-
-        print("OUT add_note")
-
-    def delete_note(self, id: int) -> None:
-        """
-        Delete a note.
-
-        Parameters
-        ----------
-        id : int
-            The integer identifier of the Note object.
-        """
-        print("IN delete_note")
-        with self.connection.cursor() as cursor: # pylint: disable=no-member
-            # Execute a command
-            cursor.execute(f"delete from notes where id={id}")
-            self.connection.commit() # pylint: disable=no-member
-        print("OUT delete_note")
-
     def delete_maintenance_task(self, id: int) -> None:
         """
         Delete the maintenance task assocated with the item identified by id.
@@ -748,6 +667,10 @@ class Database:
             cursor.execute(f"delete from other_items where id={other_id}")
             cursor.execute(
                 "delete from notes where item_type="
+                + f"'{model.ItemType.OTHER.name}' and item_ref={other_id}"
+            )
+            cursor.execute(
+                "delete from issues where item_type="
                 + f"'{model.ItemType.OTHER.name}' and item_ref={other_id}"
             )
             cursor.execute(
@@ -801,6 +724,10 @@ class Database:
                 + f"'{model.ItemType.CAMERA.name}' and item_ref={camera_id}"
             )
             cursor.execute(
+                "delete from issues where item_type="
+                + f"'{model.ItemType.CAMERA.name}' and item_ref={camera_id}"
+            )
+            cursor.execute(
                 "delete from maintenance where item_type="
                 + f"'{model.ItemType.CAMERA.name}' and item_ref={camera_id}"
             )
@@ -851,6 +778,10 @@ class Database:
             cursor.execute(f"delete from base_units where id={bu_id}")
             cursor.execute(
                 "delete from notes where item_type="
+                + f"'{model.ItemType.BASE_UNIT.name}' and item_ref={bu_id}"
+            )
+            cursor.execute(
+                "delete from issues where item_type="
                 + f"'{model.ItemType.BASE_UNIT.name}' and item_ref={bu_id}"
             )
             cursor.execute(
@@ -1216,4 +1147,204 @@ class Database:
                 self.connection.commit() # pylint: disable=no-member
         print("OUT Database.get_activity_log")
         return activity_log_list
-        
+
+    def get_notes(self, item_type: str, item_ref: int) -> List[model.Notes]:
+        """
+        This method returns all of the notes associated with a single item.
+
+        Parameters
+        ----------
+        item_type : str
+            The type of item (base unit, camera, or other)
+        item_ref : int
+            The integer identifier of the object.
+
+        Returns
+        -------
+        List[model.Notes]
+            A list of all of the notes associated with an item.
+        """
+        print(
+            f"IN Database.get_notes. item_type={item_type}; item_ref={item_ref}"
+        )
+        note_list = []
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute(
+                f"SELECT * from notes WHERE item_type='{item_type}' AND "
+                + f"item_ref={item_ref}"
+            )
+            # Fetch the results
+            for row in cur:
+                note = model.Notes(
+                    id=row[0],
+                    description=row[1],
+                    date=row[2],
+                    item_type=model.ItemType.from_str(row[3]),
+                    item_ref=row[4],
+                )
+                note_list.append(note)
+        print(f"OUT Database.get_notes. note_list={note_list}")
+        return note_list
+    
+    def add_note(self, description: str, item_type: str, item_ref: int) -> None:
+        """
+        Add a note to the given item.
+
+        Parameters
+        ----------
+        description : str
+            The text of the note.
+        item_type : str
+            The type of item associated with the note.
+        item_ref : int
+            An integer reference to the item assciated with the note.
+        """
+        print("IN add_note")
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            # Execute a command
+            cursor.execute(
+                "insert into notes (description, date, item_type, item_ref) "
+                + f"values('{description}', now(), '{item_type}', {item_ref})"
+            )
+            self.connection.commit() # pylint: disable=no-member
+
+        print("OUT add_note")
+
+    def delete_note(self, id: int) -> None:
+        """
+        Delete a note.
+
+        Parameters
+        ----------
+        id : int
+            The integer identifier of the Note object.
+        """
+        print("IN delete_note")
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            # Execute a command
+            cursor.execute(f"delete from notes where id={id}")
+            self.connection.commit() # pylint: disable=no-member
+        print("OUT delete_note")
+
+    def get_issues(self, item_type: str, item_ref: int) -> List[model.Issues]:
+        """
+        This method returns all of the issues associated with a single item.
+
+        Parameters
+        ----------
+        item_type : str
+            The type of item (base unit, camera, or other)
+        item_ref : int
+            The integer identifier of the object.
+
+        Returns
+        -------
+        List[model.Issues]
+            A list of all of the issues associated with an item.
+        """
+        print(
+            f"IN Database.get_issues. item_type={item_type}; item_ref={item_ref}"
+        )
+
+        issue_list = []
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute(
+                f"SELECT * from issues WHERE item_type='{item_type}' AND "
+                + f"item_ref={item_ref}"
+            )
+            # Fetch the results
+            for row in cur:
+                issue = model.Issues(
+                    id=row[0],
+                    description=row[1],
+                    date=row[2],
+                    item_type=model.ItemType.from_str(row[3]),
+                    item_ref=row[4],
+                )
+                issue_list.append(issue)
+        print(f"OUT Database.get_issues. issue_list={issue_list}")
+        return issue_list
+    
+    def add_issue(self, description: str, item_type: str, item_ref: int) -> None:
+        """
+        Add a note to the given item.
+
+        Parameters
+        ----------
+        description : str
+            The text of the issue.
+        item_type : str
+            The type of item associated with the issue.
+        item_ref : int
+            An integer reference to the item assciated with the issue.
+        """
+        print("IN add_issue")
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            # Execute a command
+            cursor.execute(
+                "insert into issues (description, date, item_type, item_ref) "
+                + f"values('{description}', now(), '{item_type}', {item_ref})"
+            )
+            self.connection.commit() # pylint: disable=no-member
+
+        print("OUT add_issue")
+    
+    def add_issue_by_name(self, 
+                          description: str, 
+                          item_type: str, 
+                          item_name: str) -> None:
+        """
+        Add a note to the given item.
+
+        Parameters
+        ----------
+        description : str
+            The text of the issue.
+        item_type : str
+            The type of item associated with the issue.
+        item_name : str
+            An name of the item associated with the issue.
+        """
+        print(f"IN add_issue_by_name description={description};" 
+              + f" item_type={item_type}; item_name={item_name}")
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            item_type_enum = model.ItemType.from_str(item_type)
+            if item_type_enum == model.ItemType.BASE_UNIT:
+                cursor.execute(
+                    f"SELECT id from base_units WHERE name='{item_name}' "
+                    + "LIMIT 1"
+                )
+            elif item_type_enum == model.ItemType.CAMERA:
+                cursor.execute(
+                    f"SELECT id from cameras WHERE name='{item_name}' "
+                    + "LIMIT 1"
+                )
+            elif item_type_enum == model.ItemType.OTHER:
+                cursor.execute(
+                    f"SELECT id from other_items WHERE name='{item_name}' "
+                    + "LIMIT 1"
+                )
+            record = cursor.fetchone()
+            item_ref = record[0]
+            self.add_issue(description, item_type, item_ref)
+        print("OUT add_issue_by_name")
+
+    def delete_issue(self, id: int) -> None:
+        """
+        Delete an issue.
+
+        Parameters
+        ----------
+        id : int
+            The integer identifier of the Note object.
+        """
+        print("IN delete_issue")
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            # Execute a command
+            cursor.execute(f"delete from issues where id={id}")
+            self.connection.commit() # pylint: disable=no-member
+        print("OUT delete_issue")

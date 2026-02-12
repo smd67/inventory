@@ -594,9 +594,9 @@ maintenance tasks whose last due date is >= 6 months.
     return baseDialog;
   }
 
-  const generateMaintTasks = (descriptions, itemType, itemName, subsystem) => {
+  const generateIssues = (descriptions, itemType, itemName, subsystem) => {
     for (const description of descriptions) {
-      addMaintTask(subsystem + ': ' + description, itemType, itemName);
+      addIssue(subsystem + ': ' + description, itemType, itemName);
     }
   };
 
@@ -702,24 +702,24 @@ maintenance tasks whose last due date is >= 6 months.
 
     if(labelsGeneral.length > 0){
       reportStr =  reportStr + 'General: ' + labelsGeneral.join(', ') + '\n';
-      generateMaintTasks(labelsGeneral, 'BASE_UNIT', baseUnitName.value, 'General');
+      generateIssues(labelsGeneral, 'BASE_UNIT', baseUnitName.value, 'General');
     }
 
     if(labelsBoom.length > 0){
       reportStr =  reportStr + 'Boom: ' + labelsBoom.join(', ') + '\n';
-      generateMaintTasks(labelsBoom, 'BASE_UNIT', baseUnitName.value, 'Boom');
+      generateIssues(labelsBoom, 'BASE_UNIT', baseUnitName.value, 'Boom');
     }
     if(labelsRadar.length > 0){
       reportStr =  reportStr + 'Radar: ' + labelsRadar.join(', ') + '\n';
-      generateMaintTasks(labelsRadar, 'BASE_UNIT', baseUnitName.value, 'Radar');
+      generateIssues(labelsRadar, 'BASE_UNIT', baseUnitName.value, 'Radar');
     }
     if(labelsMast.length > 0){
       reportStr =  reportStr + 'Mast: ' + labelsMast.join(', ') + '\n';
-      generateMaintTasks(labelsMast, 'BASE_UNIT', baseUnitName.value, 'Mast');
+      generateIssues(labelsMast, 'BASE_UNIT', baseUnitName.value, 'Mast');
     }
     if(labelsWindMeter.length > 0){
       reportStr =  reportStr + 'Wind Meter: ' + labelsWindMeter.join(', ') + '\n';
-      generateMaintTasks(labelsWindMeter, 'BASE_UNIT', baseUnitName.value, 'Wind Meter');
+      generateIssues(labelsWindMeter, 'BASE_UNIT', baseUnitName.value, 'Wind Meter');
     }
 
     if(missingFaceCamera.size > 0){
@@ -745,7 +745,7 @@ maintenance tasks whose last due date is >= 6 months.
                       technicianName.value);
         }
         console.log("Done => processing activity log for face cameras");
-        generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'Face Camera');
+        generateIssues(labelsForCamera, 'CAMERA',camera, 'Face Camera');
         reportStr =  reportStr + 'Face Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
    
       }
@@ -770,7 +770,7 @@ maintenance tasks whose last due date is >= 6 months.
                       "License Plate Camera Test: " + camera_item + " has passed",
                       technicianName.value);
         }
-        generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'License Plate Camera');
+        generateIssues(labelsForCamera, 'CAMERA',camera, 'License Plate Camera');
         reportStr =  reportStr + 'License Plate Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
     }
@@ -794,7 +794,7 @@ maintenance tasks whose last due date is >= 6 months.
                       "Widescreen Camera Test: " + camera_item + " has passed",
                       technicianName.value);
         }
-        generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'Widescreen Camera');
+        generateIssues(labelsForCamera, 'CAMERA',camera, 'Widescreen Camera');
         reportStr =  reportStr + 'Widescreen Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
     }
@@ -818,7 +818,7 @@ maintenance tasks whose last due date is >= 6 months.
                       "LiDar Test: " + camera_item + " has passed",
                       technicianName.value);
         }
-        generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'LiDar');
+        generateIssues(labelsForCamera, 'CAMERA',camera, 'LiDar');
         reportStr =  reportStr + 'LiDar - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
     }
@@ -842,7 +842,7 @@ maintenance tasks whose last due date is >= 6 months.
                       "Widescreen Actuators Test: " + camera_item + " has passed",
                       technicianName.value);
         }
-        generateMaintTasks(labelsForCamera, 'CAMERA',camera, 'Widescreen Actuators');
+        generateIssues(labelsForCamera, 'CAMERA',camera, 'Widescreen Actuators');
         reportStr =  reportStr + 'Widescreen Actuators - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
     }
@@ -968,22 +968,22 @@ maintenance tasks whose last due date is >= 6 months.
   };
 
   // This method handles the REST call to insert the maintenance task.
-  const addMaintTask = async (description, itemType, itemName) => {
-    console.log('IN SystemTestChecklist.addMaintTask');
+  const addIssue = async (description, itemType, itemName) => {
+    console.log('IN SystemTestChecklist.addIssue');
     const config = {
       headers: {
           'Content-Type': 'application/json'
       }
     };
     const requestBody = {
-      due_date: reportDate.value,
+      date: reportDate.value,
       description: description,
       item_type: itemType,
       item_name: itemName
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
-        const response = await api.post('/add-maintenance-task-by-name', requestBody, config);
+        const response = await api.post('/add-issue-by-name', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
     } catch (e) {
@@ -996,7 +996,7 @@ maintenance tasks whose last due date is >= 6 months.
           { color: 'red lighten-3' }
         );
     }
-    console.log('OUT SystemTestChecklist.addMaintTask');
+    console.log('OUT SystemTestChecklist.addIssue');
   };
 
   const fetchBaseUnitByName = async () => {

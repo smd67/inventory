@@ -11,7 +11,7 @@ task to the database.
       <v-row>
         <div style="color: green; font-size: 24px">
           <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-          Add Maintenance Task
+          Add Maintenance Task for {{ itemName }}
         </div>
       </v-row>
       <v-row style="border: 1px solid green;">
@@ -89,7 +89,7 @@ task to the database.
       itemRef.value = props.item_ref;
       itemName.value = props.item_name;
       description.value = null;
-      dueDate.value = null;
+      dueDate.value = new Date().toISOString().slice(0, 10);;
       technicianName.value = null;
       console.log('OUT AddMaintenanceTask.watch.refresh. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
     }
@@ -101,7 +101,7 @@ task to the database.
     itemType.value = props.item_type;
     itemRef.value = props.item_ref;
     itemName.value = props.item_name;
-    dueDate.value = null;
+    dueDate.value = new Date().toISOString().slice(0, 10);;
     technicianName.value = null;
     console.log('OUT AddMaintenaceTask.onMounted. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
   });
@@ -133,7 +133,7 @@ task to the database.
         console.log("status=" + response.status);
         activity_log(itemTypeMap[itemType.value], 
                      itemName.value, 
-                     "Maintenance task openend: " + description.value,
+                     "Maintenance task opened: " + description.value,
                      technicianName.value);
         loading.value = false;
     } catch (e) {

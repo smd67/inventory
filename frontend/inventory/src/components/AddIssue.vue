@@ -1,5 +1,5 @@
 <!--
-This file is the vue component implementation of a screen to add a note to the 
+This file is the vue component implementation of a screen to add an issue to the 
 database. 
  -->
 <template>
@@ -11,7 +11,7 @@ database.
       <v-row>
         <div style="color: green; font-size: 24px;">
           <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-          Add a Note for {{ itemName }}
+          Add an Issue for {{ itemName }}
         </div>
       </v-row>
       <v-row style="border: 1px solid green;">
@@ -37,7 +37,7 @@ database.
   // Imports
   import { ref, onMounted, defineProps, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
-  import api from "../api";
+  import api, {activity_log} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Data
@@ -45,7 +45,7 @@ database.
   const description = ref(null);
   const itemType = ref(null);
   const itemRef = ref(0);
-  const itemName = ref(0);
+  const itemName = ref(null);
   const router = useRouter();
   const route = useRoute();
   const errorDialog = ref(null);
@@ -63,42 +63,42 @@ database.
     item_name : {
       type: String,
       default: "",
-    },
+    }
   });
 
   // Resets data when path changes
   watch(
     () => [route.params.item_ref, route.params.item_type],
     async refresh => {
-      console.log("IN AddNote.watch.refresh");
+      console.log("IN AddIssue.watch.refresh");
       itemType.value = props.item_type;
       itemRef.value = props.item_ref;
       itemName.value = props.item_name;
       description.value = null;
-      console.log('OUT AddNote.watch.refresh. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
+      console.log('OUT AddIssue.watch.refresh. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
     }
   );
 
   // Initialize data on component mount
   onMounted(async () => {
-    console.log('IN AddNote.onMounted');
+    console.log('IN AddIssue.onMounted');
     itemType.value = props.item_type;
     itemRef.value = props.item_ref;
     itemName.value = props.item_name;
     description.value = null;
-    console.log('OUT AddNote.onMounted. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
+    console.log('OUT AddIssue.onMounted. itemType=' + itemType.value + '; itemRef=' + itemRef.value);
   });
 
   // Go back to previous page
   const goBack = () => {
-    console.log("IN goBack");
+    console.log("IN AddIssue.goBack");
     router.back()
-    console.log("OUT goBack");
+    console.log("OUT AddIssue.goBack");
   }
 
-  // This method handles the REST call to insert the note into the database.
+  // This method handles the REST call to insert the issue into the database.
   const handleSubmit = async () => {
-    console.log('IN handleSubmit');
+    console.log('IN AddIssue.handleSubmit');
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -111,8 +111,11 @@ database.
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
-        const response = await api.post('/add-note', requestBody, config);
+        const response = await api.post('/add-issue', requestBody, config);
         console.log("status=" + response.status);
+        activity_log(itemType.value, 
+                     itemName.value, 
+                     "Issue opened: " + description.value);
         loading.value = false;
     } catch (e) {
         loading.value = false;
@@ -125,7 +128,7 @@ database.
         );
     }
     goBack();
-    console.log('OUT handleSubmit');
+    console.log('OUT AddIssue.handleSubmit');
   };
 </script>
 <style scoped>
