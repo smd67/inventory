@@ -130,13 +130,13 @@ This file is the vue component implementation for an other items detail screen.
         itemRef.value = props.item_ref;
         itemType.value = props.item_type;
         itemName.value = props.item_name;
-        fetchMaintTasks();
+        await fetchMaintTasks();
         maintKey.value += 1;
       } else if(oldFullPath.includes("/add-maintenance-task") && newFullPath.includes("/view-maint-tasks")){ 
-        fetchMaintTasks();
+        await fetchMaintTasks();
         maintKey.value += 1;
       } else if(oldFullPath.includes("/update-maintenance-task") && newFullPath.includes("/view-maint-tasks")){ 
-        fetchMaintTasks();
+        await fetchMaintTasks();
         maintKey.value += 1;
       }
       console.log("OUT MaintenanceTasks.watch.refresh");
@@ -149,7 +149,7 @@ This file is the vue component implementation for an other items detail screen.
     itemRef.value = props.item_ref;
     itemType.value = props.item_type;
     itemName.value = props.item_name;
-    fetchMaintTasks();
+    await fetchMaintTasks();
     maintKey.value += 1;
     console.log('OUT MaintenanceTasks.onMounted itemRef=' + itemRef.value + '; itemType=' + itemType.value);
   });
@@ -202,7 +202,7 @@ This file is the vue component implementation for an other items detail screen.
           );
       }
       console.log('Task deleted!');
-      fetchMaintTasks();
+      await fetchMaintTasks();
     } else {
       console.log('Deletion cancelled.');
     }

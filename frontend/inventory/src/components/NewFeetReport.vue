@@ -76,7 +76,7 @@ of the base units with new feet.
     () => route.params.id,
     async refresh => {
       console.log("IN MastBearingReport.watch.refresh");
-      fetchBaseUnits();
+      await fetchBaseUnits();
       baseUnitsKey.value += 1;
       console.log("OUT MastBearingReport.watch.refresh");
     }
@@ -85,7 +85,7 @@ of the base units with new feet.
   // Initialize data when component is mounted
   onMounted(async () => {
     console.log('IN MastBearingReport.onMounted');
-    fetchBaseUnits();
+    await fetchBaseUnits();
     baseUnitsKey.value += 1;
     console.log('OUT MastBearingReport.onMounted');
   });

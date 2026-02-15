@@ -131,10 +131,10 @@ This file is the vue component implementation for an other items detail screen.
         itemRef.value = props.item_ref;
         itemType.value = props.item_type;
         itemName.value = props.item_name;
-        fetchNotes();
+        await fetchNotes();
         notesKey.value += 1;
       } else if(oldFullPath.includes("/add-note") && newFullPath.includes("/view-notes")){ 
-        fetchNotes();
+        await fetchNotes();
         notesKey.value += 1;
       }
       console.log("OUT Notes.watch.refresh");
@@ -147,7 +147,7 @@ This file is the vue component implementation for an other items detail screen.
     itemRef.value = props.item_ref;
     itemType.value = props.item_type;
     itemName.value = props.item_name;
-    fetchNotes();
+    await fetchNotes();
     console.log('OUT Notes.onMounted itemRef=' + itemRef.value + '; itemType=' + itemType.value);
   });
 
@@ -199,7 +199,7 @@ This file is the vue component implementation for an other items detail screen.
           );
       }
       console.log('Note deleted!');
-      fetchNotes();
+      await fetchNotes();
     } else {
       console.log('Deletion cancelled.');
     }

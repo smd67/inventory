@@ -71,6 +71,7 @@ class CameraType(str, Enum):
     LICENSE_PLATE_CAMERA = "License Plate Camera"
     WIDE_SCREEN_CAMERA = "Wide Screen Camera"
     OTHER = "Other"
+    ALL = "All"
 
     @staticmethod
     def from_str(label: str):
@@ -121,6 +122,59 @@ class CameraType(str, Enum):
             return CameraType.OTHER
 
 
+class LaneIndicatorType(str, Enum):
+    """
+    The lane a camera is in
+    """
+
+    A_LANE = "A"
+    B_LANE = "B"
+    NO_LANE = "NONE"
+    
+    @staticmethod
+    def from_str(label: str):
+        """
+        Return an enumerated value from a string.
+
+        Parameters
+        ----------
+        label : str
+            The string value to convert
+
+        Returns
+        -------
+        LaneIndicatorType
+            An enumerated value converted from the string.
+        """
+        if label == LaneIndicatorType.A_LANE.name:
+            return LaneIndicatorType.A_LANE
+        elif label == LaneIndicatorType.B_LANE.name:
+            return LaneIndicatorType.B_LANE
+        elif label == LaneIndicatorType.NO_LANE.name:
+            return LaneIndicatorType.NO_LANE
+
+    @staticmethod
+    def from_str_value(label: str):
+        """
+        Converts the enumerated value string to an enum
+
+        Parameters
+        ----------
+        label : str
+            The string value to convert
+
+        Returns
+        -------
+        LaneIndicatorType
+            An enumerated value converted from the string.
+        """
+        if label == LaneIndicatorType.A_LANE.value:
+            return LaneIndicatorType.A_LANE
+        elif label == LaneIndicatorType.B_LANE.value:
+            return LaneIndicatorType.B_LANE
+        elif label == LaneIndicatorType.NO_LANE.value:
+            return LaneIndicatorType.NO_LANE
+        
 # Model Definitions
 
 # BaseUnit models
@@ -190,6 +244,7 @@ class CameraBase(BaseModel):
     """
     id: int
     name: str
+    lane: str
 
 class Camera(CameraBase):
     """
@@ -221,6 +276,7 @@ class CameraCreate(BaseModel):
     """
     name: str
     camera_type: str
+    lane: str
     base_unit: Optional[str] = None
 
 
@@ -237,6 +293,7 @@ class CameraUpdate(BaseModel):
     CameraItem update
     """
     name: str
+    lane: str
     base_unit: str
 
 

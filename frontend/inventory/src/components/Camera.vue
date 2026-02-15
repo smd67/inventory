@@ -24,6 +24,11 @@ notes or maintenance tasks.
               readonly
             ></v-text-field>
             <v-text-field
+              v-model="lane"
+              label="Lane"
+              readonly
+            ></v-text-field>
+            <v-text-field
               v-model="cameraType"
               label="Camera Type"
               readonly
@@ -233,6 +238,7 @@ notes or maintenance tasks.
   const loading = ref(true);
   const id = ref(null);
   const name = ref(null);
+  const lane = ref(null);
   const cameraType = ref(null);
   const baseUnit = ref(null);
   const location = ref(null);
@@ -281,6 +287,10 @@ notes or maintenance tasks.
       type: String,
       default: "",
     },
+    lane: {
+      type: String,
+      default: "",
+    },
     camera_type: {
       type: String,
       default: "",
@@ -306,15 +316,16 @@ notes or maintenance tasks.
       if(oldFullPath.includes("/prototype") || oldFullPath.includes("/base-unit")){
         id.value = props.id;
         name.value = props.name;
+        lane.value = props.lane;
         location.value = props.location;
         baseUnit.value = props.base_unit;
         cameraType.value = props.camera_type;
       }
-      fetchNotes();
+      await fetchNotes();
       notesKey.value += 1;
-      fetchIssues();
+      await fetchIssues();
       issuesKey.value += 1;
-      fetchMaintTasks();
+      await fetchMaintTasks();
       maintKey.value += 1;
       console.log('OUT Camera.watch.refresh');
     }
@@ -325,14 +336,15 @@ notes or maintenance tasks.
     console.log('IN onMounted');
     id.value = props.id;
     name.value = props.name;
+    lane.value = props.lane;
     location.value = props.location;
     baseUnit.value = props.base_unit;
     cameraType.value = props.camera_type;
-    fetchNotes();
+    await fetchNotes();
     notesKey.value += 1;
-    fetchIssues();
+    await fetchIssues();
     issuesKey.value += 1;
-    fetchMaintTasks();
+    await fetchMaintTasks();
     maintKey.value += 1;
     console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; base_unit=' + baseUnit.value);
   });
@@ -383,7 +395,11 @@ notes or maintenance tasks.
       };
       try {
           const response = await api.post('/delete-maintenance-task', requestBody, config);
-          activity_log('Camera', name.value, 'Maintenance Task Closed: ' + item.description);
+          let cameraName = name.value;
+          if(lane.value !== 'NONE'){
+            cameraName += "[" + lane.value + "]";
+          }
+          activity_log('Camera', cameraName, 'Maintenance Task Closed: ' + item.description);
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -395,7 +411,7 @@ notes or maintenance tasks.
             { color: 'red lighten-3' }
           );
       }
-      fetchMaintTasks();
+      await fetchMaintTasks();
       console.log('Maintenance Task deleted!');
       // Perform deletion logic here
     } else {
@@ -446,7 +462,7 @@ notes or maintenance tasks.
           );
       }
       console.log('Note deleted!');
-      fetchNotes();
+      await fetchNotes();
     } else {
       console.log('Deletion cancelled.');
     }
@@ -511,7 +527,11 @@ notes or maintenance tasks.
       };
       try {
           const response = await api.post('/delete-issue', requestBody, config);
-          activity_log('Camera', name.value, 'Issue Closed: ' + item.description);
+          let cameraName = name.value;
+          if(lane.value !== 'NONE'){
+            cameraName += "[" + lane.value + "]";
+          }
+          activity_log('Camera', cameraName, 'Issue Closed: ' + item.description);  
           loading.value = false;
       } catch (e) {
           loading.value = false;
@@ -524,7 +544,7 @@ notes or maintenance tasks.
           );
       }
       console.log('Issue deleted!');
-      fetchIssues();
+      await fetchIssues();
     } else {
       console.log('Deletion cancelled.');
     }

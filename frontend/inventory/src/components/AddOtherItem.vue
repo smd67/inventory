@@ -73,7 +73,7 @@ in the database.
       baseUnitRef.value = props.base_unit_id;
       baseUnitName.value = props.base_unit_name;
       otherItem.value = null;
-      fetchAvailableOtherItems();
+      await fetchAvailableOtherItems();
       console.log("OUT AddOtherItem.watch.refresh");
     }
   );
@@ -84,7 +84,7 @@ in the database.
     baseUnitRef.value = props.base_unit_id;
     baseUnitName.value = props.base_unit_name;
     otherItem.value = null;
-    fetchAvailableOtherItems();
+    await fetchAvailableOtherItems();
     console.log('OUT AddOtherItem.onMounted. baseUnitRef=' + baseUnitRef.value + ', baseUnitName=' + baseUnitName.value);
   });
 

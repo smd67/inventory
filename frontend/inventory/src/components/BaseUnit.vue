@@ -437,6 +437,7 @@ cameras, notes, other items, or maintenance tasks.
 
   const cameraHeaders = ref([
     {title: 'Name', align: 'start', value: 'name', sortable: true, value: 'name', class: 'blue lighten-5'},
+    {title: 'Lane', value: 'lane' , sortable: true},
     {title: 'Type', value: 'type' , sortable: true},
     // ... other headers
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
@@ -490,15 +491,15 @@ cameras, notes, other items, or maintenance tasks.
         licensePlateCameras.value = route.query.license_plate_cameras;
         widescreenCameras.value = route.query.widescreen_cameras;
       }
-      fetchCameras();
+      await fetchCameras();
       cameraKey.value += 1;
-      fetchNotes();
+      await fetchNotes();
       notesKey.value += 1;
-      fetchIssues();
+      await fetchIssues();
       issuesKey.value += 1;
-      fetchMaintTasks();
+      await fetchMaintTasks();
       maintKey.value += 1;
-      fetchOther();
+      await fetchOther();
       otherKey.value += 1;
       console.log("OUT BaseUnit.watch.refresh");
     }
@@ -515,15 +516,15 @@ cameras, notes, other items, or maintenance tasks.
     faceCameras.value = route.query.face_cameras;
     licensePlateCameras.value = route.query.license_plate_cameras;
     widescreenCameras.value = route.query.widescreen_cameras;
-    fetchCameras();
+    await fetchCameras();
     cameraKey.value += 1;
-    fetchNotes();
+    await fetchNotes();
     notesKey.value += 1;
-    fetchIssues();
+    await fetchIssues();
     issuesKey.value += 1;
-    fetchMaintTasks();
+    await fetchMaintTasks();
     maintKey.value += 1;
-    fetchOther();
+    await fetchOther();
     otherKey.value += 1;
     console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; has_new_feet=' + has_new_feet.value + '; has_new_mast_bearing=' + has_new_mast_bearing.value + '; faceCameras=' + faceCameras.value);
   });
@@ -542,7 +543,7 @@ cameras, notes, other items, or maintenance tasks.
     if ('base_unit' in item && item.base_unit != null) {
       camera_bu = item.base_unit;
     }
-    router.push({name: 'camera', params: {id: item.id, name: item.name, location: camera_location, base_unit: camera_bu, camera_type: item.type}}).catch(failure => {
+    router.push({name: 'camera', params: {id: item.id, lane: item.lane, name: item.name, location: camera_location, base_unit: camera_bu, camera_type: item.type}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT navigateToCameraDetails");
@@ -574,6 +575,7 @@ cameras, notes, other items, or maintenance tasks.
     router.back();
     console.log("OUT goBack");
   };
+
   const viewCameraNotes = (item) => {
     console.log("IN Prototype.viewCameraNotes");
     router.push({name: 'view-notes', params: {item_type: 'CAMERA', item_ref: item.id, item_name: item.name}}).catch(failure => {
@@ -655,8 +657,12 @@ cameras, notes, other items, or maintenance tasks.
       try {
           const response = await api.post('/remove-camera', requestBody, config);
           loading.value = false;
-          activity_log('Camera', item.name, 'Removed from Base Unit ' + name.value);
-          activity_log('Base Unit', name.value, 'Removed Camera ' + item.name + ' from Base Unit ' + name.value);
+          let cameraName = item.name;
+          if(item.lane !== 'NONE'){
+            cameraName += "[" + item.lane + "]";
+          }
+          activity_log('Camera', cameraName, 'Removed from Base Unit ' + name.value);
+          activity_log('Base Unit', name.value, 'Removed Camera ' + cameraName + ' from Base Unit ' + name.value);
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
@@ -666,7 +672,7 @@ cameras, notes, other items, or maintenance tasks.
             { color: 'red lighten-3' }
           );
       }
-      fetchCameras();
+      await fetchCameras();
       console.log('Camera removed!');
       // Perform deletion logic here
     } else {
@@ -678,7 +684,7 @@ cameras, notes, other items, or maintenance tasks.
   // Update a camera 
   const updateCamera = (item) => {
     console.log("IN updateCamera");
-    router.push({name: 'update-camera', params: {name: item.name, base_unit_name: name.value}}).catch(failure => {
+    router.push({name: 'update-camera', params: {name: item.name, lane: item.lane, base_unit_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT updateCamera");
@@ -727,7 +733,7 @@ cameras, notes, other items, or maintenance tasks.
             { color: 'red lighten-3' }
           );
       }
-      fetchOther();
+      await fetchOther();
       console.log('Other Item deleted!');
       // Perform deletion logic here
     } else {
@@ -795,7 +801,7 @@ cameras, notes, other items, or maintenance tasks.
             { color: 'red lighten-3' }
           );
       }
-      fetchMaintTasks();
+      await fetchMaintTasks();
       console.log('Maintenance Task deleted!');
       // Perform deletion logic here
     } else {
@@ -845,7 +851,7 @@ cameras, notes, other items, or maintenance tasks.
           );
       }
       console.log('Note deleted!');
-      fetchNotes();
+      await fetchNotes();
     } else {
       console.log('Deletion cancelled.');
     }
@@ -920,7 +926,7 @@ cameras, notes, other items, or maintenance tasks.
           );
       }
       console.log('Issue deleted!');
-      fetchIssues();
+      await fetchIssues();
     } else {
       console.log('Deletion cancelled.');
     }
@@ -998,12 +1004,16 @@ cameras, notes, other items, or maintenance tasks.
         licensePlateCameras.value = [];
         widescreenCameras.value = [];
         for (const camera of cameraTable.value) {
+          let cameraName = camera.name;
+          if(camera.lane !== 'NONE') {
+            cameraName += "[" + camera.lane + "]";
+          }
           if(camera.type === "Face Camera"){
-            faceCameras.value.push(camera.name);
+            faceCameras.value.push(cameraName);
           } else if(camera.type === "License Plate Camera") {
-            licensePlateCameras.value.push(camera.name);
+            licensePlateCameras.value.push(cameraName);
           } else if(camera.type === "Wide Screen Camera") {
-            widescreenCameras.value.push(camera.name); 
+            widescreenCameras.value.push(cameraName); 
           }
         }
         faceCameraKey.value += 1;

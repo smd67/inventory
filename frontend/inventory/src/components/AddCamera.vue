@@ -29,6 +29,11 @@ in the database.
               item-value="name"
               label="Camera"
             ></v-select>
+            <v-select
+              v-model="lane"
+              :items="laneIndicators"
+              label="Lane"
+            ></v-select>
             <div class="d-flex justify-center align-center" style="padding-top: 20px; ; gap: 16px;">
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Add</v-btn>
@@ -70,7 +75,9 @@ in the database.
   const route = useRoute();
   const errorDialog = ref(null);
   const cameraType = ref('All')
-  const cameraTypes = ref(['Face Camera', 'License Plate Camera', 'Wide Screen Camera', 'Other', 'All']);
+  const cameraTypes = ref(null);
+  const laneIndicators = ref(null);
+  const lane = ref('NONE');
 
   // Watcher to reset data when path changes
   watch(
@@ -81,7 +88,9 @@ in the database.
       baseUnitName.value = props.base_unit_name;
       camera.value = ref(null);
       cameraType.value = 'All';
-      fetchAvailableCameras();
+      await fetchAvailableCameras();
+      await fetchCameraTypes();
+      await fetchLaneIndicators();
       console.log("OUT AddCamera.watch.refresh");
     }
   );
@@ -93,7 +102,9 @@ in the database.
     baseUnitName.value = props.base_unit_name;
     camera.value = ref(null);
     cameraType.value = 'All';
-    fetchAvailableCameras();
+    await fetchAvailableCameras();
+    await fetchCameraTypes();
+    await fetchLaneIndicators();
     console.log('OUT AddCamera.onMounted. baseUnitRef=' + baseUnitRef.value + ', baseUnitName=' + baseUnitName.value);
   });
 
@@ -149,7 +160,7 @@ in the database.
   // Handle REST call to update a camera object in the database.
   // Submit updates to database through a REST call.
   const handleSubmit = async () => {
-    console.log('IN handleSubmit camera=' + camera.value + '; baseUnitName=' + baseUnitName.value);
+    console.log('IN AddCamera.handleSubmit camera=' + camera.value + '; baseUnitName=' + baseUnitName.value + "; lane=" + lane.value);
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -158,12 +169,14 @@ in the database.
     console.log("camera=" + JSON.stringify(camera.value));
     const requestBody = {
         name: camera.value,
+        lane: lane.value,
         base_unit: baseUnitName.value
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
         const response = await api.post('/update-camera', requestBody, config);
-        console.log("status=" + response.status);
+        console.log("AddCamera.handleSubmit.status=" + response.status);
+
         activity_log('Base Unit', 
                      baseUnitName.value, 
                      'Adding camera ' + camera.value + ' to Base Unit ' + baseUnitName.value);
@@ -173,17 +186,66 @@ in the database.
         loading.value = false;
     } catch (e) {
         loading.value = false;
-        console.error('Error updating data:', e);
         // Call the dialog's open function using the template ref
+        let message = e.message;
+        if(e.response){
+          message = e.response.data.detail;
+        }
+        console.error('Error updating data:', message);
         const result = await errorDialog.value.open(
           'Confirm Error',
-          'Error updating data:' + e,
+          'Error updating data:' + message,
           { color: 'red lighten-3' }
         );
     }
     goBack();
-    console.log('OUT handleSubmit');
+    console.log('OUT AddCamera.handleSubmit');
   };
+
+  // Retrieve camera types.
+  const fetchCameraTypes = async () => {
+    const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    try {
+        const response = await api.get('/get-camera-types', config);
+        cameraTypes.value = response.data;
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching data:' + e,
+            { color: 'red lighten-3' }
+          );
+    }
+  };
+
+  // Retrieve lane indicator values.
+  const fetchLaneIndicators = async () => {
+    const config = {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    try {
+        const response = await api.get('/get-camera-lane-indicators', config);
+        laneIndicators.value = response.data;
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        const result = await errorDialog.value.open(
+            'Confirm Error',
+            'Error fetching data:' + e,
+            { color: 'red lighten-3' }
+          );
+    }
+  };
+
 </script>
 <style scoped>
   .detail-container {

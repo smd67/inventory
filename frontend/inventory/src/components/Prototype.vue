@@ -309,6 +309,7 @@ upper right for generating reports.
 
   const camerasHeaders = ref([
     {title: 'Name', align: 'start', sortable: true, value: 'name', class: 'blue lighten-5'},
+    {title: 'Lane', value: 'lane', sortable: true },
     {title: 'Type', value: 'type', sortable: true },
     {title: 'Base Unit', value: 'base_unit' , sortable: true},
     // ... other headers
@@ -327,11 +328,11 @@ upper right for generating reports.
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
       console.log("IN Prototype.watch.refresh");
-      fetchBaseUnits();
+      await fetchBaseUnits();
       baseUnitsKey.value += 1;
-      fetchCameras();
+      await fetchCameras();
       cameraKey.value += 1;
-      fetchOtherItems();
+      await fetchOtherItems();
       otherKey.value += 1;
       console.log("OUT Prototype.watch.refresh");
     }
@@ -340,11 +341,11 @@ upper right for generating reports.
   // Initialize data when component is mounted
   onMounted(async () => {
     console.log('IN Prototype.onMounted');
-    fetchBaseUnits();
+    await fetchBaseUnits();
     baseUnitsKey.value += 1;
-    fetchCameras();
+    await fetchCameras();
     cameraKey.value += 1;
-    fetchOtherItems();
+    await fetchOtherItems();
     otherKey.value += 1;
     console.log('Before');
     document.addEventListener('click', handleClickOutside);
@@ -404,7 +405,7 @@ upper right for generating reports.
     }
 
     console.log("camera_location=" + camera_location + "; camera_bu=" + camera_bu);
-    router.push({name: 'camera', params: {id: item.id, name: item.name, location: camera_location, base_unit: camera_bu, camera_type: item.type}}).catch(failure => {
+    router.push({name: 'camera', params: {id: item.id, name: item.name, lane: item.lane, location: camera_location, base_unit: camera_bu, camera_type: item.type}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT navigateToCameraDetails");
@@ -516,9 +517,9 @@ upper right for generating reports.
             { color: 'red lighten-3' }
           );
       }
-      fetchOtherItems();
-      fetchBaseUnits();
-      fetchCameras();
+      await fetchOtherItems();
+      await fetchBaseUnits();
+      await fetchCameras();
       console.log('Other Item deleted!');
       // Perform deletion logic here
     } else {
@@ -632,7 +633,7 @@ upper right for generating reports.
     // Call the dialog's open function using the template ref
     const result = await confirmDialog.value.open(
       'Confirm Deletion',
-      'Are you sure you want to delete the camera' + item.name + '?',
+      'Are you sure you want to delete the camera ' + item.name + '?',
       { color: 'red lighten-3' }
     );
 
@@ -645,25 +646,32 @@ upper right for generating reports.
       const requestBody = {
         id: item.id,
         name: item.name,
+        lane: item.lane,
         type: item.type,
         base_unit: item.base_unit
       };
       try {
           const response = await api.post('/delete-camera', requestBody, config);
           loading.value = false;
-          activity_log('Camera', item.name, 'Removed from Base Unit ' + item.base_unit + ' and deleted from database');
-          activity_log('Base Unit', item.base_unit, 'Removed Camera ' + item.name + ' from Base Unit ' + item.base_unit + ' and deleted from database');
-      } catch (e) {
+          let cameraName = item.name;
+          if(item.lane !== 'NONE'){
+            cameraName += "[" + item.lane + "]";
+          }
+          activity_log('Camera', cameraName, 'Removed from Base Unit ' + item.base_unit + ' and deleted from database');
+          if(!Object.is(item.base_unit, null)){
+            activity_log('Base Unit', item.base_unit, 'Removed Camera ' + cameraName + ' from Base Unit ' + item.base_unit + ' and deleted from database');
+          }
+        } catch (e) {
           loading.value = false;
           console.log("error=" + e)
           const result = await errorDialog.value.open(
             'Confirm Error',
-            'Error deleting camera:' + e,
+            'Error deleting camera: ' + e,
             { color: 'red lighten-3' }
           );
       }
-      fetchCameras();
-      fetchBaseUnits();
+      await fetchCameras();
+      await fetchBaseUnits();
       console.log('Camera deleted!');
       // Perform deletion logic here
     } else {
@@ -673,7 +681,7 @@ upper right for generating reports.
   };
   const updateCamera = (item) => {
     console.log("IN updateCamera item=" + JSON.stringify(item));
-    router.push({name: 'update-camera', params: {name: item.name, base_unit_name: item.base_unit}}).catch(failure => {
+    router.push({name: 'update-camera', params: {name: item.name, lane: item.lane, base_unit_name: item.base_unit}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT updateCamera");
@@ -681,7 +689,11 @@ upper right for generating reports.
 
   const cameraHistoryReport = (item) => {
     console.log("IN cameraHistoryReport name=" + item.name);
-    router.push({name: 'report-history', params: {item_type: 'Camera', item_name: item.name}}).catch(failure => {
+    let cameraName = item.name;
+    if(item.lane !== 'NONE'){
+      cameraName += "[" + item.lane + "]";
+    }
+    router.push({name: 'report-history', params: {item_type: 'Camera', item_name: cameraName}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT cameraHistoryReport");
@@ -719,8 +731,10 @@ upper right for generating reports.
           const response = await api.post('/delete-other-item', requestBody, config);
           loading.value = false;
           activity_log('Other Item', item.name, 'Removed from Base Unit ' + item.base_unit + ' and deleted from database');
-          activity_log('Base Unit', item.base_unit, 'Removed Other Item ' + item.name + ' from Base Unit ' + item.base_unit + ' and deleted from database');
-      } catch (e) {
+          if(!Object.is(item.base_unit, null)){
+            activity_log('Base Unit', item.base_unit, 'Removed Other Item ' + item.name + ' from Base Unit ' + item.base_unit + ' and deleted from database');
+          }
+        } catch (e) {
           loading.value = false;
           console.log("error=" + e)
           const result = await errorDialog.value.open(
@@ -729,8 +743,8 @@ upper right for generating reports.
             { color: 'red lighten-3' }
           );
       }
-      fetchOtherItems();
-      fetchBaseUnits();
+      await fetchOtherItems();
+      await fetchBaseUnits();
       console.log('Other Item deleted!');
       // Perform deletion logic here
     } else {

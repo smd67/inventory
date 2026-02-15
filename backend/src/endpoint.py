@@ -8,6 +8,7 @@ import model
 from db import Database
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from psycopg import errors
 
 app = FastAPI(redirect_slashes=False)
 
@@ -167,6 +168,36 @@ def get_cameras_for_bu(
     print(f"OUT Endpoint.get_cameras_for_bu. camera_list={camera_list}")
     return camera_list
 
+@app.get("/get-camera-lane-indicators")
+def get_camera_lane_indicators() -> List[str]:
+    """
+    Get the possible lane indicator values.
+
+    Returns
+    -------
+    List[str]
+        A list of all possible lane indicator values.
+    """
+    print("IN Endpoint.get_camera_lane_indicators")
+    db = Database()
+    lane_list = db.get_camera_lane_indicators()
+    print(f"OUT Endpoint.get_camera_lane_indicators. lane_list={lane_list}")
+    return lane_list
+
+@app.get("/get-camera-types")
+def get_camera_types() -> List[str]:
+    """
+    Get all of the camera types.
+
+    Returns
+    -------
+    List[str]
+        A list of all of the camera types.
+    """
+    print("IN Endpoint.get_camera_types")
+    type_list = [camera_type.value for camera_type in model.CameraType]
+    print(f"OUT Endpoint.get_camera_types. type_list={type_list}")
+    return type_list
 
 @app.get("/get-other-items")
 def get_other_items() -> List[model.OtherItemQueryResult]:
@@ -278,7 +309,13 @@ def create_camera(query: model.CameraCreate) -> None:
     print(f"IN create-camera query={query}")
     try:
         db = Database()
-        db.create_camera(query.name, query.camera_type, query.base_unit)
+        db.create_camera(query.name, query.lane, query.camera_type, query.base_unit)
+    except errors.UniqueViolation as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"An unexpected exception e={e} has occured",
+        )
     except Exception as e:
         print(f"An unexpected exception e={e} has occured")
         raise HTTPException(
@@ -593,7 +630,13 @@ def update_camera(query: model.CameraUpdate) -> None:
     print(f"IN update-camera query={query}")
     try:
         db = Database()
-        db.update_camera(query.name, query.base_unit)
+        db.update_camera(query.name, query.lane, query.base_unit)
+    except errors.UniqueViolation as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"An unexpected exception e={e} has occured",
+        )
     except Exception as e:
         print(f"An unexpected exception e={e} has occured")
         raise HTTPException(

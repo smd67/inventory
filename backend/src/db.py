@@ -3,6 +3,7 @@ This file contains a common database class.
 """
 
 import os
+import re
 from typing import Any, Dict, List, Optional
 from datetime import datetime
 
@@ -76,8 +77,8 @@ class Database:
             cur.execute(
                 "select (base_units.id, base_units.name, base_units.location, "
                 + "base_units.has_new_mast_bearing, base_units.has_new_feet,"
-                + "cameras.name, "
-                + "cameras.type) from base_units LEFT OUTER JOIN cameras ON "
+                + "cameras.name, cameras.type, cameras.lane) "
+                + "from base_units LEFT OUTER JOIN cameras ON "
                 + "base_units.id=cameras.base_unit_ref;"
             )
             # Fetch the results
@@ -94,20 +95,25 @@ class Database:
                         has_new_feet=row[0][4],
                     )
                     bu_dict[row[0][1]] = bu_results
+                camera_name = row[0][5]
                 camera_type = model.CameraType.from_str(row[0][6])
+                camera_lane = row[0][7]
+                camera_name = f"{camera_name}[{camera_lane}]" \
+                    if camera_lane != model.LaneIndicatorType.NO_LANE.value \
+                    else camera_name
                 if camera_type == model.CameraType.FACE_CAMERA:
                     if not bu_results.face_cameras:
                         bu_results.face_cameras = []
-                    bu_results.face_cameras.append(row[0][5])
+                    bu_results.face_cameras.append(camera_name)
                 elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
                     if not bu_results.license_plate_cameras:
                         bu_results.license_plate_cameras = []
-                    bu_results.license_plate_cameras.append(row[0][5])
+                    bu_results.license_plate_cameras.append(camera_name)
                 
                 elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
                     if not bu_results.widescreen_cameras:
                         bu_results.widescreen_cameras = []
-                    bu_results.widescreen_cameras.append(row[0][5])
+                    bu_results.widescreen_cameras.append(camera_name)
 
         print(f"OUT Database.get_base_units: {list(bu_dict.values())}")
         return list(bu_dict.values())
@@ -128,8 +134,8 @@ class Database:
             cur.execute(
                 "select (base_units.id, base_units.name, base_units.location, "
                 + "base_units.has_new_mast_bearing, base_units.has_new_feet,"
-                + "cameras.name, "
-                + "cameras.type) from base_units LEFT OUTER JOIN cameras ON "
+                + "cameras.name, cameras.type, cameras.lane) " 
+                + "from base_units LEFT OUTER JOIN cameras ON "
                 + "base_units.id=cameras.base_unit_ref " 
                 + f"where base_units.name='{bu_name}' order by cameras.id asc;"
             )
@@ -146,19 +152,25 @@ class Database:
                         has_new_mast_bearing=row[0][3],
                         has_new_feet=row[0][4],
                     )
+                camera_name = row[0][5]
                 camera_type = model.CameraType.from_str(row[0][6])
+                camera_lane = row[0][7]
+                camera_name = f"{camera_name}[{camera_lane}]" \
+                    if camera_lane != model.LaneIndicatorType.NO_LANE.value \
+                    else camera_name
+                
                 if camera_type == model.CameraType.FACE_CAMERA:
                     if not bu_results.face_cameras:
                         bu_results.face_cameras = []
-                    bu_results.face_cameras.append(row[0][5])
+                    bu_results.face_cameras.append(camera_name)
                 elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
                     if not bu_results.license_plate_cameras:
                         bu_results.license_plate_cameras = []
-                    bu_results.license_plate_cameras.append(row[0][5])
+                    bu_results.license_plate_cameras.append(camera_name)
                 elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
                     if not bu_results.widescreen_cameras:
                         bu_results.widescreen_cameras = []
-                    bu_results.widescreen_cameras.append(row[0][5])
+                    bu_results.widescreen_cameras.append(camera_name)
 
         print(f"OUT Database.get_base_unit_by_name: {bu_results}")
         return bu_results
@@ -219,7 +231,7 @@ class Database:
         with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
-                "select (cameras.id, cameras.name, cameras.type, "
+                "select (cameras.id, cameras.name, cameras.lane, cameras.type, "
                 + "base_units.name, base_units.location) "
                 + "from cameras LEFT OUTER join base_units on "
                 + "cameras.base_unit_ref = base_units.id;"
@@ -228,13 +240,14 @@ class Database:
             for curr_row in cur:
                 row = curr_row[0]
                 print(f"row={row}")
-                camera_type = model.CameraType.from_str(row[2])
+                camera_type = model.CameraType.from_str(row[3])
                 camera = model.CameraQueryResult(
                     id=row[0],
                     name=row[1],
+                    lane=row[2],
                     type=camera_type.value,
-                    base_unit=row[3],
-                    location=row[4],
+                    base_unit=row[4],
+                    location=row[5],
                 )
                 camera_list.append(camera)
 
@@ -257,16 +270,17 @@ class Database:
         with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
-                "select (id, name, type) from cameras where base_unit_ref is null;"
+                "select (id, name, lane, type) from cameras where base_unit_ref is null;"
             )
             # Fetch the results
             for cur_row in cur:
                 row = cur_row[0]
                 print(f"row={row}")
-                camera_type = model.CameraType.from_str(row[2])
+                camera_type = model.CameraType.from_str(row[3])
                 camera = model.CameraQueryResult(
                     id=row[0],
                     name=row[1],
+                    lane=row[2],
                     type=camera_type.value,
                     base_unit=None,
                     location=None,
@@ -297,7 +311,7 @@ class Database:
         with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
             cur.execute(
-                "select (cameras.id, cameras.name, cameras.type, "
+                "select (cameras.id, cameras.name, cameras.lane, cameras.type, "
                 + "base_units.name, base_units.location) "
                 + "from cameras INNER join base_units on "
                 + "cameras.base_unit_ref = base_units.id where "
@@ -307,19 +321,46 @@ class Database:
             camera_list = []
             for curr_row in cur:
                 row = curr_row[0]
-                camera_type = model.CameraType.from_str(row[2])
+                camera_type = model.CameraType.from_str(row[3])
                 camera = model.CameraQueryResult(
                     id=row[0],
                     name=row[1],
+                    lane=row[2],
                     type=camera_type.value,
-                    base_unit=row[3],
-                    location=row[4],
+                    base_unit=row[4],
+                    location=row[5],
                 )
                 camera_list.append(camera)
             return camera_list
 
         return camera_list
 
+    def get_camera_lane_indicators(self) -> List[str]:
+        """
+        This method returns a list of all possible lanes.
+
+        Returns
+        -------
+        List[str]
+            a list of all possible lanes
+        """
+        # Open a cursor to perform database operations
+        print("IN Database.get_camera_lane_indicators")
+        lane_list = []
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute(
+                "SELECT unnest(enum_range(NULL::lane_indicator));"
+            )
+            # Fetch the results
+            for curr_row in cur:
+                lane = curr_row[0]
+                print(f"lane={lane}")
+                lane_list.append(lane)
+
+        print("OUT Database.get_camera_lane_indicators")
+        return lane_list
+    
     def get_other_items(self) -> List[model.OtherItemQueryResult]:
         """
         Returns a list of all of the other items.
@@ -450,7 +491,7 @@ class Database:
         print("OUT create_base_unit")
 
     def create_camera(
-        self, name: str, camera_type: str, base_unit: Optional[str] = None
+        self, name: str, lane: str, camera_type: str, base_unit: Optional[str] = None
     ):
         """
         Create a camera item in the database.
@@ -459,6 +500,8 @@ class Database:
         ----------
         name : str
             The name of the camera
+        lane: str
+            The lane the camera is for
         camera_type : str
             The type of the camera (ie; face, license plate, widescreen.)
         base_unit : Optional[str], optional
@@ -471,8 +514,8 @@ class Database:
                 # Execute a command
                 camera_type_enum = model.CameraType.from_str_value(camera_type)
                 cursor.execute(
-                    "insert into cameras (name, type) "
-                    + f"values('{name}', '{camera_type_enum.name}') "
+                    "insert into cameras (name, lane, type) "
+                    + f"values('{name}', '{lane}', '{camera_type_enum.name}') "
                     + "RETURNING id"
                 )
 
@@ -826,7 +869,7 @@ class Database:
             self.connection.commit() # pylint: disable=no-member
         print("OUT update_other_item")
 
-    def update_camera(self, name: str, base_unit: str) -> None:
+    def update_camera(self, name: str, lane: str, base_unit: str) -> None:
         """
         Update select information about a camera.
 
@@ -847,7 +890,8 @@ class Database:
 
             # Execute a command
             cursor.execute(
-                f"update cameras set base_unit_ref={bu_id} where name='{name}'"
+                f"update cameras set base_unit_ref={bu_id}, lane='{lane}' "
+                + f"where name='{name}'"
             )
 
             self.connection.commit() # pylint: disable=no-member
@@ -1319,10 +1363,22 @@ class Database:
                     + "LIMIT 1"
                 )
             elif item_type_enum == model.ItemType.CAMERA:
-                cursor.execute(
-                    f"SELECT id from cameras WHERE name='{item_name}' "
-                    + "LIMIT 1"
-                )
+                pattern = re.compile(r"^(\w+)\s*\[\s*(.*?)\s*\]$")
+                match = pattern.fullmatch(item_name)
+                if match:
+                    camera_name = match.group(1)
+                    camera_lane = match.group(2)
+                    print(f"camera_name={camera_name}; " 
+                          + f"camera_lane={camera_lane}")
+                    cursor.execute(
+                        f"SELECT id from cameras WHERE name='{camera_name}' "
+                        + f"AND lane='{camera_lane}' LIMIT 1"
+                    )
+                else:
+                    cursor.execute(
+                        f"SELECT id from cameras WHERE name='{item_name}' "
+                        + "LIMIT 1"
+                    )
             elif item_type_enum == model.ItemType.OTHER:
                 cursor.execute(
                     f"SELECT id from other_items WHERE name='{item_name}' "

@@ -68,7 +68,7 @@ prior to performing a system test checklist.
         reportDate.value = new Date().toISOString().slice(0, 10);
         baseUnit.value = null;
       }
-      fetchBaseUnitNames();
+      await fetchBaseUnitNames();
       console.log('OUT SystemTestInfo.watch.refresh');
     }
   );
@@ -79,7 +79,7 @@ prior to performing a system test checklist.
     technicianName.value = null;
     reportDate.value = new Date().toISOString().slice(0, 10);
     baseUnit.value = null;
-    fetchBaseUnitNames();
+    await fetchBaseUnitNames();
     console.log("OUT SystemTestInfo.onMounted");
   });
 

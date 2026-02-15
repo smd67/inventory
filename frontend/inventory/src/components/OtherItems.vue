@@ -296,11 +296,11 @@ This file is the vue component implementation for an other items detail screen.
         location.value = props.location;
         baseUnit.value = props.base_unit;
       }
-      fetchNotes();
+      await fetchNotes();
       notesKey.value += 1;
-      fetchIssues();
+      await fetchIssues();
       issuesKey.value += 1;
-      fetchMaintTasks();
+      await fetchMaintTasks();
       maintKey.value += 1;
     }
   );
@@ -312,11 +312,11 @@ This file is the vue component implementation for an other items detail screen.
     name.value = props.name;
     location.value = props.location;
     baseUnit.value = props.base_unit;
-    fetchNotes();
+    await fetchNotes();
     notesKey.value += 1;
-    fetchIssues();
+    await fetchIssues();
     issuesKey.value += 1;
-    fetchMaintTasks();
+    await fetchMaintTasks();
     maintKey.value += 1;
     console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; base_unit=' + baseUnit.value);
   });
@@ -379,7 +379,7 @@ This file is the vue component implementation for an other items detail screen.
             { color: 'red lighten-3' }
           );
       }
-      fetchMaintTasks();
+      await fetchMaintTasks();
       console.log('Maintenance Task deleted!');
       // Perform deletion logic here
     } else {
@@ -429,7 +429,7 @@ This file is the vue component implementation for an other items detail screen.
           );
       }
       console.log('Note deleted!');
-      fetchNotes();
+      await fetchNotes();
     } else {
       console.log('Deletion cancelled.');
     }
@@ -504,7 +504,7 @@ This file is the vue component implementation for an other items detail screen.
           );
       }
       console.log('Issue deleted!');
-      fetchNotes();
+      await fetchNotes();
     } else {
       console.log('Deletion cancelled.');
     }

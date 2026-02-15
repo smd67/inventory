@@ -23,6 +23,12 @@ in the database.
               :key="nameKey"
             ></v-text-field>
             <v-select
+              v-model="lane"
+              :items="laneIndicators"
+              label="Lane"
+              :key="laneKey"
+            ></v-select>
+            <v-select
               v-model="cameraType"
               :items="cameraTypes"
               label="Camera Type"
@@ -65,14 +71,17 @@ in the database.
   const loading = ref(true);
   const name = ref(null);
   const baseUnit = ref(null);
-  const baseUnitNames = ref(null);
-  const cameraType = ref(null)
-  const cameraTypes = ref(['Face Camera', 'License Plate Camera', 'Wide Screen Camera', 'Other']);
+  const baseUnitNames = ref([]);
+  const cameraType = ref('Other')
+  const cameraTypes = ref([]);
+  const lane = ref('NONE');
+  const laneIndicators = ref([]);
   const router = useRouter();
   const route = useRoute();
   const baseUnitKey = ref(0);
   const nameKey = ref(0);
   const cameraTypeKey = ref(0);
+  const laneKey = ref(0);
   const errorDialog = ref(null);
 
   // Watcher to reset data when path changes
@@ -84,24 +93,32 @@ in the database.
       baseUnitKey.value += 1;
       name.value = null;
       nameKey.value += 1;
-      cameraType.value = null;
+      cameraType.value = 'Other';
       cameraTypeKey.value += 1;
-      fetchBaseUnitNames();
+      lane.value = 'NONE';
+      laneKey.value += 1;
+      await fetchBaseUnitNames();
+      await fetchCameraTypes();
+      await fetchLaneIndicators();
       console.log("OUT CreateCamera.watch.refresh");
     }
   );
 
   // Initialize data on component load
   onMounted(async () => {
-    console.log('IN onMounted');
+    console.log('IN CreateCamera.onMounted');
     baseUnit.value = props.base_unit;
     baseUnitKey.value += 1;
     name.value = null;
     nameKey.value += 1;
-    cameraType.value = null;
+    cameraType.value = 'Other';
     cameraTypeKey.value += 1;
-    fetchBaseUnitNames();
-    console.log('OUT onMounted');
+    lane.value = 'NONE';
+    laneKey.value += 1;
+    await fetchBaseUnitNames();
+    await fetchCameraTypes();
+    await fetchLaneIndicators();
+    console.log('OUT CreateCamera.onMounted');
   });
 
   // Go back to previous page
@@ -121,6 +138,7 @@ in the database.
     };
     const requestBody = {
         name: name.value,
+        lane: lane.value,
         camera_type: cameraType.value,
         base_unit: baseUnit.value
     };
@@ -129,23 +147,31 @@ in the database.
         const response = await api.post('/create-camera', requestBody, config);
         console.log("status=" + response.status);
         loading.value = false;
-        let logStr = "Created Camera: " + name.value + 
+        let cameraName = name.value;
+        if(lane.value !== 'NONE'){
+          cameraName += "[" + lane.value + "]";
+        }
+        let logStr = "Created Camera: " + cameraName + 
                       ", type=" + cameraType.value;
         if(baseUnit.value != null) {
           logStr +=  ", base_unit=" + baseUnit.value;
           activity_log('Base Unit', 
                        baseUnit.value, 
-                       'Added Camera ' + name.value + ' to Base Unit ' + baseUnit.value);
+                       'Added Camera ' + cameraName + ' to Base Unit ' + baseUnit.value);
         }
-        activity_log('Camera', name.value, logStr);
+        activity_log('Camera', cameraName, logStr);
         
     } catch (e) {
         loading.value = false;
-        console.error('Error inserting data:', e);
+        let message = e.message;
+        if(e.response){
+          message = e.response.data.detail;
+        }
+        console.error('Error inserting data:', message);
         // Call the dialog's open function using the template ref
         const result = await errorDialog.value.open(
           'Confirm Error',
-          'Error inserting data:' + e,
+          'Error inserting data:' + message,
           { color: 'red lighten-3' }
         );
     }
@@ -156,14 +182,37 @@ in the database.
   // Retrieve base units from the database.
   const fetchBaseUnitNames = async () => {
     const config = {
+      headers: {
+          'Content-Type': 'application/json'
+      }
+    };
+
+    try {
+      const response = await api.get('/get-base-units-names', config);
+      baseUnitNames.value = response.data;
+      loading.value = false;
+    } catch (e) {
+      loading.value = false;
+      const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error fetching data:' + e,
+          { color: 'red lighten-3' }
+        );
+    }
+  };
+
+
+  // Retrieve camera types.
+  const fetchCameraTypes = async () => {
+    const config = {
         headers: {
             'Content-Type': 'application/json'
         }
     };
 
     try {
-        const response = await api.get('/get-base-units-names', config);
-        baseUnitNames.value = response.data;
+        const response = await api.get('/get-camera-types', config);
+        cameraTypes.value = response.data;
         loading.value = false;
     } catch (e) {
         loading.value = false;
@@ -172,6 +221,28 @@ in the database.
             'Error fetching data:' + e,
             { color: 'red lighten-3' }
           );
+    }
+  };
+
+  // Retrieve lane indicator values.
+  const fetchLaneIndicators = async () => {
+    const config = {
+      headers: {
+          'Content-Type': 'application/json'
+      }
+    };
+
+    try {
+      const response = await api.get('/get-camera-lane-indicators', config);
+      laneIndicators.value = response.data;
+      loading.value = false;
+    } catch (e) {
+      loading.value = false;
+      const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error fetching data:' + e,
+          { color: 'red lighten-3' }
+        );
     }
   };
 

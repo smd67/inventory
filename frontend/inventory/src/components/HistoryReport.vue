@@ -88,7 +88,7 @@
       logItemsKey.value += 1;
       itemType.value = props.item_type;
       itemName.value = props.item_name;
-      fetchActivityLog();
+      await fetchActivityLog();
       console.log("OUT HistoryReport.watch.refresh");
     }
   );
@@ -99,7 +99,7 @@
     logItemsKey.value += 1;
     itemType.value = props.item_type;
     itemName.value = props.item_name;
-    fetchActivityLog();
+    await fetchActivityLog();
     console.log('OUT HistoryReport.onMounted');
   });
 

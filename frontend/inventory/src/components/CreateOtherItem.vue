@@ -69,7 +69,7 @@ in the database.
       console.log("IN CreateOtherItem.watch.refresh");
       baseUnit.value = props.base_unit;
       name.value = null;
-      fetchBaseUnitNames();
+      await fetchBaseUnitNames();
       console.log('OUT CreateOtherItem.watch.refresh');
     }
   );
@@ -77,7 +77,7 @@ in the database.
   onMounted(async () => {
     console.log('IN onMounted');
     baseUnit.value = props.base_unit;
-    fetchBaseUnitNames();
+    await fetchBaseUnitNames();
     console.log('OUT onMounted');
   });
 

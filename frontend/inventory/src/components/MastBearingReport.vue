@@ -76,7 +76,7 @@ maintenance tasks whose last due date is >= 6 months.
     () => route.params.id,
     async refresh => {
       console.log("IN MastBearingReport.watch.refresh");
-      fetchBaseUnits();
+      await fetchBaseUnits();
       baseUnitsKey.value += 1;
       console.log("OUT MastBearingReport.watch.refresh");
     }
@@ -85,7 +85,7 @@ maintenance tasks whose last due date is >= 6 months.
   // Initialize data when component mounts
   onMounted(async () => {
     console.log('IN MastBearingReport.onMounted');
-    fetchBaseUnits();
+    await fetchBaseUnits();
     baseUnitsKey.value += 1;
     console.log('OUT MastBearingReport.onMounted');
   });
