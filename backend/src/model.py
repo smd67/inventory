@@ -538,3 +538,18 @@ class IssuesDelete(BaseModel):
     Query to delete a note
     """
     id: int
+
+class IssuesReportQuery(BaseModel):
+    """
+    Query for an issue report
+    """
+    item_type: str
+    query_string: str
+    end_date: date
+    start_date: Optional[date] = None
+
+class IssueReportQueryResult(BaseModel):
+    item_name: str
+    item_type: str
+    match_string: str
+    sim_score: float

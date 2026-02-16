@@ -41,6 +41,8 @@ import AddIssue from './components/AddIssue.vue'
 import Notes from './components/Notes.vue'
 import Issues from './components/Issues.vue'
 import MaintenanceTasks from './components/MaintenanceTasks.vue'
+import IssueReportInfo from './components/IssueReportInfo.vue'
+import IssueReport from './components/IssueReport.vue'
 
 
 // Define routes
@@ -70,6 +72,8 @@ const routes = [
   { path: '/report-history:item_type:item_name', name: 'report-history', component: HistoryReport, props: true },
   { path: '/system-test-info', name: 'system-test-info', component: SystemTestInfo },
   { path: '/system-test-checklist:technician_name:base_unit:report_date', name: 'system-test-checklist', component: SystemTestChecklist, props: true },
+  { path: '/issue-report-info', name: 'issue-report-info', component: IssueReportInfo },
+  { path: '/issue-report:item_type:query_string:end_date:start_date?', name: 'issue-report', component: IssueReport, props: true },
 ];
 
 // Create the router instance

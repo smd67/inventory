@@ -19,6 +19,7 @@ upper right for generating reports.
               <li @click="selectReportsOption('MastBearing')">Has New Mast Bearing</li>
               <li @click="selectReportsOption('NewFeet')">Has New Feet</li>
               <li @click="selectReportsOption('MaintItems')">Has Expired Maintenance Tasks</li>
+              <li @click="selectReportsOption('IssueReport')">Issue Report</li>
               </ul>
           </div>
         </div>
@@ -453,7 +454,10 @@ upper right for generating reports.
       router.push({name: "new-feet-report"});
     } else if (option === "MaintItems") {
       router.push({name: "maint-items-report"});
+    } else if (option === "IssueReport") {
+      router.push({name: "issue-report-info"});
     }
+
   };
 
   const selectChecklistsOption = (option) => {

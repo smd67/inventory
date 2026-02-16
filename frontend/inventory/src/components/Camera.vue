@@ -500,7 +500,7 @@ notes or maintenance tasks.
   // Add a issue and associate it with a camera.
   const addIssue = () => {
     console.log("IN Camera.addIssue");
-    router.push({name: 'add-issue', params: {item_type: 'CAMERA', item_ref: id.value, item_name: name.value}}).catch(failure => {
+    router.push({name: 'add-issue', params: {item_type: 'Camera', item_ref: id.value, item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT Camera.addIssue");

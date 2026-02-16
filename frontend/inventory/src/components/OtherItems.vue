@@ -465,7 +465,7 @@ This file is the vue component implementation for an other items detail screen.
   // Add an issue to the database
   const addIssue = () => {
     console.log("IN OtherItem.addNote");
-    router.push({name: 'add-issue', params: {item_type: 'OTHER', item_ref: id.value, item_name: name.value}}).catch(failure => {
+    router.push({name: 'add-issue', params: {item_type: 'Other Item', item_ref: id.value, item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT OtherItem.addIssue");

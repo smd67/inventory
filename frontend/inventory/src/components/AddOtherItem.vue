@@ -1,6 +1,6 @@
 <!--
 This file is the vue component implementation to create a otherItem object 
-in the database.
+to a base unit.
  -->
 <template>
   <div class="my-division">

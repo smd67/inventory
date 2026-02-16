@@ -6,6 +6,8 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 from datetime import datetime
+from sentence_transformers import SentenceTransformer, util
+import torch
 
 import model
 import psycopg
@@ -1232,6 +1234,54 @@ class Database:
         print(f"OUT Database.get_notes. note_list={note_list}")
         return note_list
     
+    def get_issues_by_type(self, 
+                          item_type: str, 
+                          start_date: datetime.date,
+                          end_date: datetime.date) -> List[model.Issues]:
+        """
+        This method returns all of the issues associated with an item_type.
+
+        Parameters
+        ----------
+        item_type : str
+            The type of item (base unit, camera, or other)
+        Returns
+        -------
+        List[model.Issues]
+            A list of all of the issues associated with an item_type.
+        """
+        print(
+            f"IN Database.get_issues_by_type. item_type={item_type}"
+        )
+        issue_list = []
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            if start_date and end_date:
+                cur.execute(
+                    f"SELECT * from issues WHERE item_type='{item_type.name}' and date >= '{start_date}' and date <= '{end_date}'"
+                )
+            elif start_date:
+                cur.execute(
+                    f"SELECT * from issues WHERE item_type='{item_type.name}' and date >= '{start_date}'"
+                )
+            elif end_date:
+                cur.execute(
+                    f"SELECT * from issues WHERE item_type='{item_type.name}' and date <= '{end_date}'"
+                )
+            # Fetch the results
+            for row in cur:
+                issue = model.Issues(
+                    id=row[0],
+                    date=row[1],
+                    description=row[2],
+                    item_type=model.ItemType.from_str(row[3]),
+                    item_ref=row[4],
+                )
+                issue_list.append(issue)
+        print(f"OUT Database.get_issues_by_type. issue_list={issue_list}")
+        return issue_list
+    
     def add_note(self, description: str, item_type: str, item_ref: int) -> None:
         """
         Add a note to the given item.
@@ -1404,3 +1454,35 @@ class Database:
             cursor.execute(f"delete from issues where id={id}")
             self.connection.commit() # pylint: disable=no-member
         print("OUT delete_issue")
+    
+    def get_issue_report(self,
+                         query_string:str,
+                         item_type:str,
+                         start_date: datetime.date,
+                         end_date: datetime.date) -> List[model.IssueReportQueryResult]:
+        
+        result_list = []
+        item_type_enum = model.ItemType.from_str_value(item_type)
+        issue_list = self.get_issues_by_type(item_type_enum, start_date, end_date)
+        
+        issues = [issue.description for issue in issue_list]
+        lang_model = SentenceTransformer('all-MiniLM-L6-v2')
+        
+        # 3. Compute embeddings
+        # convert_to_tensor=True returns PyTorch tensors, good for similarity calculations
+        embeddings = lang_model.encode(issues, convert_to_tensor=True)
+        query_embedding = lang_model.encode([query_string] * len(issues), convert_to_tensor=True)
+        query_scores = util.pytorch_cos_sim(query_embedding, embeddings)
+        
+        for idx, score in enumerate(query_scores[0]):
+            print(f"score={score}; idx={idx}; len={len(issues)}")
+            if score >= 0.70:
+                result_list.append(
+                    model.IssueReportQueryResult(
+                        item_name=issues[idx].item_name,
+                        item_type=issues[idx].item_type,
+                        query_string=query_string,
+                        match_string=issues[idx].description
+                    )
+                )
+        return result_list

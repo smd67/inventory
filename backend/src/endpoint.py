@@ -184,6 +184,21 @@ def get_camera_lane_indicators() -> List[str]:
     print(f"OUT Endpoint.get_camera_lane_indicators. lane_list={lane_list}")
     return lane_list
 
+@app.get("/get-item-types")
+def get_item_types() -> List[str]:
+    """
+    Get all of the item types.
+
+    Returns
+    -------
+    List[str]
+        A list of all item types (ie; Base Unit, Camera, etc).
+    """
+    print("IN Endpoint.get_item_types")
+    items_list = [item_type.value for item_type in model.ItemType]
+    print(f"OUT Endpoint.get_item_types. items_list={items_list}")
+    return items_list
+
 @app.get("/get-camera-types")
 def get_camera_types() -> List[str]:
     """
@@ -941,3 +956,22 @@ def delete_issue(query: model.IssuesDelete) -> None:
             detail=f"An unexpected exception e={e} has occured",
         )
     print("OUT delete-issue")
+
+@app.post("/get-issue-report")
+def get_issue_report(query: model.IssuesReportQuery) -> \
+    List[model.IssueReportQueryResult]:
+    """
+    This method returns the results of an issue report query.
+
+    Returns
+    -------
+    List[model.IssueReportQueryResult]
+        A list of items of type item_type that have a note similar to the query 
+        string.
+    """
+    db = Database()
+    results = db.get_issue_report(query.query_string, 
+                                  query.item_type, 
+                                  query.start_date, 
+                                  query.end_date)
+    return results

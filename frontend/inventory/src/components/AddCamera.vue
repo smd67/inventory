@@ -1,6 +1,6 @@
 <!--
-This file is the vue component implementation to create a camera object 
-in the database.
+This file is the vue component implementation to add a camera to 
+a base unit.
  -->
 <template>
   <div class="my-division">
