@@ -503,6 +503,7 @@ class Issues(BaseModel):
     description: str
     item_type: ItemType
     item_ref: int
+    item_name: Optional[str] = None
 
 class IssuesQueryBase(BaseModel):
     """

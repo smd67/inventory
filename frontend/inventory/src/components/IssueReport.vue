@@ -66,9 +66,9 @@ This file is the vue component implementation for the issue report.
 
   // Table headers
   const headers = ref([
-    {title: 'Name', align: 'start', sortable: true, value: 'name', class: 'blue lighten-5'},
-    {title: 'Type', value: 'type', sortable: true },
-    {title: 'Match String', value: 'matchString' , sortable: true},
+    {title: 'Name', align: 'start', sortable: true, value: 'item_name', class: 'blue lighten-5'},
+    {title: 'Type', value: 'item_type', sortable: true },
+    {title: 'Match String', value: 'match_string' , sortable: true},
     {title: 'Similarity Score', value: 'sim_score', sortable: true}
   ]);
   

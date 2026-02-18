@@ -6,8 +6,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 from datetime import datetime
-from sentence_transformers import SentenceTransformer, util
-import torch
+from fuzzywuzzy import fuzz
 
 import model
 import psycopg
@@ -177,6 +176,7 @@ class Database:
         print(f"OUT Database.get_base_unit_by_name: {bu_results}")
         return bu_results
 
+    
     def get_maintenance_tasks(
         self, item_type: str, item_ref: int
     ) -> List[model.MaintenanceTask]:
@@ -1270,15 +1270,33 @@ class Database:
                     f"SELECT * from issues WHERE item_type='{item_type.name}' and date <= '{end_date}'"
                 )
             # Fetch the results
+
             for row in cur:
                 issue = model.Issues(
                     id=row[0],
-                    date=row[1],
-                    description=row[2],
+                    description=row[1],
+                    date=row[2],
                     item_type=model.ItemType.from_str(row[3]),
                     item_ref=row[4],
                 )
                 issue_list.append(issue)
+
+            for issue in issue_list:
+                if item_type == model.ItemType.BASE_UNIT:
+                    cur.execute("select name from base_units WHERE " 
+                                + f"id='{issue.item_ref}' LIMIT 1")
+                elif item_type == model.ItemType.CAMERA:
+                    cur.execute("select name from cameras WHERE " 
+                                + f"id='{issue.item_ref}' LIMIT 1")
+                elif item_type == model.ItemType.OTHER:
+                    cur.execute("select name from other_items WHERE " 
+                                + f"id='{issue.item_ref}' LIMIT 1")
+                else:
+                    break
+                record = cur.fetchone()
+                item_name = record[0]
+                issue.item_name = item_name
+
         print(f"OUT Database.get_issues_by_type. issue_list={issue_list}")
         return issue_list
     
@@ -1461,28 +1479,52 @@ class Database:
                          start_date: datetime.date,
                          end_date: datetime.date) -> List[model.IssueReportQueryResult]:
         
+        print("IN Database.get_issue_report")
         result_list = []
         item_type_enum = model.ItemType.from_str_value(item_type)
         issue_list = self.get_issues_by_type(item_type_enum, start_date, end_date)
         
-        issues = [issue.description for issue in issue_list]
-        lang_model = SentenceTransformer('all-MiniLM-L6-v2')
-        
-        # 3. Compute embeddings
-        # convert_to_tensor=True returns PyTorch tensors, good for similarity calculations
-        embeddings = lang_model.encode(issues, convert_to_tensor=True)
-        query_embedding = lang_model.encode([query_string] * len(issues), convert_to_tensor=True)
-        query_scores = util.pytorch_cos_sim(query_embedding, embeddings)
-        
-        for idx, score in enumerate(query_scores[0]):
-            print(f"score={score}; idx={idx}; len={len(issues)}")
-            if score >= 0.70:
-                result_list.append(
-                    model.IssueReportQueryResult(
-                        item_name=issues[idx].item_name,
-                        item_type=issues[idx].item_type,
-                        query_string=query_string,
-                        match_string=issues[idx].description
-                    )
-                )
+        for idx, issue in enumerate(issue_list):
+            print(f"{idx}:{issue}")
+            score = self.fuzzy_similarity(query_string, issue.description)
+            if score >= 70.0:
+                query_result = model.IssueReportQueryResult(item_name=issue.item_name, item_type=issue.item_type, match_string=issue.description,sim_score=score)
+                result_list.append(query_result)
+        print("OUT Database.get_issue_report")
         return result_list
+
+    def fuzzy_similarity(self, str1: str, str2: str) -> float:
+        """
+        Find the similarity between str1 and a match in str2 using a fuzzy
+        comparison.
+
+        Parameters
+        ----------
+        str1 : str
+            This is the query string.
+        str2 : str
+            This is the description of the channel
+
+        Returns
+        -------
+        int
+            A ratio between 0 and 100 representing how similar the match is.
+        """
+        str1 = str1.lower()
+        str2 = str2.lower()
+
+        pattern_words = re.findall(r"\w+", str1)
+
+        best_ratio = 0.0
+        for i in range(len(str2)):
+            text_words = re.findall(r"\w+", str2[i:])
+            if len(text_words) < len(pattern_words):
+                break
+            ratios = [
+                fuzz.ratio(w, text_words[j]) for j, w in enumerate(pattern_words)
+            ]
+            avg_ratio = sum(ratios) / len(ratios)
+            if avg_ratio > best_ratio:
+                best_ratio = avg_ratio
+
+        return best_ratio
