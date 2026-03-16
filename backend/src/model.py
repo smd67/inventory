@@ -191,8 +191,6 @@ class BaseUnitQueryResult(BaseUnit):
     """
     Base unit definitiion for ui.
     """
-    has_new_mast_bearing: Optional[bool] = False
-    has_new_feet: Optional[bool] = False
     face_cameras: Optional[List[str]] = None
     license_plate_cameras: Optional[List[str]] = None
     widescreen_cameras: Optional[List[str]] = None
@@ -201,8 +199,6 @@ class BaseUnitQueryByNameResult(BaseUnit):
     """
     Base unit definitiion for ui.
     """
-    has_new_mast_bearing: Optional[bool] = False
-    has_new_feet: Optional[bool] = False
     face_cameras: Optional[List[str]] = []
     license_plate_cameras: Optional[List[str]] = []
     widescreen_cameras: Optional[List[str]] = []
@@ -213,8 +209,6 @@ class BaseUnitCreate(BaseModel):
     """
     name: str
     location: int
-    has_new_mast_bearing: Optional[bool] = False
-    has_new_feet: Optional[bool] = False
 
 
 class BaseUnitDelete(BaseModel):
@@ -228,8 +222,7 @@ class BaseUnitUpdate(BaseUnit):
     """
     Query to update a base unit
     """
-    has_new_feet: bool
-    has_new_mast_bearing: bool
+    pass 
 
 class BaseUnitQueryByName(BaseModel):
     """
@@ -362,6 +355,7 @@ class Notes(BaseModel):
     description: str
     item_type: ItemType
     item_ref: int
+    item_name: Optional[str] = None
 
 class NotesQueryBase(BaseModel):
     """
@@ -383,7 +377,14 @@ class NotesCreate(NotesQueryBase):
     """
     description: str
 
-
+class NoteCreateByName(BaseModel):
+    """
+    Query to create a note by item name
+    """
+    item_type: str
+    item_name: str
+    description: str
+    
 class NotesDelete(BaseModel):
     """
     Query to delete a note
@@ -402,6 +403,7 @@ class MaintenanceTask(BaseModel):
     item_type: ItemType
     item_ref: int
     due_date: Optional[date] = None
+    item_name: Optional[str] = None
 
 class MaintenanceTaskQueryResultBase(BaseModel):
     """

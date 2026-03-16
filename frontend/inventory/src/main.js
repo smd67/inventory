@@ -43,17 +43,19 @@ import Issues from './components/Issues.vue'
 import MaintenanceTasks from './components/MaintenanceTasks.vue'
 import IssueReportInfo from './components/IssueReportInfo.vue'
 import IssueReport from './components/IssueReport.vue'
+import ViewMaintenanceTasks from './components/ViewMaintenanceTasks.vue'
+import ViewIssues from './components/ViewIssues.vue'
 
 
 // Define routes
 const routes = [
   { path: '/prototype', name: 'prototype', component: Prototype },
   { path: '/create-base-unit', name: 'create-base-unit', component: CreateBaseUnit },
-  { path: '/update-base-unit:name:id:location:has_new_feet:has_new_mast_bearing', name: 'update-base-unit', component: UpdateBaseUnit, props: true },
+  { path: '/update-base-unit:name:id:location', name: 'update-base-unit', component: UpdateBaseUnit, props: true },
   { path: '/create-camera:base_unit?', name: 'create-camera', component: CreateCamera, props: true},
   { path: '/add-camera:base_unit_name:base_unit_id', name: 'add-camera', component: AddCamera, props: true},
   { path: '/update-camera:name:lane:base_unit_name?', name: 'update-camera', component: UpdateCamera, props: true },
-  { path: '/base-unit:id:name:location:has_new_mast_bearing:has_new_feet', name: 'base-unit', component: BaseUnit, props: true },
+  { path: '/base-unit:id:name:location', name: 'base-unit', component: BaseUnit, props: true },
   { path: '/camera:id:name:lane:camera_type:location:base_unit', name: 'camera', component: Camera, props: true },
   { path: '/other-items:id:name:location:base_unit', name: 'other-items', component: OtherItems, props: true },
   { path: '/create-other-item:base_unit?', name: 'create-other-item', component: CreateOtherItem, props: true },
@@ -61,11 +63,13 @@ const routes = [
   { path: '/update-other-item:name', name: 'update-other-item', component: UpdateOtherItem, props: true },
   { path: '/add-maintenance-task:item_type:item_ref:item_name', name: 'add-maintenance-task', component: AddMaintenanceTask, props: true },
   { path: '/view-maint-tasks:item_type:item_ref:item_name', name: 'view-maint-tasks', component: MaintenanceTasks, props: true },
+  { path: '/view-maint-tasks-all', name: 'view-maint-tasks-all', component: ViewMaintenanceTasks },
   { path: '/update-maintenance-task:id:description:item_type:item_name', name: 'update-maintenance-task', component: UpdateMaintenanceTask, props: true },
   { path: '/add-note:item_type:item_ref:item_name', name: 'add-note', component: AddNote, props: true },
   { path: '/view-notes:item_type:item_ref:item_name', name: 'view-notes', component: Notes, props: true },
   { path: '/add-issue:item_type:item_ref:item_name', name: 'add-issue', component: AddIssue, props: true }, 
   { path: '/view-issues:item_type:item_ref:item_name', name: 'view-issues', component: Issues, props: true }, 
+  { path: '/view-issues-all', name: 'view-issues-all', component: ViewIssues },
   { path: '/mast-bearing-report', name: 'mast-bearing-report', component: MastBearingReport },
   { path: '/new-feet-report', name: 'new-feet-report', component: NewFeetReport },
   { path: '/maint-items-report', name: 'maint-items-report', component: MaintItemsReport },

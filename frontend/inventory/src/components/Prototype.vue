@@ -6,12 +6,24 @@ upper right for generating reports.
 <template>
   <div class="tools-menu-container">
     <v-row>
-      <v-col style="padding-right: 5px;">
+      <v-col style="padding-right: 4px; padding-left: 5px">
+        <div class="tools-menu-right">
+          <button @click="toggleViewsMenu" class="tools-button" aria-label="Settings menu">
+            <img src="../assets/views.png" alt="Views Menu" class="button-image"/>
+          </button>
+          <div v-if="isViewsOpen" class="tools-dropdown">
+              <ul>
+              <li @click="selectViewsOption('Main')">Main</li>
+              <li @click="selectViewsOption('Issues')">Issues</li>
+              <li @click="selectViewsOption('MaintTasks')">Maint Tasks</li>
+              </ul>
+          </div>
+        </div>
+      </v-col>
+      <v-col style="padding-right: 4px; padding-left: 0px">
         <div class="tools-menu-right">
           <button @click="toggleReportsMenu" class="tools-button" aria-label="Settings menu">
-            <img src="../assets/report_icon.jpg" alt="Description of action" class="button-image" />
-              <!-- You can use a settings icon here, e.g., a gear symbol (⚙) or an SVG -->
-              <!-- ⚙ Settings -->
+            <img src="../assets/report_icon.jpg" alt="Reports Menu" class="button-image" />
           </button>
 
           <div v-if="isReportsOpen" class="tools-dropdown">
@@ -24,12 +36,10 @@ upper right for generating reports.
           </div>
         </div>
       </v-col>
-      <v-col style="padding-left: 0px">
+      <v-col style="padding-right: 4px; padding-left: 0px">
         <div class="tools-menu-right">
           <button @click="toggleChecklistsMenu" class="tools-button" aria-label="Settings menu">
-            <img src="../assets/checkbox_icon.png" alt="Description of action" class="button-image"/>
-              <!-- You can use a settings icon here, e.g., a gear symbol (⚙) or an SVG -->
-              <!-- ⚙ Settings -->
+            <img src="../assets/checkbox_icon.png" alt="Checklists Menu" class="button-image"/>
           </button>
           <div v-if="isChecklistsOpen" class="tools-dropdown">
               <ul>
@@ -51,8 +61,14 @@ upper right for generating reports.
   <div class="outer-div">
     <v-container class="table-container">
       <v-row>
-        <div style="color: green; font-size: 24px">
+        <div style="color: green; font-size: 24px; padding-bottom: 25px;">
           <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
+          Main View
+        </div>
+      </v-row>
+      <v-spacer></v-spacer>
+      <v-row>
+        <div style="color: green; font-size: 18px">
           Base Units
         </div>
       </v-row>
@@ -124,7 +140,7 @@ upper right for generating reports.
     
     <v-container class="table-container">
       <v-row>
-        <div style="color: green; font-size: 24px">
+        <div style="color: green; font-size: 18px">
           Cameras
         </div>
       </v-row>
@@ -195,7 +211,7 @@ upper right for generating reports.
     </v-container>
     <v-container class="table-container">
       <v-row>
-        <div style="color: green; font-size: 24px">
+        <div style="color: green; font-size: 18px">
           Other Items
         </div>
       </v-row>
@@ -281,6 +297,7 @@ upper right for generating reports.
   // Data
   const isReportsOpen = ref(false);
   const isChecklistsOpen = ref(false);
+  const isViewsOpen = ref(false);
   const baseUnitSearch = ref('');
   const cameraSearch = ref('');
   const otherSearch = ref('');
@@ -385,7 +402,7 @@ upper right for generating reports.
       {
         name: 'base-unit',
         query: { face_cameras: face_cameras, license_plate_cameras: license_plate_cameras, widescreen_cameras: widescreen_cameras },
-        params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet}
+        params: {id: item.id, name: item.name, location: item.location}
       });
     console.log("OUT navigateToDetails");
   }
@@ -438,11 +455,16 @@ upper right for generating reports.
     isReportsOpen.value = !isReportsOpen.value;
   };
 
-  // Toggle the reports menu.
+  // Toggle the checklists menu.
   const toggleChecklistsMenu = () => {
     isChecklistsOpen.value = !isChecklistsOpen.value;
   };
 
+  // Toggle the views menu.
+  const toggleViewsMenu = () => {
+    isViewsOpen.value = !isViewsOpen.value;
+  };
+  
   // Select an option from the reports menu dropdown.
   const selectReportsOption = (option) => {
     console.log('Selected:' + option);
@@ -468,6 +490,21 @@ upper right for generating reports.
       router.push({name: "system-test-info"});
     }
     console.log("OUT Prototype.selectChecklistsOption");
+  };
+
+  const selectViewsOption = (option) => {
+    console.log("IN Prototype.selectViewsOption");
+    console.log('Selected:' + option);
+    isViewsOpen.value = false; // Close menu after selection
+    if(option == 'Main'){
+      router.push({name: "prototype"});
+    } else if(option == 'Issues') {
+      router.push({name: "view-issues-all"});
+    } else if(option == 'MaintTasks') {
+      router.push({name: "view-maint-tasks-all"});
+    }
+
+    console.log("OUT Prototype.selectViewsOption");
   };
 
   // Close the menu when clicking outside
@@ -535,7 +572,7 @@ upper right for generating reports.
   // Update.  base unit object.
   const updateBaseUnit = (item) => {
     console.log("IN updateBaseUnit");
-    router.push({name: 'update-base-unit', params: {name: item.name, id: item.id, location: item.location, has_new_feet: item.has_new_feet, has_new_mast_bearing: item.has_new_mast_bearing}}).catch(failure => {
+    router.push({name: 'update-base-unit', params: {name: item.name, id: item.id, location: item.location}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
     console.log("OUT updateBaseUnit");

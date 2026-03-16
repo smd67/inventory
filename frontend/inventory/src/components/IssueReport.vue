@@ -22,6 +22,7 @@ This file is the vue component implementation for the issue report.
           item-value="name"
           class="elevation-1"
           :key="issueReportKey"
+          :sort-by="defaultSort"
           @dblclick:row="navigateToDetails"
         >
         </v-data-table>
@@ -71,7 +72,11 @@ This file is the vue component implementation for the issue report.
     {title: 'Match String', value: 'match_string' , sortable: true},
     {title: 'Similarity Score', value: 'sim_score', sortable: true}
   ]);
-  
+
+  const defaultSort = [
+    { key: 'sim_score', order: 'desc' },
+  ];
+
   // Properties passed in to component
   const props = defineProps({
     item_type: {
@@ -94,7 +99,7 @@ This file is the vue component implementation for the issue report.
 
   // fetch the user information when params change
   watch(
-    () => route.params.id,
+    () => [route.params.item_type, route.params.query_string, route.params.start_date, route.params.end_date],
     async refresh => {
       console.log("IN IssueReport.watch.refresh");
       itemType.value = props.item_type;
@@ -167,7 +172,7 @@ This file is the vue component implementation for the issue report.
       {
         name: 'base-unit',
         query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, widescreen_cameras: widescreenCameras.value },
-        params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet}
+        params: {id: item.id, name: item.name, location: item.location}
       });
     console.log("OUT navigateToDetails");
   };

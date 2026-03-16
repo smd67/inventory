@@ -27,16 +27,6 @@ in the database.
               label="Location"
               :key="locationKey"
             ></v-text-field>
-            <v-checkbox
-              v-model="has_new_feet"
-              label="Has new feet?"
-              :key="hasNewFeetKey"
-            ></v-checkbox>
-            <v-checkbox
-              v-model="has_new_mast_bearing"
-              label="Has new mast bearing?"
-              :key="hasNewMastBearingKey"
-            ></v-checkbox>
             <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important; padding-right: 10px;" @click="goBack">Back</v-btn>
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
@@ -61,14 +51,10 @@ in the database.
   const loading = ref(true);
   const name = ref(null);
   const location = ref(null);
-  const has_new_feet = ref(false);
-  const has_new_mast_bearing = ref(false);
   const router = useRouter();
   const route = useRoute();
   const nameKey = ref(0);
   const locationKey = ref(0);
-  const hasNewFeetKey = ref(0);
-  const hasNewMastBearingKey = ref(0);
 
   // Watcher to reset data when path changes
   watch(
@@ -80,10 +66,6 @@ in the database.
         nameKey.value += 1;
         location.value = null;
         locationKey.value += 1;
-        has_new_feet.value = false;
-        hasNewFeetKey.value += 1;
-        has_new_mast_bearing.value = false;
-        hasNewMastBearingKey.value += 1;
       }
       console.log("OUT Create.watch.refresh");
     }
@@ -112,9 +94,7 @@ in the database.
     };
     const requestBody = {
         name: name.value,
-        location: location.value,
-        has_new_mast_bearing: has_new_mast_bearing.value,
-        has_new_feet: has_new_feet.value,
+        location: location.value
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
@@ -123,9 +103,7 @@ in the database.
         activity_log('Base Unit', 
                      name.value, 
                      "Created Base Unit: " + name.value + 
-                     " at location=" + location.value +
-                     ", has_new_mast_bearing=" + has_new_mast_bearing.value +
-                     ", has_new_feet=" + has_new_feet.value);
+                     " at location=" + location.value);
         loading.value = false;
     } catch (e) {
         loading.value = false;

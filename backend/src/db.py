@@ -5,7 +5,7 @@ This file contains a common database class.
 import os
 import re
 from typing import Any, Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, date
 from fuzzywuzzy import fuzz
 
 import model
@@ -77,7 +77,6 @@ class Database:
             # Execute a command
             cur.execute(
                 "select (base_units.id, base_units.name, base_units.location, "
-                + "base_units.has_new_mast_bearing, base_units.has_new_feet,"
                 + "cameras.name, cameras.type, cameras.lane) "
                 + "from base_units LEFT OUTER JOIN cameras ON "
                 + "base_units.id=cameras.base_unit_ref;"
@@ -92,13 +91,11 @@ class Database:
                         id=row[0][0],
                         name=row[0][1],
                         location=row[0][2],
-                        has_new_mast_bearing=row[0][3],
-                        has_new_feet=row[0][4],
                     )
                     bu_dict[row[0][1]] = bu_results
-                camera_name = row[0][5]
-                camera_type = model.CameraType.from_str(row[0][6])
-                camera_lane = row[0][7]
+                camera_name = row[0][3]
+                camera_type = model.CameraType.from_str(row[0][4])
+                camera_lane = row[0][5]
                 camera_name = f"{camera_name}[{camera_lane}]" \
                     if camera_lane != model.LaneIndicatorType.NO_LANE.value \
                     else camera_name
@@ -134,7 +131,6 @@ class Database:
             # Execute a command
             cur.execute(
                 "select (base_units.id, base_units.name, base_units.location, "
-                + "base_units.has_new_mast_bearing, base_units.has_new_feet,"
                 + "cameras.name, cameras.type, cameras.lane) " 
                 + "from base_units LEFT OUTER JOIN cameras ON "
                 + "base_units.id=cameras.base_unit_ref " 
@@ -150,12 +146,10 @@ class Database:
                         id=row[0][0],
                         name=row[0][1],
                         location=row[0][2],
-                        has_new_mast_bearing=row[0][3],
-                        has_new_feet=row[0][4],
                     )
-                camera_name = row[0][5]
-                camera_type = model.CameraType.from_str(row[0][6])
-                camera_lane = row[0][7]
+                camera_name = row[0][3]
+                camera_type = model.CameraType.from_str(row[0][4])
+                camera_lane = row[0][5]
                 camera_name = f"{camera_name}[{camera_lane}]" \
                     if camera_lane != model.LaneIndicatorType.NO_LANE.value \
                     else camera_name
@@ -218,6 +212,52 @@ class Database:
         print("OUT Database.get_maintenance_tasks")
         return maint_list
 
+    def get_all_maintenance_tasks(self) -> List[model.MaintenanceTask]:
+        """
+        Get all of the maintenance tasks.
+
+        Returns
+        -------
+        List[model.MaintenanceTask]
+            A list of all maintenance tasks.
+        """
+        print("IN Database.get_all_maintenance_tasks")
+        maint_list = []
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute("SELECT * from maintenance")
+            # Fetch the results
+            for row in cur:
+                maint_task = model.MaintenanceTask(
+                    id=row[0],
+                    description=row[1],
+                    last_done_date=row[2],
+                    item_type=model.ItemType.from_str(row[3]),
+                    item_ref=row[4],
+                    due_date=row[5]
+                )
+                maint_list.append(maint_task)
+            
+            for maint_task in maint_list:
+                if maint_task.item_type == model.ItemType.BASE_UNIT:
+                    cur.execute("select name from base_units WHERE " 
+                                + f"id='{maint_task.item_ref}' LIMIT 1")
+                elif maint_task.item_type == model.ItemType.CAMERA:
+                    cur.execute("select name from cameras WHERE " 
+                                + f"id='{maint_task.item_ref}' LIMIT 1")
+                elif maint_task.item_type == model.ItemType.OTHER:
+                    cur.execute("select name from other_items WHERE " 
+                                + f"id='{maint_task.item_ref}' LIMIT 1")
+                else:
+                    break
+                record = cur.fetchone()
+                item_name = record[0]
+                maint_task.item_name = item_name
+
+        print(f"OUT Database.get_all_maintenance_tasks")
+        return maint_list
+    
     def get_cameras(self) -> List[model.CameraQueryResult]:
         """
         This method returns a list of all cameras.
@@ -462,9 +502,7 @@ class Database:
     def create_base_unit(
         self,
         name: str,
-        location: int,
-        has_new_mast_bearing: Optional[bool] = False,
-        has_new_feet: Optional[bool] = False
+        location: int
     ):
         """
         Create a base unit in the database.
@@ -475,19 +513,13 @@ class Database:
             The name of the base unit.
         location : int
             An integer value associated with a location.
-        has_new_mast_bearing : Optional[bool], optional
-            True if base unit has a new mast bearing.
-        has_new_feet : Optional[bool], optional
-            True if base unit has a new feet.
         """
         print("IN create_base_unit")
         with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(
-                "insert into base_units (name, location, "
-                + "has_new_mast_bearing, has_new_feet) "
-                + f"values('{name}', {location}, {has_new_mast_bearing}, "
-                + f"{has_new_feet})"
+                "insert into base_units (name, location) "
+                + f"values('{name}', {location})"
             )
             self.connection.commit() # pylint: disable=no-member
         print("OUT create_base_unit")
@@ -853,7 +885,7 @@ class Database:
         name : str
             The name of the other item
         base_unit : str
-            The name of the base unit where the item is installed.
+            The name of the base unit w_mainthere the item is installed.
         """
         print("IN update_other_item")
         with self.connection.cursor() as cursor: # pylint: disable=no-member
@@ -903,9 +935,7 @@ class Database:
         self,
         id: int,
         name: str,
-        location: int,
-        has_new_feet: bool,
-        has_new_mast_bearing: bool,
+        location: int
     ) -> None:
         """
         Update a base unit object
@@ -918,18 +948,12 @@ class Database:
             The name of the base unit
         location : int
             The location of the base unit
-        has_new_feet : bool
-            An indicator of if the base unit has new feet
-        has_new_mast_bearing : bool
-            An indicator of if the base unit has a new mast bearing.
         """
         print("IN update_base_unit")
         with self.connection.cursor() as cursor: # pylint: disable=no-member
             # Execute a command
             cursor.execute(
-                f"update base_units set location={location}, "
-                + f"has_new_feet={has_new_feet}, "
-                + f"has_new_mast_bearing={has_new_mast_bearing} where id={id}"
+                f"update base_units set location={location} where id={id}"
             )
             self.connection.commit() # pylint: disable=no-member
         print("OUT update_base_unit")
@@ -944,54 +968,36 @@ class Database:
             A list of base units with a new mast bearing.
         """
         print("IN Database.get_has_new_mast_bearing")
-        bu_dict: Dict[Any, Any] = {}
-        # Open a cursor to perform database operations
-        with self.connection.cursor() as cur: # pylint: disable=no-member
-            # Execute a command
-            cur.execute(
-                "select (base_units.id, base_units.name, base_units.location, "
-                + "base_units.has_new_mast_bearing, base_units.has_new_feet,"
-                + "cameras.name, "
-                + "cameras.type) from base_units LEFT OUTER JOIN cameras ON "
-                + "base_units.id=cameras.base_unit_ref WHERE "
-                + "base_units.has_new_mast_bearing=true"
-            )
-            # Fetch the results
-            for row in cur:
-                print(f"row={row}")
-                if row[0][1] in bu_dict:
-                    bu_results = bu_dict[row[0][1]]
-                else:
-                    bu_results = model.BaseUnitQueryResult(
-                        id=row[0][0],
-                        name=row[0][1],
-                        location=row[0][2],
-                        has_new_mast_bearing=row[0][3],
-                        has_new_feet=row[0][4],
-                    )
-                    bu_dict[row[0][1]] = bu_results
-                camera_type = model.CameraType.from_str(row[0][6])
-                print(
-                    f"camera_type={camera_type} "
-                    + f"{model.CameraType.FACE_CAMERA.name}"
+        item_type_enum = model.ItemType.BASE_UNIT
+        start_date = None
+        end_date = date.today()
+        query_string = 'has new mast bearing'
+        result_list = []
+        note_list = self.get_notes_by_type(item_type_enum, start_date, end_date)
+        
+        seen = set()
+        for idx, note in enumerate(note_list):
+            if note.description.startswith('System Test Checklist Executed') or note.item_ref in seen:
+                continue
+            score = self.fuzzy_similarity(query_string, note.description)
+            if score > 75.0:
+                seen.add(note.item_ref)
+                bu = self.get_base_unit_by_name(note.item_name)
+
+                query_result = model.BaseUnitQueryResult(
+                    id=bu.id,
+                    name=bu.name,
+                    location=bu.location,
+                    face_cameras=bu.face_cameras,
+                    widescreen_cameras=bu.widescreen_cameras,
+                    license_plate_cameras=bu.license_plate_cameras
                 )
-                if camera_type == model.CameraType.FACE_CAMERA:
-                    if not bu_results.face_cameras:
-                        bu_results.face_cameras = []
-                    bu_results.face_cameras.append(row[0][5])
-                elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
-                    if not bu_results.license_plate_cameras:
-                        bu_results.license_plate_cameras = []
-                    bu_results.license_plate_cameras.append(row[0][5])
-                elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
-                    if not bu_results.widescreen_cameras:
-                        bu_results.widescreen_cameras = []
-                    bu_results.widescreen_cameras.append(row[0][5])
+                result_list.append(query_result)
 
         print(
-            f"OUT Database.get_has_new_mast_bearing: {list(bu_dict.values())}"
+            f"OUT Database.get_has_new_mast_bearing"
         )
-        return list(bu_dict.values())
+        return result_list
 
     def get_has_new_feet(self) -> List[model.BaseUnitQueryResult]:
         """
@@ -1003,52 +1009,35 @@ class Database:
             A list of base units with new feet.
         """
         print("IN Database.get_has_new_feet")
-        bu_dict: Dict[Any, Any] = {}
-        # Open a cursor to perform database operations
-        with self.connection.cursor() as cur: # pylint: disable=no-member
-            # Execute a command
-            cur.execute(
-                "select (base_units.id, base_units.name, base_units.location, "
-                + "base_units.has_new_mast_bearing, base_units.has_new_feet,"
-                + "cameras.name, "
-                + "cameras.type) from base_units LEFT OUTER JOIN cameras ON "
-                + "base_units.id=cameras.base_unit_ref WHERE "
-                + "base_units.has_new_feet=true"
-            )
-            # Fetch the results
-            for row in cur:
-                print(f"row={row}")
-                if row[0][1] in bu_dict:
-                    bu_results = bu_dict[row[0][1]]
-                else:
-                    bu_results = model.BaseUnitQueryResult(
-                        id=row[0][0],
-                        name=row[0][1],
-                        location=row[0][2],
-                        has_new_mast_bearing=row[0][3],
-                        has_new_feet=row[0][4],
-                    )
-                    bu_dict[row[0][1]] = bu_results
-                camera_type = model.CameraType.from_str(row[0][6])
-                print(
-                    f"camera_type={camera_type} "
-                    + f"{model.CameraType.FACE_CAMERA.name}"
-                )
-                if camera_type == model.CameraType.FACE_CAMERA:
-                    if not bu_results.face_cameras:
-                        bu_results.face_cameras = []
-                    bu_results.face_cameras.append(row[0][5])
-                elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
-                    if not bu_results.license_plate_cameras:
-                        bu_results.license_plate_cameras = []
-                    bu_results.license_plate_cameras.append(row[0][5])
-                elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
-                    if not bu_results.widescreen_cameras:
-                        bu_results.widescreen_cameras = []
-                    bu_results.widescreen_cameras.append(row[0][5])
 
-        print(f"OUT Database.get_has_new_feet: {list(bu_dict.values())}")
-        return list(bu_dict.values())
+        item_type_enum = model.ItemType.BASE_UNIT
+        start_date = None
+        end_date = date.today()
+        query_string = 'has new feet'
+        result_list = []
+        note_list = self.get_notes_by_type(item_type_enum, start_date, end_date)
+        seen = set()
+
+        for idx, note in enumerate(note_list):
+            if note.description.startswith('System Test Checklist Executed') or note.item_ref in seen:
+                continue
+            score = self.fuzzy_similarity(query_string, note.description)
+            if score > 75.0:
+                seen.add(note.item_ref)
+                bu = self.get_base_unit_by_name(note.item_name)
+
+                query_result = model.BaseUnitQueryResult(
+                    id=bu.id,
+                    name=bu.name,
+                    location=bu.location,
+                    face_cameras=bu.face_cameras,
+                    widescreen_cameras=bu.widescreen_cameras,
+                    license_plate_cameras=bu.license_plate_cameras
+                )
+                result_list.append(query_result)
+
+        print(f"OUT Database.get_has_new_feet")
+        return result_list
 
     def get_expired_maintenance_tasks(self) -> List[model.MaintenanceTask]:
         """
@@ -1234,6 +1223,73 @@ class Database:
         print(f"OUT Database.get_notes. note_list={note_list}")
         return note_list
     
+    def get_notes_by_type(self, 
+                          item_type: str, 
+                          start_date: datetime.date,
+                          end_date: datetime.date) -> List[model.Notes]:
+        """
+        This method returns all of the notess associated with an item_type.
+
+        Parameters
+        ----------
+        item_type : str
+            The type of item (base unit, camera, or other)
+        Returns
+        -------
+        List[model.Notes]
+            A list of all of the notes associated with an item_type.
+        """
+        print(
+            f"IN Database.get_notes_by_type. item_type={item_type}"
+        )
+        note_list = []
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            if start_date and end_date:
+                cur.execute(
+                    f"SELECT * from notes WHERE item_type='{item_type.name}' and date >= '{start_date}' and date <= '{end_date}'"
+                )
+            elif start_date:
+                cur.execute(
+                    f"SELECT * from notes WHERE item_type='{item_type.name}' and date >= '{start_date}'"
+                )
+            elif end_date:
+                cur.execute(
+                    f"SELECT * from notes WHERE item_type='{item_type.name}' and date <= '{end_date}'"
+                )
+            # Fetch the results
+
+            for row in cur:
+                note = model.Notes(
+                    id=row[0],
+                    description=row[1],
+                    date=row[2],
+                    item_type=model.ItemType.from_str(row[3]),
+                    item_ref=row[4],
+                )
+                note_list.append(note)
+
+            for note in note_list:
+                if item_type == model.ItemType.BASE_UNIT:
+                    cur.execute("select name from base_units WHERE " 
+                                + f"id='{note.item_ref}' LIMIT 1")
+                elif item_type == model.ItemType.CAMERA:
+                    cur.execute("select name from cameras WHERE " 
+                                + f"id='{note.item_ref}' LIMIT 1")
+                elif item_type == model.ItemType.OTHER:
+                    cur.execute("select name from other_items WHERE " 
+                                + f"id='{note.item_ref}' LIMIT 1")
+                else:
+                    break
+                record = cur.fetchone()
+                item_name = record[0]
+                note.item_name = item_name
+
+        print(f"OUT Database.get_notes_by_type. note_list={note_list}")
+        return note_list
+    
+
     def get_issues_by_type(self, 
                           item_type: str, 
                           start_date: datetime.date,
@@ -1324,6 +1380,49 @@ class Database:
 
         print("OUT add_note")
 
+    def add_note_by_name(self, description: str, item_type: str, item_name: str) -> None:
+        """
+        Add a note to the given item.
+
+        Parameters
+        ----------
+        description : str
+            The text of the note.
+        item_type : str
+            The type of item associated with the note.
+        item_name : str
+            The name of the item assciated with the note.
+        """
+        print("IN Database.add_note_by_name")
+        with self.connection.cursor() as cursor: # pylint: disable=no-member
+            item_type_enum = model.ItemType.from_str(item_type)
+            if item_type_enum == model.ItemType.BASE_UNIT:
+                cursor.execute(
+                    f"SELECT id from base_units WHERE name='{item_name}' "
+                    + "LIMIT 1"
+                )
+            elif item_type_enum == model.ItemType.CAMERA:
+                cursor.execute(
+                    f"SELECT id from cameras WHERE name='{item_name}' "
+                    + "LIMIT 1"
+                )
+            elif item_type_enum == model.ItemType.OTHER:
+                cursor.execute(
+                    f"SELECT id from other_items WHERE name='{item_name}' "
+                    + "LIMIT 1"
+                )
+            record = cursor.fetchone()
+            item_ref = record[0]
+
+            # Execute a command
+            cursor.execute(
+                "insert into notes (description, date, item_type, item_ref) "
+                + f"values('{description}', now(), '{item_type}', {item_ref})"
+            )
+            self.connection.commit() # pylint: disable=no-member
+
+        print("OUT Database.add_note_by_name")
+
     def delete_note(self, id: int) -> None:
         """
         Delete a note.
@@ -1379,6 +1478,51 @@ class Database:
                 )
                 issue_list.append(issue)
         print(f"OUT Database.get_issues. issue_list={issue_list}")
+        return issue_list
+    
+    def get_all_issues(self) -> List[model.Issues]:
+        """
+        Get all of the issues.
+
+        Returns
+        -------
+        List[model.Issues]
+            A list of all maintenance tasks.
+        """
+        print("IN Database.get_all_issues")
+        issue_list = []
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute("SELECT * from issues")
+            # Fetch the results
+            for row in cur:
+                issue = model.Issues(
+                    id=row[0],
+                    description=row[1],
+                    date=row[2],
+                    item_type=model.ItemType.from_str(row[3]),
+                    item_ref=row[4],
+                )
+                issue_list.append(issue)
+            
+            for issue in issue_list:
+                if issue.item_type == model.ItemType.BASE_UNIT:
+                    cur.execute("select name from base_units WHERE " 
+                                + f"id='{issue.item_ref}' LIMIT 1")
+                elif issue.item_type == model.ItemType.CAMERA:
+                    cur.execute("select name from cameras WHERE " 
+                                + f"id='{issue.item_ref}' LIMIT 1")
+                elif issue.item_type == model.ItemType.OTHER:
+                    cur.execute("select name from other_items WHERE " 
+                                + f"id='{issue.item_ref}' LIMIT 1")
+                else:
+                    break
+                record = cur.fetchone()
+                item_name = record[0]
+                issue.item_name = item_name
+
+        print(f"OUT Database.get_all_issues")
         return issue_list
     
     def add_issue(self, description: str, item_type: str, item_ref: int) -> None:
@@ -1481,13 +1625,17 @@ class Database:
         
         print("IN Database.get_issue_report")
         result_list = []
-        item_type_enum = model.ItemType.from_str_value(item_type)
-        issue_list = self.get_issues_by_type(item_type_enum, start_date, end_date)
+
+        if item_type != 'ALL':
+            item_type_enum = model.ItemType.from_str_value(item_type)
+            issue_list = self.get_issues_by_type(item_type_enum, start_date, end_date)
+        else:
+            issue_list = self.get_all_issues()
         
         for idx, issue in enumerate(issue_list):
             print(f"{idx}:{issue}")
             score = self.fuzzy_similarity(query_string, issue.description)
-            if score >= 70.0:
+            if score > 70.0:
                 query_result = model.IssueReportQueryResult(item_name=issue.item_name, item_type=issue.item_type, match_string=issue.description,sim_score=score)
                 result_list.append(query_result)
         print("OUT Database.get_issue_report")

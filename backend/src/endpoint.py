@@ -111,6 +111,27 @@ def get_maint_tasks(
     print(f"OUT Endpoint.get_maint_tasks. maint_list={maint_list}")
     return maint_list
 
+@app.get("/get-all-maint-tasks")
+def get_all_maint_tasks() -> List[model.MaintenanceTask]:
+    """
+    Get all of the maintenance tasks for an item.
+
+    Parameters
+    ----------
+    query : model.MaintenanceTaskQuery
+        A query that contains the type and reference for the item to get the
+        maintenance tasks for.
+
+    Returns
+    -------
+    List[model.MaintenanceTask]
+        A list of tasks associated with the item.
+    """
+    print("IN Endpoint.get_all_maint_tasks")
+    db = Database()
+    maint_list = db.get_all_maintenance_tasks()
+    print(f"OUT Endpoint.get_all_maint_tasks.")
+    return maint_list
 
 @app.get("/get-cameras")
 def get_cameras() -> List[model.CameraQueryResult]:
@@ -293,9 +314,7 @@ def create_base_unit(query: model.BaseUnitCreate) -> None:
         db = Database()
         db.create_base_unit(
             query.name,
-            query.location,
-            query.has_new_mast_bearing,
-            query.has_new_feet
+            query.location
         )
     except Exception as e:
         print(f"An unexpected exception e={e} has occured")
@@ -682,9 +701,7 @@ def update_base_unit(query: model.BaseUnitUpdate) -> None:
         db.update_base_unit(
             query.id,
             query.name,
-            query.location,
-            query.has_new_feet,
-            query.has_new_mast_bearing,
+            query.location
         )
     except Exception as e:
         print(f"An unexpected exception e={e} has occured")
@@ -820,6 +837,33 @@ def add_note(query: model.NotesCreate) -> None:
     print("OUT add-note")
 
 
+@app.post("/add-note-by-name")
+def add_note_by_name(query: model.NoteCreateByName) -> None:
+    """
+    Add a note to the database.
+
+    Parameters
+    ----------
+    query : model.NotesCreateByName
+        A query with all of the parameters to create the note.
+
+    Raises
+    ------
+    HTTPException
+        Used to return a 500 internal server error
+    """
+    print(f"IN Endpoint.add-note-by-name query={query}")
+    try:
+        db = Database()
+        db.add_note_by_name(query.description, query.item_type, query.item_name)
+    except Exception as e:
+        print(f"An unexpected exception e={e} has occured")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected exception e={e} has occured",
+        )
+    print("OUT add-note-by-name")
+
 @app.post("/delete-note")
 def delete_note(query: model.NotesDelete) -> None:
     """
@@ -870,6 +914,23 @@ def get_issues(query: model.IssuesQuery) -> List[model.Issues]:
     issues_list = db.get_issues(item_type_enum.name, query.item_ref)
     print(f"OUT Endpoint.get_issues. issues_list={issues_list}")
     return issues_list
+
+@app.get("/get-all-issues")
+def get_all_issues() -> List[model.Issues]:
+    """
+    Get all of the issues.
+
+    Returns
+    -------
+    List[model.Issues]
+        A list of issues associated with the item.
+    """
+    print("IN Endpoint.get_all_issues")
+    db = Database()
+    issues_list = db.get_all_issues()
+    print(f"OUT Endpoint.get_all_issues. issues_list={issues_list}")
+    return issues_list
+
 
 @app.post("/add-issue")
 def add_issue(query: model.IssuesCreate) -> None:

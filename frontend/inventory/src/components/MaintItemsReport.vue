@@ -136,7 +136,7 @@ maintenance tasks whose last due date is >= 6 months.
       {
         name: 'base-unit',
         query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, widescreen_cameras: widescreenCameras.value },
-        params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet}
+        params: {id: item.id, name: item.name, location: item.location}
       });
     console.log("OUT navigateToDetails");
   };

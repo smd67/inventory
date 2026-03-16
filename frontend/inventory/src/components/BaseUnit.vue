@@ -28,16 +28,6 @@ cameras, notes, other items, or maintenance tasks.
               label="Location"
               readonly
             ></v-text-field>
-            <v-checkbox
-              v-model="has_new_feet"
-              label="Has new feet?"
-              readonly
-            ></v-checkbox>
-            <v-checkbox
-              v-model="has_new_mast_bearing"
-              label="Has new mast bearing?"
-              readonly
-            ></v-checkbox>
             <v-text-field
               v-model="faceCameras"
               label="Face Cameras"
@@ -384,8 +374,6 @@ cameras, notes, other items, or maintenance tasks.
   const id = ref(null);
   const name = ref(null);
   const location = ref(null);
-  const has_new_feet = ref(false);
-  const has_new_mast_bearing = ref(false);
   const faceCameras = ref([]);
   const licensePlateCameras = ref([]);
   const widescreenCameras = ref([]);
@@ -462,14 +450,6 @@ cameras, notes, other items, or maintenance tasks.
     location: {
       type: String,
       default: "",
-    },
-    has_new_feet: {
-      type: Boolean,
-      default: false,
-    },
-    has_new_mast_bearing: {
-      type: Boolean,
-      default: false,
     }
   });
 
@@ -485,8 +465,6 @@ cameras, notes, other items, or maintenance tasks.
         id.value = props.id;
         name.value = props.name;
         location.value = props.location;
-        has_new_feet.value = (props.has_new_feet === 'true');
-        has_new_mast_bearing.value = (props.has_new_mast_bearing === 'true');
         faceCameras.value = route.query.face_cameras;
         licensePlateCameras.value = route.query.license_plate_cameras;
         widescreenCameras.value = route.query.widescreen_cameras;
@@ -511,8 +489,6 @@ cameras, notes, other items, or maintenance tasks.
     id.value = props.id;
     name.value = props.name;
     location.value = props.location;
-    has_new_feet.value = (props.has_new_feet === 'true');
-    has_new_mast_bearing.value = (props.has_new_mast_bearing === 'true');
     faceCameras.value = route.query.face_cameras;
     licensePlateCameras.value = route.query.license_plate_cameras;
     widescreenCameras.value = route.query.widescreen_cameras;
@@ -526,7 +502,7 @@ cameras, notes, other items, or maintenance tasks.
     maintKey.value += 1;
     await fetchOther();
     otherKey.value += 1;
-    console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; has_new_feet=' + has_new_feet.value + '; has_new_mast_bearing=' + has_new_mast_bearing.value + '; faceCameras=' + faceCameras.value);
+    console.log('OUT onMounted id=' + id.value + '; location=' + location.value + '; faceCameras=' + faceCameras.value);
   });
 
   // Handle double-click on a camera row

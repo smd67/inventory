@@ -289,7 +289,7 @@ maintenance tasks whose last due date is >= 6 months.
       {id: 3, label: "Cerbo is powered", value: "cerbo_is_powered"},
       {id: 4, label: "Switch and modem are functioning", value: "switch_and_modem_functioning"},
       {id: 5, label: "Switch in top mast box is functioning", value: "switch_in_top_mast_functioning"},
-
+      {id: 2, label: "Has new feet", value: "base_unit_has_new_feet"},
     ]);
     const faceCameraCheckbox = ref([
       {id: 1, label: "At least one fan is working", value: "at_least_one_fan_working"},
@@ -703,11 +703,21 @@ maintenance tasks whose last due date is >= 6 months.
     if(labelsGeneral.length > 0){
       reportStr =  reportStr + 'General: ' + labelsGeneral.join(', ') + '\n';
       generateIssues(labelsGeneral, 'BASE_UNIT', baseUnitName.value, 'General');
+      if(!labelsGeneral.includes('Has new feet')){
+        generateNote('Has new feet', 'BASE_UNIT', baseUnitName.value)
+      }
+    } else {
+      generateNote('Has new feet', 'BASE_UNIT', baseUnitName.value)
     }
 
     if(labelsBoom.length > 0){
       reportStr =  reportStr + 'Boom: ' + labelsBoom.join(', ') + '\n';
       generateIssues(labelsBoom, 'BASE_UNIT', baseUnitName.value, 'Boom');
+      if(!labelsBoom.includes('Has new mast bearing')){
+        generateNote('Has new mast bearing', 'BASE_UNIT', baseUnitName.value)
+      }
+    } else {
+      generateNote('Has new mast bearing', 'BASE_UNIT', baseUnitName.value)
     }
     if(labelsRadar.length > 0){
       reportStr =  reportStr + 'Radar: ' + labelsRadar.join(', ') + '\n';
@@ -997,6 +1007,38 @@ maintenance tasks whose last due date is >= 6 months.
         );
     }
     console.log('OUT SystemTestChecklist.addIssue');
+  };
+
+  // This method handles the REST call to insert the maintenance task.
+  const generateNote = async (description, itemType, itemName) => {
+    console.log('IN SystemTestChecklist.generateNote');
+    const config = {
+      headers: {
+          'Content-Type': 'application/json'
+      }
+    };
+    const requestBody = {
+      date: reportDate.value,
+      description: description,
+      item_type: itemType,
+      item_name: itemName
+    };
+    console.log("requestBody=" + JSON.stringify(requestBody));
+    try {
+        const response = await api.post('/add-note-by-name', requestBody, config);
+        console.log("status=" + response.status);
+        loading.value = false;
+    } catch (e) {
+        loading.value = false;
+        console.error('Error inserting data:', e);
+        // Call the dialog's open function using the template ref
+        const result = await errorDialog.value.open(
+          'Confirm Error',
+          'Error inserting data:' + e,
+          { color: 'red lighten-3' }
+        );
+    }
+    console.log('OUT SystemTestChecklist.generateNote');
   };
 
   const fetchBaseUnitByName = async () => {

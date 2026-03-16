@@ -68,7 +68,6 @@ of the base units with new feet.
     {title: 'Face Camera', value: 'face_cameras_str' , sortable: true},
     {title: 'License Plate Camera', value: 'license_plate_cameras_str', sortable: true},
     {title: 'Widescreen Camera', value: 'widescreen_cameras_str', sortable: true},
-    {title: 'Has New Feet', value: 'has_new_feet', sortable: true},
   ]);
   
   // fetch the user information when params change
@@ -139,7 +138,7 @@ of the base units with new feet.
       {
         name: 'base-unit',
         query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, widescreen_cameras: widescreenCameras.value },
-        params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet}
+        params: {id: item.id, name: item.name, location: item.location}
       });
     console.log("OUT navigateToDetails");
   };

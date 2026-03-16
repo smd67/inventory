@@ -68,7 +68,6 @@ maintenance tasks whose last due date is >= 6 months.
     {title: 'Face Cameras', value: 'face_cameras_str' , sortable: true},
     {title: 'License Plate Cameras', value: 'license_plate_cameras_str', sortable: true},
     {title: 'Widescreen Cameras', value: 'widescreen_cameras_str', sortable: true},
-    {title: 'Has New Mast Bearing', value: 'has_new_mast_bearing', sortable: true},
   ]);
   
   // fetch the user information when params change
@@ -138,7 +137,7 @@ maintenance tasks whose last due date is >= 6 months.
       {
         name: 'base-unit',
         query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, widescreen_cameras: widescreenCameras.value },
-        params: {id: item.id, name: item.name, location: item.location, has_new_mast_bearing: item.has_new_mast_bearing, has_new_feet: item.has_new_feet}
+        params: {id: item.id, name: item.name, location: item.location}
       });
     console.log("OUT navigateToDetails");
   };

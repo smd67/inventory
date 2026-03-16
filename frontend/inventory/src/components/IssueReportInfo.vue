@@ -52,7 +52,7 @@ prior to performing an issue report.
   const queryString = ref(null);
   const startDate = ref(null);
   const endDate = ref(new Date().toISOString().slice(0, 10));
-  const itemType = ref(null);
+  const itemType = ref('ALL');
   const itemTypes = ref([]);
   const router = useRouter();
   const route = useRoute();
@@ -112,6 +112,7 @@ prior to performing an issue report.
     try {
       const response = await api.get('/get-item-types', config);
       itemTypes.value = response.data;
+      itemTypes.value.push('ALL')
       loading.value = false;
     } catch (e) {
       loading.value = false;

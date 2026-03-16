@@ -28,16 +28,6 @@ unit.
               :key="locationKey"
               label="Location"
             ></v-text-field>
-            <v-checkbox
-              v-model="hasNewFeet"
-              label="Has new feet?"
-              :key="hasNewFeetKey"
-            ></v-checkbox>
-            <v-checkbox
-              v-model="hasNewMastBearing"
-              label="Has new mast bearing?"
-              :key="hasNewMastBearingKey"
-            ></v-checkbox>
             <div class="d-flex justify-center align-center" style="padding-top: 20px; gap: 16px;">
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC !important;" @click="goBack">Back</v-btn>
               <v-btn variant="outlined" color="green" style="background-color: #F5F5DC;" type="submit">Submit</v-btn>
@@ -72,15 +62,7 @@ unit.
     location: {
       type: String,
       default: null,
-    },
-    has_new_feet: {
-      type: Boolean,
-      default: false
-    },
-    has_new_mast_bearing: {
-      type: Boolean,
-      default: false
-    },
+    }
   });
 
   // Data
@@ -88,20 +70,16 @@ unit.
   const name = ref(null);
   const id = ref(null);
   const location = ref(null);
-  const hasNewFeet = ref(false);
-  const hasNewMastBearing = ref(false);
   const router = useRouter();
   const route = useRoute();
   const nameKey = ref(0);
   const locationKey = ref(0);
-  const hasNewFeetKey = ref(0);
-  const hasNewMastBearingKey = ref(0);
   const errorDialog = ref(null);
   const confirmDialog = ref(null);
 
   // A watcher to reset data when the path changes.
   watch(
-    () => [route.params.name, route.params.id, route.params.location, route.params.has_new_feet, route.params.has_new_mast_bearing],
+    () => [route.params.name, route.params.id, route.params.location],
     async refresh => {
       console.log("IN UpdateBaseUnit.watch.refresh");
       name.value = props.name;
@@ -109,10 +87,6 @@ unit.
       location.value = props.location;
       locationKey.value += 1;
       id.value = props.id;
-      hasNewFeet.value = (props.has_new_feet === 'true');
-      hasNewFeetKey.value += 1;
-      hasNewMastBearing.value = (props.has_new_mast_bearing === 'true');
-      hasNewMastBearingKey.value += 1;
       console.log("OUT UpdateBaseUnit.watch.refresh");
     }
   );
@@ -125,12 +99,8 @@ unit.
     location.value = props.location;
     locationKey.value += 1;
     id.value = props.id;
-    hasNewFeet.value = (props.has_new_feet === 'true');
-    hasNewFeetKey.value += 1;
-    hasNewMastBearing.value = (props.has_new_mast_bearing === 'true');
-    hasNewMastBearingKey.value += 1;
     console.log("location=" + location.value + "; props.location=" + props.location);
-    console.log('OUT UpdateBaseUnit.onMounted. hasNewFeet=' + hasNewFeet.value + ":" + typeof hasNewFeet.value + "; hasNewMastBearing=" + hasNewMastBearing.value + ":" + typeof hasNewMastBearing.value);
+    console.log('OUT UpdateBaseUnit.onMounted.');
   });
 
   // Go back to previous page.
@@ -151,9 +121,7 @@ unit.
     const requestBody = {
         id: id.value,
         name: name.value,
-        location: location.value,
-        has_new_feet: hasNewFeet.value,
-        has_new_mast_bearing: hasNewMastBearing.value
+        location: location.value
     };
     console.log("requestBody=" + JSON.stringify(requestBody));
     try {
@@ -166,25 +134,12 @@ unit.
         if (result) {
           const response = await api.post('/update-base-unit', requestBody, config);
           console.log("status=" + response.status);
-          console.log('hasNewFeet=' + hasNewFeet.value + ":" + typeof hasNewFeet.value + "; hasNewMastBearing=" + hasNewMastBearing.value + ":" + typeof hasNewMastBearing.value);
 
           if(props.location !== location.value){
             activity_log('Base Unit', 
                           name.value, 
                           "Location changed from: " + props.location +
                           " to: " + location.value);
-          }
-          if((props.has_new_mast_bearing === 'true') !== hasNewMastBearing.value){
-            activity_log('Base Unit', 
-                          name.value, 
-                          "Has New Mast Bearing changed from: " + props.has_new_mast_bearing +
-                          " to: " + hasNewMastBearing.value);
-          }
-          if((props.has_new_feet === 'true') != hasNewFeet.value){
-            activity_log('Base Unit', 
-                          name.value, 
-                          "Has New Feet changed from: " + props.has_new_feet +
-                          " to: " + hasNewFeet.value);
           }
           loading.value = false;
         }
