@@ -57,6 +57,12 @@ def get_base_unit_by_name(query: model.BaseUnitQueryByName) -> model.BaseUnitQue
     results = db.get_base_unit_by_name(query.name)
     return results
 
+@app.post("/get-base-unit-by-id")
+def get_base_unit_by_id(query: model.BaseUnitQueryById) -> model.BaseUnitQueryByIdResult:
+    db = Database()
+    results = db.get_base_unit_by_id(query.id)
+    return results
+
 @app.get("/get-has-new-mast-bearing")
 def get_has_new_mast_bearing() -> List[model.BaseUnitQueryResult]:
     """
@@ -189,6 +195,29 @@ def get_cameras_for_bu(
     print(f"OUT Endpoint.get_cameras_for_bu. camera_list={camera_list}")
     return camera_list
 
+@app.post("/get-camera-by-id")
+def get_camera_by_id(
+    query: model.CameraQueryById,
+) -> model.CameraQueryResult:
+    """
+    Get all of the cameras installed in a base unit.
+
+    Parameters
+    ----------
+    query : model.CameraQueryById
+        Query that includes the integer identifier of the camera.
+
+    Returns
+    -------
+    model.CameraQueryResult
+        The camera associated with the id.
+    """
+    print("IN Endpoint.get_camera_by_id")
+    db = Database()
+    camera = db.get_camera_by_id(query.id)
+    print(f"OUT Endpoint.get_cameras_by_id. camera={camera}")
+    return camera
+
 @app.get("/get-camera-lane-indicators")
 def get_camera_lane_indicators() -> List[str]:
     """
@@ -293,6 +322,31 @@ def get_other_items_for_bu(
     )
     return other_items_list
 
+@app.post("/get-other-item-by-id")
+def get_other_item_by_id(
+    query: model.OtherItemQueryById,
+) -> model.OtherItemQueryResult:
+    """
+    Get single other item identified by id.
+
+    Parameters
+    ----------
+    query : model.OtherItemQueryById
+        Query that includes a unique identifier.
+
+    Returns
+    -------
+    model.OtherItemQueryResult
+        A single other item associated with the id.
+    """
+    print("IN Endpoint.get_other_item_by_id")
+    db = Database()
+    other_item = db.get_other_item_by_id(query.id)
+    print(
+        "OUT Endpoint.get_other_item_by_id. other_item="
+        + f"{other_item}"
+    )
+    return other_item
 
 @app.post("/create-base-unit")
 def create_base_unit(query: model.BaseUnitCreate) -> None:

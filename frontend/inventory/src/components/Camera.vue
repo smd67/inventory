@@ -313,7 +313,7 @@ notes or maintenance tasks.
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
       console.log('IN Camera.watch.refresh');
-      if(oldFullPath.includes("/prototype") || oldFullPath.includes("/base-unit")){
+      if(oldFullPath.includes("/prototype") || oldFullPath.includes("/base-unit") || oldFullPath.includes("/view-issues-all")){
         id.value = props.id;
         name.value = props.name;
         lane.value = props.lane;

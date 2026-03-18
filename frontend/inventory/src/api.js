@@ -45,4 +45,67 @@ export const fetchBaseUnitNames = async () => {
   }
   return baseUnitNames;
 };
+
+// Retrieve base unit from the database.
+export const fetchBaseUnitById = async (id) => {
+  let baseUnit = null;
+  const config = {
+      headers: {
+          'Content-Type': 'application/json'
+      }
+  };
+  const requestBody = {
+      id: id
+  };
+
+  try {
+      const response = await api.post('/get-base-unit-by-id', requestBody, config);
+      baseUnit = response.data;
+  } catch (e) {
+      console.error('Error fetching data:', e);
+  }
+  return baseUnit;
+};
+
+// Retrieve camera from the database.
+export const fetchCameraById = async (id) => {
+  let camera = null;
+  const config = {
+    headers: {
+        'Content-Type': 'application/json'
+    }
+  };
+  const requestBody = {
+      id: id
+  };
+
+  try {
+      const response = await api.post('/get-camera-by-id', requestBody, config);
+      camera = response.data;
+  } catch (e) {
+      console.error('Error fetching data:', e);
+  }
+  return camera;
+};
+
+// Retrieve camera from the database.
+export const fetchOtherItemById = async (id) => {
+  let otherItem = null;
+  const config = {
+    headers: {
+        'Content-Type': 'application/json'
+    }
+  };
+  const requestBody = {
+      id: id
+  };
+
+  try {
+      const response = await api.post('/get-other-item-by-id', requestBody, config);
+      otherItem = response.data;
+  } catch (e) {
+      console.error('Error fetching data:', e);
+  }
+  return otherItem;
+};
 export default api;

@@ -461,7 +461,7 @@ cameras, notes, other items, or maintenance tasks.
     async (newFullPath, oldFullPath) => {
       console.log("IN BaseUnit.watch.refresh newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
       console.log("name=" + name.value + "; props.name=" + props.name);
-      if(oldFullPath.includes("/prototype")){
+      if(oldFullPath.includes("/prototype") || oldFullPath.includes("/view-issues-all") || oldFullPath.includes("/mast-bearing-report") || oldFullPath.includes("/new-feet-report")){
         id.value = props.id;
         name.value = props.name;
         location.value = props.location;
@@ -610,7 +610,7 @@ cameras, notes, other items, or maintenance tasks.
 
   // Remove a camera from the base unit
   const removeCamera = async (item) => {
-    console.log("IN removeCamera item=" + JSON.stringify(item));
+    console.log("IN BaseUnit.removeCamera item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
     const result = await confirmDialog.value.open(
       'Confirm Removal',
@@ -627,9 +627,11 @@ cameras, notes, other items, or maintenance tasks.
       const requestBody = {
         id: item.id,
         name: item.name,
+        lane: item.lane,
         type: item.type,
         base_unit: item.base_unit
       };
+      console.log("requestBody=" + JSON.stringify(requestBody));
       try {
           const response = await api.post('/remove-camera', requestBody, config);
           loading.value = false;
@@ -654,7 +656,7 @@ cameras, notes, other items, or maintenance tasks.
     } else {
       console.log('Removal cancelled.');
     }
-    console.log("OUT removeCamera");
+    console.log("OUT BaseUnit.removeCamera");
   };
 
   // Update a camera 

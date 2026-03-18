@@ -290,7 +290,7 @@ This file is the vue component implementation for an other items detail screen.
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
       console.log("IN watch.refresh. props=" + JSON.stringify(props));
-      if(oldFullPath.includes("/prototype")){
+      if(oldFullPath.includes("/prototype") || oldFullPath.includes("/base-unit") || oldFullPath.includes("/view-issues-all")){
         id.value = props.id;
         name.value = props.name;
         location.value = props.location;
@@ -389,11 +389,13 @@ This file is the vue component implementation for an other items detail screen.
   };
 
   // Add a note to the database
-  const addNote = () => {
+  const addNote = async () => {
     console.log("IN addNote");
     router.push({name: 'add-note', params: {item_type: 'OTHER', item_ref: id.value, item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
+    await fetchNotes();
+    notesKey.value += 1;
     console.log("OUT addNote");
   }
 
@@ -430,6 +432,7 @@ This file is the vue component implementation for an other items detail screen.
       }
       console.log('Note deleted!');
       await fetchNotes();
+      notesKey.value += 1;
     } else {
       console.log('Deletion cancelled.');
     }
@@ -438,6 +441,7 @@ This file is the vue component implementation for an other items detail screen.
 
   // Retrieve notes from the database through a REST call.
   const fetchNotes = async () => {
+    console.log("IN OtherItems.fetchNotes");
     const config = {
         headers: {
             'Content-Type': 'application/json'
@@ -447,9 +451,11 @@ This file is the vue component implementation for an other items detail screen.
       item_type: 'OTHER',
       item_ref: id.value,
     };
+    console.log("requestBody=" + JSON.stringify(requestBody));
     try {
         const response = await api.post('/get-notes', requestBody, config);
         notesTable.value = response.data;
+        console.log("notesTable=" + JSON.stringify(notesTable.value));
         loading.value = false;
     } catch (e) {
         loading.value = false;
@@ -460,14 +466,17 @@ This file is the vue component implementation for an other items detail screen.
           { color: 'red lighten-3' }
         );
     }
+    console.log("OUT OtherItems.fetchNotes");
   };
 
   // Add an issue to the database
-  const addIssue = () => {
+  const addIssue = async () => {
     console.log("IN OtherItem.addNote");
     router.push({name: 'add-issue', params: {item_type: 'Other Item', item_ref: id.value, item_name: name.value}}).catch(failure => {
       console.log('An unexpected navigation failure occurred:', failure);
     });
+    await fetchIssues();
+    issuesKey.value += 1;
     console.log("OUT OtherItem.addIssue");
   }
 
@@ -508,6 +517,8 @@ This file is the vue component implementation for an other items detail screen.
     } else {
       console.log('Deletion cancelled.');
     }
+    await fetchIssues();
+    issuesKey.value += 1;
     console.log("OUT OtherItem.deleteIssue");
   };
 
@@ -525,7 +536,7 @@ This file is the vue component implementation for an other items detail screen.
     };
     try {
         const response = await api.post('/get-issues', requestBody, config);
-        notesTable.value = response.data;
+        issuesTable.value = response.data;
         loading.value = false;
     } catch (e) {
         loading.value = false;

@@ -72,6 +72,7 @@ This file is the vue component implementation for an other items detail screen.
           item-value="description"
           class="elevation-1"
           :key="issueKey"
+          @dblclick:row="navigateToDetails"
         >
           <!-- If you still want the default pagination controls alongside the search -->
           <template v-slot:footer.prepend>
@@ -126,7 +127,7 @@ This file is the vue component implementation for an other items detail screen.
   import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import ConfirmDialog from './ConfirmDialog.vue';
-  import api, {activity_log} from "../api";
+  import api, {activity_log, fetchBaseUnitById, fetchCameraById, fetchOtherItemById} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Data
@@ -176,6 +177,70 @@ This file is the vue component implementation for an other items detail screen.
     document.addEventListener('click', handleClickOutside);
     console.log('OUT ViewIssues.onMounted');
   });
+
+  // Navigate to base units detail screen on double-click.
+  const navigateToDetails = async (event, { item }) => {
+    // Prevent the default browser double-click behavior (e.g., text selection)
+    console.log("IN navigateToDetails: " + JSON.stringify(item));
+
+    event.preventDefault();
+
+    if(item.item_type === "Base Unit"){
+      let baseUnit = await fetchBaseUnitById(item.item_ref);
+      console.log("baseUnit=" + JSON.stringify(baseUnit))
+      let face_cameras = [];
+      let license_plate_cameras = [];
+      let widescreen_cameras = [];
+      if ('face_cameras' in baseUnit && baseUnit.face_cameras != null) {
+        face_cameras = baseUnit.face_cameras;
+      }
+      let license_plate_camera = [];
+      if ('license_plate_cameras' in baseUnit && baseUnit.license_plate_cameras != null) {
+        license_plate_cameras = baseUnit.license_plate_cameras;
+      }
+      let widescreen_camera = [];
+      if ('widescreen_cameras' in baseUnit && baseUnit.widescreen_cameras != null) {
+        widescreen_cameras = baseUnit.widescreen_cameras;
+      }
+
+      router.push(
+        {
+          name: 'base-unit',
+          query: { face_cameras: face_cameras, license_plate_cameras: license_plate_cameras, widescreen_cameras: widescreen_cameras },
+          params: {id: baseUnit.id, name: baseUnit.name, location: baseUnit.location}
+        });
+    } else if(item.item_type === "Camera") {
+      let camera = await fetchCameraById(item.item_ref)
+      let camera_location = -1;
+      if ('location' in camera && camera.location != null) {
+        camera_location = camera.location;
+      }
+      let camera_bu = "NONE";
+      if ('base_unit' in camera && camera.base_unit != null) {
+        camera_bu = camera.base_unit;
+      }
+
+      console.log("camera_location=" + camera_location + "; camera_bu=" + camera_bu);
+      router.push({name: 'camera', params: {id: camera.id, name: camera.name, lane: camera.lane, location: camera_location, base_unit: camera_bu, camera_type: camera.type}}).catch(failure => {
+        console.log('An unexpected navigation failure occurred:', failure);
+      });
+    } else if(item.item_type === "Other Item") {
+      let otherItem = await fetchOtherItemById(item.item_ref)
+      let other_location = -1;
+      if ('location' in otherItem && otherItem.location != null) {
+        other_location = otherItem.location;
+      }
+      let other_bu = "NONE";
+      if ('base_unit' in otherItem && otherItem.base_unit != null) {
+        other_bu = otherItem.base_unit;
+      }
+
+      router.push({name: 'other-items', params: {id: otherItem.id, name: otherItem.name, location: other_location, base_unit: other_bu}}).catch(failure => {
+        console.log('An unexpected navigation failure occurred:', failure);
+      });
+    }
+    console.log("OUT navigateToDetails");
+  }
 
   // Remove document listener when component is unmounted.
   onUnmounted(() => {

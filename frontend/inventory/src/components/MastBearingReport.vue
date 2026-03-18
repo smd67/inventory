@@ -136,7 +136,7 @@ maintenance tasks whose last due date is >= 6 months.
     router.push(
       {
         name: 'base-unit',
-        query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, widescreen_cameras: widescreenCameras.value },
+        query: { face_cameras: face_cameras.value, license_plate_cameras: license_plate_cameras.value, widescreen_cameras: widescreen_cameras.value },
         params: {id: item.id, name: item.name, location: item.location}
       });
     console.log("OUT navigateToDetails");

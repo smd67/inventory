@@ -203,6 +203,14 @@ class BaseUnitQueryByNameResult(BaseUnit):
     license_plate_cameras: Optional[List[str]] = []
     widescreen_cameras: Optional[List[str]] = []
 
+class BaseUnitQueryByIdResult(BaseUnit):
+    """
+    Base unit definitiion for ui.
+    """
+    face_cameras: Optional[List[str]] = []
+    license_plate_cameras: Optional[List[str]] = []
+    widescreen_cameras: Optional[List[str]] = []
+
 class BaseUnitCreate(BaseModel):
     """
     Query to create a Base Unit
@@ -229,6 +237,12 @@ class BaseUnitQueryByName(BaseModel):
     Query a Base Unit by name
     """
     name: str
+
+class BaseUnitQueryById(BaseModel):
+    """
+    Query a Base Unit by name
+    """
+    id: int
 
 # Camera models
 class CameraBase(BaseModel):
@@ -262,6 +276,11 @@ class CameraQuery(BaseModel):
     """
     base_unit_ref: int
 
+class CameraQueryById(BaseModel):
+    """
+    Camera query
+    """
+    id: int
 
 class CameraCreate(BaseModel):
     """
@@ -271,7 +290,6 @@ class CameraCreate(BaseModel):
     camera_type: str
     lane: str
     base_unit: Optional[str] = None
-
 
 class CameraDelete(CameraBase):
     """
@@ -320,6 +338,11 @@ class OtherItemQuery(BaseModel):
     """
     base_unit_ref: int
 
+class OtherItemQueryById(BaseModel):
+    """
+    OtherItem query
+    """
+    id: int
 
 class OtherItemCreate(BaseModel):
     """

@@ -170,6 +170,58 @@ class Database:
         print(f"OUT Database.get_base_unit_by_name: {bu_results}")
         return bu_results
 
+    def get_base_unit_by_id(self, bu_id: int) -> model.BaseUnitQueryByIdResult:
+        """
+        This method returns a single base unit based on the id.
+
+        Returns
+        -------
+        List[model.BaseUnitQueryByNameResult]
+            A list of all of the rows in the base_units table.
+        """
+        print("IN Database.get_base_unit_by_id")
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute(
+                "select (base_units.id, base_units.name, base_units.location, "
+                + "cameras.name, cameras.type, cameras.lane) " 
+                + "from base_units LEFT OUTER JOIN cameras ON "
+                + "base_units.id=cameras.base_unit_ref " 
+                + f"where base_units.id='{bu_id}' order by cameras.id asc;"
+            )
+
+            bu_results: model.BaseUnitQueryByIdResult = None
+            # Fetch the results
+            for idx, row in enumerate(cur):
+                if 0 == idx:
+                    bu_results = model.BaseUnitQueryByIdResult(
+                        id=row[0][0],
+                        name=row[0][1],
+                        location=row[0][2],
+                    )
+                camera_name = row[0][3]
+                camera_type = model.CameraType.from_str(row[0][4])
+                camera_lane = row[0][5]
+                camera_name = f"{camera_name}[{camera_lane}]" \
+                    if camera_lane != model.LaneIndicatorType.NO_LANE.value \
+                    else camera_name
+                
+                if camera_type == model.CameraType.FACE_CAMERA:
+                    if not bu_results.face_cameras:
+                        bu_results.face_cameras = []
+                    bu_results.face_cameras.append(camera_name)
+                elif camera_type == model.CameraType.LICENSE_PLATE_CAMERA:
+                    if not bu_results.license_plate_cameras:
+                        bu_results.license_plate_cameras = []
+                    bu_results.license_plate_cameras.append(camera_name)
+                elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
+                    if not bu_results.widescreen_cameras:
+                        bu_results.widescreen_cameras = []
+                    bu_results.widescreen_cameras.append(camera_name)
+
+        print(f"OUT Database.get_base_unit_by_id: {bu_results}")
+        return bu_results
     
     def get_maintenance_tasks(
         self, item_type: str, item_ref: int
@@ -317,7 +369,6 @@ class Database:
             # Fetch the results
             for cur_row in cur:
                 row = cur_row[0]
-                print(f"row={row}")
                 camera_type = model.CameraType.from_str(row[3])
                 camera = model.CameraQueryResult(
                     id=row[0],
@@ -377,6 +428,47 @@ class Database:
 
         return camera_list
 
+    def get_camera_by_id(
+        self, id: int
+    ) -> model.CameraQueryResult:
+        """
+        This method returns an individual camera by id.
+
+        Parameters
+        ----------
+        id : int
+            The integer identifier for the camera.
+
+        Returns
+        -------
+        model.CameraQueryResult
+            A single camera identified by the id.
+        """
+        # Open a cursor to perform database operations
+        camera = None
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute(
+                "select (cameras.id, cameras.name, cameras.lane, cameras.type, "
+                + "base_units.name, base_units.location) "
+                + "from cameras INNER join base_units on "
+                + "cameras.base_unit_ref = base_units.id where "
+                + f"cameras.id={id}"
+            )
+            curr_row = cur.fetchone()
+            # Fetch the results
+            row = curr_row[0]
+            camera_type = model.CameraType.from_str(row[3])
+            camera = model.CameraQueryResult(
+                id=row[0],
+                name=row[1],
+                lane=row[2],
+                type=camera_type.value,
+                base_unit=row[4],
+                location=row[5],
+            )
+            return camera
+    
     def get_camera_lane_indicators(self) -> List[str]:
         """
         This method returns a list of all possible lanes.
@@ -497,8 +589,42 @@ class Database:
 
         return other_list
 
-        return other_list
+    def get_other_item_by_id(
+        self, id: int
+    ) -> model.OtherItemQueryResult:
+        """
+        Get all of the other item for an id.
 
+        Parameters
+        ----------
+        id : int
+            Integer idetifier for the item.
+
+        Returns
+        -------
+        model.OtherItemQueryResult
+            The other item based on the id.
+        """
+        # Open a cursor to perform database operations
+        other_item = None
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute(
+                "select (other_items.id, other_items.name, base_units.name, "
+                + "base_units.location) "
+                + "from other_items INNER join base_units on "
+                + "other_items.base_unit_ref = base_units.id where "
+                + f"other_items.id={id}"
+            )
+            curr_row = cur.fetchone()
+            row = curr_row[0]
+            other = model.OtherItemQueryResult(
+                id=row[0], name=row[1], base_unit=row[2], location=row[3]
+            )
+            other_item = other
+
+        return other_item
+    
     def create_base_unit(
         self,
         name: str,
@@ -968,22 +1094,32 @@ class Database:
             A list of base units with a new mast bearing.
         """
         print("IN Database.get_has_new_mast_bearing")
-        item_type_enum = model.ItemType.BASE_UNIT
+        item_type_enum = model.ItemType.OTHER
         start_date = None
         end_date = date.today()
         query_string = 'has new mast bearing'
         result_list = []
-        note_list = self.get_notes_by_type(item_type_enum, start_date, end_date)
-        
+        note_list = self.get_notes_by_type(model.ItemType.OTHER, start_date, end_date) + \
+            self.get_notes_by_type(model.ItemType.BASE_UNIT, start_date, end_date)
+
         seen = set()
         for idx, note in enumerate(note_list):
             if note.description.startswith('System Test Checklist Executed') or note.item_ref in seen:
                 continue
             score = self.fuzzy_similarity(query_string, note.description)
+            print(f"query_string={query_string}, note.description={note.description}; score={score}")
+            
             if score > 75.0:
                 seen.add(note.item_ref)
-                bu = self.get_base_unit_by_name(note.item_name)
-
+                item_type_enum = note.item_type
+                print(f"note.item_type={note.item_type}; item_type_enum={item_type_enum}")
+                if item_type_enum == model.ItemType.OTHER:
+                    other_item = self.get_other_item_by_id(note.item_ref)
+                    if not other_item.base_unit:
+                        continue
+                    bu = self.get_base_unit_by_name(other_item.base_unit)
+                else:
+                    bu = self.get_base_unit_by_name(note.item_name)
                 query_result = model.BaseUnitQueryResult(
                     id=bu.id,
                     name=bu.name,
@@ -1511,7 +1647,7 @@ class Database:
                     cur.execute("select name from base_units WHERE " 
                                 + f"id='{issue.item_ref}' LIMIT 1")
                 elif issue.item_type == model.ItemType.CAMERA:
-                    cur.execute("select name from cameras WHERE " 
+                    cur.execute("select name, lane from cameras WHERE " 
                                 + f"id='{issue.item_ref}' LIMIT 1")
                 elif issue.item_type == model.ItemType.OTHER:
                     cur.execute("select name from other_items WHERE " 
@@ -1520,6 +1656,8 @@ class Database:
                     break
                 record = cur.fetchone()
                 item_name = record[0]
+                if issue.item_type == model.ItemType.CAMERA:
+                    item_name = record[0] if record[1] == "NONE" else f"{record[0]}[{record[1]}]"
                 issue.item_name = item_name
 
         print(f"OUT Database.get_all_issues")
