@@ -53,7 +53,7 @@ prior to performing a system test checklist.
   const baseUnitNames = ref(null);
   const faceCameras = ref([]);
   const licensePlateCameras = ref([]);
-  const widescreenCameras = ref([]);
+  const windscreenCameras = ref([]);
   const router = useRouter();
   const route = useRoute();
   const errorDialog = ref(null);
@@ -96,7 +96,7 @@ prior to performing a system test checklist.
     router.push({
       name: "system-test-checklist", 
       params: {technician_name: technicianName.value, base_unit: baseUnit.value, report_date: reportDate.value },
-      query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, widescreen_cameras: widescreenCameras.value }
+      query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, windscreen_cameras: windscreenCameras.value }
     });
     console.log("OUT SystemTestInfo.goNext");
   }
@@ -138,7 +138,7 @@ prior to performing a system test checklist.
         const target_bu = response.data;
         faceCameras.value = target_bu.face_cameras;
         licensePlateCameras.value = target_bu.license_plate_cameras;
-        widescreenCameras.value = target_bu.widescreen_cameras;
+        windscreenCameras.value = target_bu.windscreen_cameras;
         loading.value = false;
     } catch (e) {
         loading.value = false;
@@ -149,7 +149,7 @@ prior to performing a system test checklist.
             { color: 'red lighten-3' }
           );
     }
-    console.log("OUT SystemTestInfo.fetchBaseUnitByName faceCameras=" + JSON.stringify(faceCameras.value) + "; licensePlateCameras=" + JSON.stringify(licensePlateCameras.value) + "; widescreenCameras=" + JSON.stringify(widescreenCameras.value));
+    console.log("OUT SystemTestInfo.fetchBaseUnitByName faceCameras=" + JSON.stringify(faceCameras.value) + "; licensePlateCameras=" + JSON.stringify(licensePlateCameras.value) + "; windscreenCameras=" + JSON.stringify(windscreenCameras.value));
   };
 </script>
 <style scoped>

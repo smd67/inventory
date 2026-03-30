@@ -67,7 +67,7 @@ maintenance tasks whose last due date is >= 6 months.
     {title: 'Location', value: 'location', sortable: true },
     {title: 'Face Cameras', value: 'face_cameras_str' , sortable: true},
     {title: 'License Plate Cameras', value: 'license_plate_cameras_str', sortable: true},
-    {title: 'Widescreen Cameras', value: 'widescreen_cameras_str', sortable: true},
+    {title: 'Windscreen Cameras', value: 'windscreen_cameras_str', sortable: true},
   ]);
   
   // fetch the user information when params change
@@ -128,15 +128,15 @@ maintenance tasks whose last due date is >= 6 months.
     if ('license_plate_cameras' in item && item.license_plate_cameras != null) {
       license_plate_cameras = item.license_plate_cameras;
     }
-    let widescreen_cameras = [];
-    if ('widescreen_cameras' in item && item.widescreen_cameras != null) {
-      widescreen_cameras = item.widescreen_cameras;
+    let windscreen_cameras = [];
+    if ('windscreen_cameras' in item && item.windscreen_cameras != null) {
+      windscreen_cameras = item.windscreen_cameras;
     }
 
     router.push(
       {
         name: 'base-unit',
-        query: { face_cameras: face_cameras.value, license_plate_cameras: license_plate_cameras.value, widescreen_cameras: widescreen_cameras.value },
+        query: { face_cameras: face_cameras.value, license_plate_cameras: license_plate_cameras.value, windscreen_cameras: windscreen_cameras.value },
         params: {id: item.id, name: item.name, location: item.location}
       });
     console.log("OUT navigateToDetails");
@@ -164,10 +164,10 @@ maintenance tasks whose last due date is >= 6 months.
           } else {
             bu.license_plate_cameras_str = "";
           }
-          if('widescreen_cameras' in bu && bu.widescreen_cameras != null){
-            bu.widescreen_cameras_str = bu.widescreen_cameras.join(', ');
+          if('windscreen_cameras' in bu && bu.windscreen_cameras != null){
+            bu.windscreen_cameras_str = bu.windscreen_cameras.join(', ');
           } else {
-            bu.widescreen_cameras_str = "";
+            bu.windscreen_cameras_str = "";
           }
         });
         loading.value = false;

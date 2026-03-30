@@ -69,7 +69,7 @@ This file is the vue component implementation for the issue report.
   const headers = ref([
     {title: 'Name', align: 'start', sortable: true, value: 'item_name', class: 'blue lighten-5'},
     {title: 'Type', value: 'item_type', sortable: true },
-    {title: 'Match String', value: 'match_string' , sortable: true},
+    {title: 'Description', value: 'match_string' , sortable: true},
     {title: 'Similarity Score', value: 'sim_score', sortable: true}
   ]);
 
@@ -163,15 +163,15 @@ This file is the vue component implementation for the issue report.
     if ('license_plate_cameras' in item && item.license_plate_cameras != null) {
       license_plate_cameras = item.license_plate_cameras;
     }
-    let widescreen_cameras = "NONE";
-    if ('widescreen_cameras' in item && item.widescreen_cameras != null) {
-      widescreen_cameras = item.widescreen_cameras;
+    let windscreen_cameras = "NONE";
+    if ('windscreen_cameras' in item && item.windscreen_cameras != null) {
+      windscreen_cameras = item.windscreen_cameras;
     }
 
     router.push(
       {
         name: 'base-unit',
-        query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, widescreen_cameras: widescreenCameras.value },
+        query: { face_cameras: faceCameras.value, license_plate_cameras: licensePlateCameras.value, windscreen_cameras: windscreenCameras.value },
         params: {id: item.id, name: item.name, location: item.location}
       });
     console.log("OUT navigateToDetails");

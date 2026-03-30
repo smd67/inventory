@@ -3,12 +3,16 @@ This file contains the definition of a FastAPI endpoint for the backend.
 """
 
 from typing import List
-
+from common import get_secret
 import model
+import os
+import base64
 from db import Database
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from psycopg import errors
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import Depends, FastAPI, HTTPException, status
 
 app = FastAPI(redirect_slashes=False)
 
@@ -985,6 +989,21 @@ def get_all_issues() -> List[model.Issues]:
     print(f"OUT Endpoint.get_all_issues. issues_list={issues_list}")
     return issues_list
 
+@app.get("/get-all-notes")
+def get_all_notes() -> List[model.Notes]:
+    """
+    Get all of the notes.
+
+    Returns
+    -------
+    List[model.Notes]
+        A list of notes associated.
+    """
+    print("IN Endpoint.get_all_notes")
+    db = Database()
+    notes_list = db.get_all_notes()
+    print(f"OUT Endpoint.get_all_notes. notes_list={notes_list}")
+    return notes_list
 
 @app.post("/add-issue")
 def add_issue(query: model.IssuesCreate) -> None:
@@ -1090,3 +1109,49 @@ def get_issue_report(query: model.IssuesReportQuery) -> \
                                   query.start_date, 
                                   query.end_date)
     return results
+
+@app.post("/get-notes-report")
+def get_notes_report(query: model.NotesReportQuery) -> \
+    List[model.NotesReportQueryResult]:
+    """
+    This method returns the results of an issue report query.
+
+    Returns
+    -------
+    List[model.NotesReportQueryResult]
+        A list of items of type item_type that have a note similar to the query 
+        string.
+    """
+    db = Database()
+    results = db.get_notes_report(query.query_string, 
+                                  query.item_type, 
+                                  query.start_date, 
+                                  query.end_date)
+    return results
+
+@app.post("/login")
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+):
+    print("IN login")
+    deploy_type = os.getenv("DEPLOY_TYPE")
+
+    user = form_data.username
+    passwd = form_data.password
+    target_user = 'admin'
+
+    if deploy_type == "dev":
+        admin_password = get_secret(os.getenv("ADMIN_PWD"))
+    else:
+        admin_password = os.getenv("ADMIN_PWD")
+
+    # Convert string to bytes and then encode to base64 bytes
+    admin_password = base64.b64encode(admin_password.encode('utf-8')).decode("utf-8") 
+    target_user = base64.b64encode(target_user.encode('utf-8')).decode("utf-8") 
+    if user != target_user or passwd != admin_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
+    print("OUT login")
+    return {"message": "Login successfull"}

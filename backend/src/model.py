@@ -69,7 +69,7 @@ class CameraType(str, Enum):
 
     FACE_CAMERA = "Face Camera"
     LICENSE_PLATE_CAMERA = "License Plate Camera"
-    WIDE_SCREEN_CAMERA = "Wide Screen Camera"
+    WIND_SCREEN_CAMERA = "Wind Screen Camera"
     OTHER = "Other"
     ALL = "All"
 
@@ -92,8 +92,8 @@ class CameraType(str, Enum):
             return CameraType.FACE_CAMERA
         elif label == CameraType.LICENSE_PLATE_CAMERA.name:
             return CameraType.LICENSE_PLATE_CAMERA
-        elif label == CameraType.WIDE_SCREEN_CAMERA.name:
-            return CameraType.WIDE_SCREEN_CAMERA
+        elif label == CameraType.WIND_SCREEN_CAMERA.name:
+            return CameraType.WIND_SCREEN_CAMERA
         else:
             return CameraType.OTHER
 
@@ -116,8 +116,8 @@ class CameraType(str, Enum):
             return CameraType.FACE_CAMERA
         elif label == CameraType.LICENSE_PLATE_CAMERA.value:
             return CameraType.LICENSE_PLATE_CAMERA
-        elif label == CameraType.WIDE_SCREEN_CAMERA.value:
-            return CameraType.WIDE_SCREEN_CAMERA
+        elif label == CameraType.WIND_SCREEN_CAMERA.value:
+            return CameraType.WIND_SCREEN_CAMERA
         else:
             return CameraType.OTHER
 
@@ -193,7 +193,7 @@ class BaseUnitQueryResult(BaseUnit):
     """
     face_cameras: Optional[List[str]] = None
     license_plate_cameras: Optional[List[str]] = None
-    widescreen_cameras: Optional[List[str]] = None
+    windscreen_cameras: Optional[List[str]] = None
 
 class BaseUnitQueryByNameResult(BaseUnit):
     """
@@ -201,7 +201,7 @@ class BaseUnitQueryByNameResult(BaseUnit):
     """
     face_cameras: Optional[List[str]] = []
     license_plate_cameras: Optional[List[str]] = []
-    widescreen_cameras: Optional[List[str]] = []
+    windscreen_cameras: Optional[List[str]] = []
 
 class BaseUnitQueryByIdResult(BaseUnit):
     """
@@ -209,7 +209,7 @@ class BaseUnitQueryByIdResult(BaseUnit):
     """
     face_cameras: Optional[List[str]] = []
     license_plate_cameras: Optional[List[str]] = []
-    widescreen_cameras: Optional[List[str]] = []
+    windscreen_cameras: Optional[List[str]] = []
 
 class BaseUnitCreate(BaseModel):
     """
@@ -413,6 +413,21 @@ class NotesDelete(BaseModel):
     Query to delete a note
     """
     id: int
+
+class NotesReportQuery(BaseModel):
+    """
+    Query for an issue report
+    """
+    item_type: str
+    query_string: str
+    end_date: date
+    start_date: Optional[date] = None
+
+class NotesReportQueryResult(BaseModel):
+    item_name: str
+    item_type: str
+    match_string: str
+    sim_score: float
 
 
 # Maintenance Task models

@@ -15,6 +15,7 @@ upper right for generating reports.
               <ul>
               <li @click="selectViewsOption('Main')">Main</li>
               <li @click="selectViewsOption('Issues')">Issues</li>
+              <li @click="selectViewsOption('Notes')">Notes</li>
               <li @click="selectViewsOption('MaintTasks')">Maint Tasks</li>
               </ul>
           </div>
@@ -32,6 +33,7 @@ upper right for generating reports.
               <li @click="selectReportsOption('NewFeet')">Has New Feet</li>
               <li @click="selectReportsOption('MaintItems')">Has Expired Maintenance Tasks</li>
               <li @click="selectReportsOption('IssueReport')">Issue Report</li>
+              <li @click="selectReportsOption('NotesReport')">Notes Report</li>
               </ul>
           </div>
         </div>
@@ -320,7 +322,7 @@ upper right for generating reports.
     {title: 'Location', value: 'location', sortable: true },
     {title: 'Face Cameras', value: 'face_cameras_str' , sortable: true},
     {title: 'License Plate Cameras', value: 'license_plate_cameras_str', sortable: true},
-    {title: 'Widescreen Cameras', value: 'widescreen_cameras_str', sortable: true},
+    {title: 'Windscreen Cameras', value: 'windscreen_cameras_str', sortable: true},
     // ... other headers
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
@@ -385,7 +387,7 @@ upper right for generating reports.
 
     let face_cameras = [];
     let license_plate_cameras = [];
-    let widescreen_cameras = [];
+    let windscreen_cameras = [];
     if ('face_cameras' in item && item.face_cameras != null) {
       face_cameras = item.face_cameras;
     }
@@ -393,15 +395,14 @@ upper right for generating reports.
     if ('license_plate_cameras' in item && item.license_plate_cameras != null) {
       license_plate_cameras = item.license_plate_cameras;
     }
-    let widescreen_camera = [];
-    if ('widescreen_cameras' in item && item.widescreen_cameras != null) {
-      widescreen_cameras = item.widescreen_cameras;
+    if ('windscreen_cameras' in item && item.windscreen_cameras != null) {
+      windscreen_cameras = item.windscreen_cameras;
     }
 
     router.push(
       {
         name: 'base-unit',
-        query: { face_cameras: face_cameras, license_plate_cameras: license_plate_cameras, widescreen_cameras: widescreen_cameras },
+        query: { face_cameras: face_cameras, license_plate_cameras: license_plate_cameras, windscreen_cameras: windscreen_cameras },
         params: {id: item.id, name: item.name, location: item.location}
       });
     console.log("OUT navigateToDetails");
@@ -478,6 +479,8 @@ upper right for generating reports.
       router.push({name: "maint-items-report"});
     } else if (option === "IssueReport") {
       router.push({name: "issue-report-info"});
+    } else if (option === "NotesReport") {
+      router.push({name: "notes-report-info"});
     }
 
   };
@@ -502,6 +505,8 @@ upper right for generating reports.
       router.push({name: "view-issues-all"});
     } else if(option == 'MaintTasks') {
       router.push({name: "view-maint-tasks-all"});
+    } else if(option == 'Notes') {
+      router.push({name: "view-notes-all"});
     }
 
     console.log("OUT Prototype.selectViewsOption");
@@ -544,7 +549,7 @@ upper right for generating reports.
         id: item.id,
         face_cameras: item.face_cameras,
         license_plate_cameras: item.license_plate_cameras,
-        widescreen_cameras: item.widescreen_cameras
+        windscreen_cameras: item.windscreen_cameras
       };
       try {
           const response = await api.post('/delete-base-unit', requestBody, config);
@@ -834,10 +839,10 @@ upper right for generating reports.
           } else {
             bu.license_plate_cameras_str = "";
           }
-          if('widescreen_cameras' in bu && bu.widescreen_cameras != null){
-            bu.widescreen_cameras_str = bu.widescreen_cameras.join(', ');
+          if('windscreen_cameras' in bu && bu.windscreen_cameras != null){
+            bu.windscreen_cameras_str = bu.windscreen_cameras.join(', ');
           } else {
-            bu.widescreen_cameras_str = "";
+            bu.windscreen_cameras_str = "";
           }
         });
 

@@ -41,9 +41,9 @@ cameras, notes, other items, or maintenance tasks.
               readonly
             ></v-text-field>
             <v-text-field
-              v-model="widescreenCameras"
-              label="Widescreen Cameras"
-              :key="widescreenCameraKey"
+              v-model="windscreenCameras"
+              label="Windscreen Cameras"
+              :key="windscreenCameraKey"
               readonly
             ></v-text-field>
             <div class="d-flex justify-center align-center" style="padding-top: 20px;">
@@ -376,7 +376,7 @@ cameras, notes, other items, or maintenance tasks.
   const location = ref(null);
   const faceCameras = ref([]);
   const licensePlateCameras = ref([]);
-  const widescreenCameras = ref([]);
+  const windscreenCameras = ref([]);
   const router = useRouter();
   const route = useRoute()
   const notesTable = ref([]);
@@ -398,7 +398,7 @@ cameras, notes, other items, or maintenance tasks.
   const cameraKey = ref(0);
   const faceCameraKey = ref(0);
   const licensePlateCameraKey = ref(0);
-  const widescreenCameraKey = ref(0);
+  const windscreenCameraKey = ref(0);
 
   // Table headers
   const headers = ref([
@@ -467,7 +467,7 @@ cameras, notes, other items, or maintenance tasks.
         location.value = props.location;
         faceCameras.value = route.query.face_cameras;
         licensePlateCameras.value = route.query.license_plate_cameras;
-        widescreenCameras.value = route.query.widescreen_cameras;
+        windscreenCameras.value = route.query.windscreen_cameras;
       }
       await fetchCameras();
       cameraKey.value += 1;
@@ -491,7 +491,7 @@ cameras, notes, other items, or maintenance tasks.
     location.value = props.location;
     faceCameras.value = route.query.face_cameras;
     licensePlateCameras.value = route.query.license_plate_cameras;
-    widescreenCameras.value = route.query.widescreen_cameras;
+    windscreenCameras.value = route.query.windscreen_cameras;
     await fetchCameras();
     cameraKey.value += 1;
     await fetchNotes();
@@ -980,7 +980,7 @@ cameras, notes, other items, or maintenance tasks.
         console.log("cameraTable=" + JSON.stringify(cameraTable.value));
         faceCameras.value = [];
         licensePlateCameras.value = [];
-        widescreenCameras.value = [];
+        windscreenCameras.value = [];
         for (const camera of cameraTable.value) {
           let cameraName = camera.name;
           if(camera.lane !== 'NONE') {
@@ -990,13 +990,13 @@ cameras, notes, other items, or maintenance tasks.
             faceCameras.value.push(cameraName);
           } else if(camera.type === "License Plate Camera") {
             licensePlateCameras.value.push(cameraName);
-          } else if(camera.type === "Wide Screen Camera") {
-            widescreenCameras.value.push(cameraName); 
+          } else if(camera.type === "Wind Screen Camera") {
+            windscreenCameras.value.push(cameraName); 
           }
         }
         faceCameraKey.value += 1;
         licensePlateCameraKey.value += 1;
-        widescreenCameraKey.value += 1;
+        windscreenCameraKey.value += 1;
 
         loading.value = false;
     } catch (e) {

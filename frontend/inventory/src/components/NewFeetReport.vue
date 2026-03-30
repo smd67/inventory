@@ -67,7 +67,7 @@ of the base units with new feet.
     {title: 'Location', value: 'location', sortable: true },
     {title: 'Face Camera', value: 'face_cameras_str' , sortable: true},
     {title: 'License Plate Camera', value: 'license_plate_cameras_str', sortable: true},
-    {title: 'Widescreen Camera', value: 'widescreen_cameras_str', sortable: true},
+    {title: 'Windscreen Camera', value: 'windscreen_cameras_str', sortable: true},
   ]);
   
   // fetch the user information when params change
@@ -129,15 +129,15 @@ of the base units with new feet.
     if ('license_plate_cameras' in item && item.license_plate_cameras != null) {
       license_plate_cameras = item.license_plate_cameras;
     }
-    let widescreen_cameras = "NONE";
-    if ('widescreen_cameras' in item && item.widescreen_cameras != null) {
-      widescreen_cameras = item.widescreen_cameras;
+    let windscreen_cameras = "NONE";
+    if ('windscreen_cameras' in item && item.windscreen_cameras != null) {
+      windscreen_cameras = item.windscreen_cameras;
     }
 
     router.push(
       {
         name: 'base-unit',
-        query: { face_cameras: face_cameras.value, license_plate_cameras: license_plate_cameras.value, widescreen_cameras: widescreen_cameras.value },
+        query: { face_cameras: face_cameras.value, license_plate_cameras: license_plate_cameras.value, windscreen_cameras: windscreen_cameras.value },
         params: {id: item.id, name: item.name, location: item.location}
       });
     console.log("OUT navigateToDetails");
@@ -165,10 +165,10 @@ of the base units with new feet.
           } else {
             bu.license_plate_cameras_str = "";
           }
-          if('widescreen_cameras' in bu && bu.widescreen_cameras != null){
-            bu.widescreen_cameras_str = bu.widescreen_cameras.join(', ');
+          if('windscreen_cameras' in bu && bu.windscreen_cameras != null){
+            bu.windscreen_cameras_str = bu.windscreen_cameras.join(', ');
           } else {
-            bu.widescreen_cameras_str = "";
+            bu.windscreen_cameras_str = "";
           }
         });
         loading.value = false;

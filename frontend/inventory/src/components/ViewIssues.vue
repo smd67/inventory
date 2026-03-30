@@ -13,6 +13,7 @@ This file is the vue component implementation for an other items detail screen.
               <ul>
               <li @click="selectViewsOption('Main')">Main</li>
               <li @click="selectViewsOption('Issues')">Issues</li>
+              <li @click="selectViewsOption('Notes')">Notes</li>
               <li @click="selectViewsOption('MaintTasks')">Maint Tasks</li>
               </ul>
           </div>
@@ -30,6 +31,7 @@ This file is the vue component implementation for an other items detail screen.
               <li @click="selectReportsOption('NewFeet')">Has New Feet</li>
               <li @click="selectReportsOption('MaintItems')">Has Expired Maintenance Tasks</li>
               <li @click="selectReportsOption('IssueReport')">Issue Report</li>
+              <li @click="selectReportsOption('NotesReport')">Notes Report</li>
               </ul>
           </div>
         </div>
@@ -190,7 +192,7 @@ This file is the vue component implementation for an other items detail screen.
       console.log("baseUnit=" + JSON.stringify(baseUnit))
       let face_cameras = [];
       let license_plate_cameras = [];
-      let widescreen_cameras = [];
+      let windscreen_cameras = [];
       if ('face_cameras' in baseUnit && baseUnit.face_cameras != null) {
         face_cameras = baseUnit.face_cameras;
       }
@@ -198,15 +200,15 @@ This file is the vue component implementation for an other items detail screen.
       if ('license_plate_cameras' in baseUnit && baseUnit.license_plate_cameras != null) {
         license_plate_cameras = baseUnit.license_plate_cameras;
       }
-      let widescreen_camera = [];
-      if ('widescreen_cameras' in baseUnit && baseUnit.widescreen_cameras != null) {
-        widescreen_cameras = baseUnit.widescreen_cameras;
+      let windscreen_camera = [];
+      if ('windscreen_cameras' in baseUnit && baseUnit.windscreen_cameras != null) {
+        windscreen_cameras = baseUnit.windscreen_cameras;
       }
 
       router.push(
         {
           name: 'base-unit',
-          query: { face_cameras: face_cameras, license_plate_cameras: license_plate_cameras, widescreen_cameras: widescreen_cameras },
+          query: { face_cameras: face_cameras, license_plate_cameras: license_plate_cameras, windscreen_cameras: windscreen_cameras },
           params: {id: baseUnit.id, name: baseUnit.name, location: baseUnit.location}
         });
     } else if(item.item_type === "Camera") {
@@ -289,6 +291,8 @@ This file is the vue component implementation for an other items detail screen.
       router.push({name: "maint-items-report"});
     } else if (option === "IssueReport") {
       router.push({name: "issue-report-info"});
+    } else if (option === "NotesReport") {
+      router.push({name: "notes-report-info"});
     }
 
   };
@@ -313,6 +317,8 @@ This file is the vue component implementation for an other items detail screen.
       router.push({name: "view-issues-all"});
     } else if(option == 'MaintTasks') {
       router.push({name: "view-maint-tasks-all"});
+    } else if(option == 'Notes') {
+      router.push({name: "view-notes-all"});
     }
 
     console.log("OUT Prototype.selectViewsOption");

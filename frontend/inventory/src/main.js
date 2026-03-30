@@ -43,8 +43,12 @@ import Issues from './components/Issues.vue'
 import MaintenanceTasks from './components/MaintenanceTasks.vue'
 import IssueReportInfo from './components/IssueReportInfo.vue'
 import IssueReport from './components/IssueReport.vue'
+import NotesReportInfo from './components/NotesReportInfo.vue'
+import NotesReport from './components/NotesReport.vue'
 import ViewMaintenanceTasks from './components/ViewMaintenanceTasks.vue'
 import ViewIssues from './components/ViewIssues.vue'
+import Login from './components/Login.vue'
+import ViewNotes from './components/ViewNotes.vue'
 
 
 // Define routes
@@ -78,6 +82,11 @@ const routes = [
   { path: '/system-test-checklist:technician_name:base_unit:report_date', name: 'system-test-checklist', component: SystemTestChecklist, props: true },
   { path: '/issue-report-info', name: 'issue-report-info', component: IssueReportInfo },
   { path: '/issue-report:item_type:query_string:end_date:start_date?', name: 'issue-report', component: IssueReport, props: true },
+  { path: '/notes-report-info', name: 'notes-report-info', component: NotesReportInfo },
+  { path: '/notes-report:item_type:query_string:end_date:start_date?', name: 'notes-report', component: NotesReport, props: true },
+  { path: '/view-notes-all', name: 'view-notes-all', component: ViewNotes },
+  { path: '/login', name: 'login', component: Login },
+
 ];
 
 // Create the router instance
@@ -92,4 +101,4 @@ registerPlugins(app)
 app.mount('#app')
 
 // Manually push the initial navigation for memory history
-router.push('/prototype');
+router.push('/login');

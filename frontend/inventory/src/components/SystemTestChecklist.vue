@@ -42,14 +42,14 @@ maintenance tasks whose last due date is >= 6 months.
                 </v-tab>
 
                 <v-tab
-                  v-for="item in widescreenCameras"
-                  :text="`Widescreen Camera - ${item}`"
-                  :value="`widescreen_camera_tab_${item }`"
+                  v-for="item in windscreenCameras"
+                  :text="`Windscreen Camera - ${item}`"
+                  :value="`windscreen_camera_tab_${item }`"
                 >
                 </v-tab>
 
                 <v-tab
-                  v-for="item in widescreenCameras"
+                  v-for="item in windscreenCameras"
                   :text="`LiDar - ${item}`"
                   :value="`lidar_tab_${item }`"
                 >
@@ -57,9 +57,9 @@ maintenance tasks whose last due date is >= 6 months.
 
                 <v-tab text="Boom" value="boom_tab"></v-tab>
                 <v-tab
-                  v-for="item in widescreenCameras"
-                  :text="`Widescreen Actuators - ${item}`"
-                  :value="`widescreen_actuators_tab_${item }`"
+                  v-for="item in windscreenCameras"
+                  :text="`Windscreen Actuators - ${item}`"
+                  :value="`windscreen_actuators_tab_${item }`"
                 >
                 </v-tab>
 
@@ -126,17 +126,17 @@ maintenance tasks whose last due date is >= 6 months.
                   </v-card>
                 </v-tabs-window-item>
                 <v-tabs-window-item 
-                  v-for="top_item in widescreenCameras"
-                  :value="`widescreen_camera_tab_${top_item}`"
+                  v-for="top_item in windscreenCameras"
+                  :value="`windscreen_camera_tab_${top_item}`"
                 >
-                  <v-card flat v-if="activeTab === `widescreen_camera_tab_${top_item}`">
+                  <v-card flat v-if="activeTab === `windscreen_camera_tab_${top_item}`">
                     <v-card-text>
                       <!-- Another Checkbox Group in Tab 4 -->
                       <div class="checkbox-grid">
                         <!-- Another Checkbox Group in Tab 10 -->
                         <v-checkbox
-                          v-for="item in widescreenCameraCheckbox"
-                          v-model="widescreenCameraItems"
+                          v-for="item in windscreenCameraCheckbox"
+                          v-model="windscreenCameraItems"
                           :label="item.label"
                           :value="`${item.value}_${top_item}`"
                           class="grid-item"
@@ -146,7 +146,7 @@ maintenance tasks whose last due date is >= 6 months.
                   </v-card>
                 </v-tabs-window-item>
                 <v-tabs-window-item 
-                  v-for="top_item in widescreenCameras"
+                  v-for="top_item in windscreenCameras"
                   :value="`lidar_tab_${top_item}`"
                  >
                   <v-card flat v-if="activeTab === `lidar_tab_${top_item}`">
@@ -183,17 +183,17 @@ maintenance tasks whose last due date is >= 6 months.
                   </v-card>
                 </v-tabs-window-item>
                 <v-tabs-window-item 
-                  v-for="top_item in widescreenCameras"
-                  :value="`widescreen_actuators_tab_${top_item}`"
+                  v-for="top_item in windscreenCameras"
+                  :value="`windscreen_actuators_tab_${top_item}`"
                 >
-                  <v-card flat v-if="activeTab === `widescreen_actuators_tab_${top_item}`">
+                  <v-card flat v-if="activeTab === `windscreen_actuators_tab_${top_item}`">
                     <v-card-text>
                       <!-- Another Checkbox Group in Tab 7 -->
                       <div class="checkbox-grid">
                         <!-- Another Checkbox Group in Tab 10 -->
                         <v-checkbox
-                          v-for="item in widescreenActuatorsCheckbox"
-                          v-model="widescreenActuatorsItems"
+                          v-for="item in windscreenActuatorsCheckbox"
+                          v-model="windscreenActuatorsItems"
                           :label="item.label"
                           :value="`${item.value}_${top_item}`"
                           class="grid-item"
@@ -313,7 +313,7 @@ maintenance tasks whose last due date is >= 6 months.
       {id: 7, label: "Focus value 180 == Infinity on lens", value: "focus_value_180_equals_infinity_on_lens", model: "licensePlateCameraItems"},
       {id: 8, label: "Focus set to 180", value: "focus_set_to_180", model: "licensePlateCameraItems"},
     ]);
-    const widescreenCameraCheckbox = ref([
+    const windscreenCameraCheckbox = ref([
       {id: 1, label: "at least one fan is working", value: "fan_is_working"},
       {id: 2, label: "8 LEDs are working", value: "leds_are_working"},
       {id: 3, label: "Camera gets more than 8 AvgFPS", value: "camera_gets_more_than_8_avgFPS"},
@@ -341,7 +341,7 @@ maintenance tasks whose last due date is >= 6 months.
       {id: 6, label: "Extends Out to the limit", value: "boom_extends_out_to_limit"},
       {id: 7, label: "Extends In to the limit", value: "boom_extends_in_to_limit"},
     ])
-    const widescreenActuatorsCheckbox = ref([
+    const windscreenActuatorsCheckbox = ref([
       {id: 1, label: "Yaw is functioning", value: "yaw_is_functioning"},
       {id: 2, label: "Roll is functioning", value: "roll_is_functioning"},
       {id: 3, label: "Pitch is functioning", value: "pitch_is_functioning"}
@@ -391,7 +391,7 @@ maintenance tasks whose last due date is >= 6 months.
     const baseUnitName = ref(null);
     const faceCameras = ref([]);
     const licensePlateCameras = ref([]);
-    const widescreenCameras = ref([]);
+    const windscreenCameras = ref([]);
     const reportDate = ref(null);
 
     // Checkbox group states 
@@ -399,9 +399,9 @@ maintenance tasks whose last due date is >= 6 months.
     const boomItems = ref([]); 
     const faceCameraItems = ref([]); 
     const licensePlateCameraItems = ref([]);
-    const widescreenCameraItems = ref([]);
+    const windscreenCameraItems = ref([]);
     const liDarItems = ref([]);
-    const widescreenActuatorsItems = ref([]);
+    const windscreenActuatorsItems = ref([]);
     const radarItems = ref([]);
     const windMeterItems = ref([]);
     const mastItems = ref([]);
@@ -417,18 +417,18 @@ maintenance tasks whose last due date is >= 6 months.
         baseUnitName.value = props.base_unit;
         faceCameras.value = route.query.face_cameras;
         licensePlateCameras.value = route.query.license_plate_cameras;
-        widescreenCameras.value = route.query.widescreen_cameras;
+        windscreenCameras.value = route.query.windscreen_cameras;
         generalItems.value = []; 
         boomItems.value = []; 
         faceCameraItems.value = []; 
         licensePlateCameraItems.value = [];
-        widescreenCameraItems.value = [];
+        windscreenCameraItems.value = [];
         liDarItems.value = [];
-        widescreenActuatorsItems.value = [];
+        windscreenActuatorsItems.value = [];
         radarItems.value = [];
         windMeterItems.value = [];
         mastItems.value = [];
-        console.log('OUT SystemTestChecklist.watch.refresh baseUnitName=' + baseUnitName.value + '; faceCameras=' + faceCameras.value + '; licensePlateCameras=' + licensePlateCameras.value + '; widescreenCameras=' + widescreenCameras.value);
+        console.log('OUT SystemTestChecklist.watch.refresh baseUnitName=' + baseUnitName.value + '; faceCameras=' + faceCameras.value + '; licensePlateCameras=' + licensePlateCameras.value + '; windscreenCameras=' + windscreenCameras.value);
       }
     );
 
@@ -440,18 +440,18 @@ maintenance tasks whose last due date is >= 6 months.
       baseUnitName.value = props.base_unit;
       faceCameras.value = route.query.face_cameras;
       licensePlateCameras.value = route.query.license_plate_cameras;
-      widescreenCameras.value = route.query.widescreen_cameras;
+      windscreenCameras.value = route.query.windscreen_cameras;
       generalItems.value = []; 
       boomItems.value = []; 
       faceCameraItems.value = []; 
       licensePlateCameraItems.value = [];
-      widescreenCameraItems.value = [];
+      windscreenCameraItems.value = [];
       liDarItems.value = [];
-      widescreenActuatorsItems.value = [];
+      windscreenActuatorsItems.value = [];
       radarItems.value = [];
       windMeterItems.value = [];
       mastItems.value = [];
-      console.log('OUT SystemTestChecklist.onMounted baseUnitName=' + baseUnitName.value + '; faceCameras=' + faceCameras.value + '; licensePlateCameras=' + licensePlateCameras.value + '; widescreenCameras=' + widescreenCameras.value);
+      console.log('OUT SystemTestChecklist.onMounted baseUnitName=' + baseUnitName.value + '; faceCameras=' + faceCameras.value + '; licensePlateCameras=' + licensePlateCameras.value + '; windscreenCameras=' + windscreenCameras.value);
     });
 
   // Go back to previous page
@@ -486,29 +486,29 @@ maintenance tasks whose last due date is >= 6 months.
     const missingLicensePlateCamera = expectedLicensePlateCamera.difference(new Set(licensePlateCameraItems.value));
 
 
-    let expectedWidescreenCameraVals = [];
-    for (const camera of widescreenCameras.value) {
-      const cameraVals = widescreenCameraCheckbox.value.map(item => item.value + '_' + camera);
-      expectedWidescreenCameraVals = [...expectedWidescreenCameraVals, ...cameraVals];
+    let expectedWindscreenCameraVals = [];
+    for (const camera of windscreenCameras.value) {
+      const cameraVals = windscreenCameraCheckbox.value.map(item => item.value + '_' + camera);
+      expectedWindscreenCameraVals = [...expectedWindscreenCameraVals, ...cameraVals];
     }
-    const expectedWidescreenCamera = new Set(expectedWidescreenCameraVals);
-    const missingWidescreenCamera = expectedWidescreenCamera.difference(new Set(widescreenCameraItems.value));
+    const expectedWindscreenCamera = new Set(expectedWindscreenCameraVals);
+    const missingWindscreenCamera = expectedWindscreenCamera.difference(new Set(windscreenCameraItems.value));
 
     let expectedLiDarVals = [];
-    for (const camera of widescreenCameras.value) {
+    for (const camera of windscreenCameras.value) {
       const cameraVals = liDarCheckbox.value.map(item => item.value + '_' + camera);
       expectedLiDarVals = [...expectedLiDarVals, ...cameraVals];
     }
     const expectedLiDar = new Set(expectedLiDarVals);
     const missingLiDar = expectedLiDar.difference(new Set(liDarItems.value));
 
-    let expectedWidescreenActuatorsVals = [];
-    for (const camera of widescreenCameras.value) {
-      const cameraVals = widescreenActuatorsCheckbox.value.map(item => item.value + '_' + camera);
-      expectedWidescreenActuatorsVals = [...expectedWidescreenActuatorsVals, ...cameraVals];
+    let expectedWindscreenActuatorsVals = [];
+    for (const camera of windscreenCameras.value) {
+      const cameraVals = windscreenActuatorsCheckbox.value.map(item => item.value + '_' + camera);
+      expectedWindscreenActuatorsVals = [...expectedWindscreenActuatorsVals, ...cameraVals];
     }
-    const expectedWidescreenActuators = new Set(expectedWidescreenActuatorsVals);
-    const missingWidescreenActuators = expectedWidescreenActuators.difference(new Set(widescreenActuatorsItems.value));
+    const expectedWindscreenActuators = new Set(expectedWindscreenActuatorsVals);
+    const missingWindscreenActuators = expectedWindscreenActuators.difference(new Set(windscreenActuatorsItems.value));
 
     const expectedBoom = new Set(boomCheckbox.value.map(item => item.value));
     const missingBoom = expectedBoom.difference(new Set(boomItems.value));
@@ -526,7 +526,7 @@ maintenance tasks whose last due date is >= 6 months.
     const missingMast = expectedMast.difference(new Set(mastItems.value));
     const labelsMast = mastCheckbox.value.filter(item => missingMast.has(item.value)).map(item => item.label);
 
-    if(labelsGeneral.length > 0 || labelsBoom.length > 0 || labelsRadar.length > 0 || labelsWindMeter.length > 0 || labelsMast.length > 0 || missingFaceCamera.length > 0 || missingLicensePlateCamera.length > 0 || missingWidescreenCamera.length > 0|| missingLiDar.size > 0){
+    if(labelsGeneral.length > 0 || labelsBoom.length > 0 || labelsRadar.length > 0 || labelsWindMeter.length > 0 || labelsMast.length > 0 || missingFaceCamera.length > 0 || missingLicensePlateCamera.length > 0 || missingWindscreenCamera.length > 0|| missingLiDar.size > 0){
        baseDialog =  baseDialog + ' The following checks are missing\n';
     }
     if(labelsGeneral.length > 0){
@@ -564,17 +564,17 @@ maintenance tasks whose last due date is >= 6 months.
       }
     }
 
-    if(missingWidescreenCamera.size > 0){
-      for (const camera of widescreenCameras.value) {
-        const missingWidescreenCameraList = [...missingWidescreenCamera];
-        const missingForCamera = new Set(missingWidescreenCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = widescreenCameraCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
-        baseDialog =  baseDialog + '<b>Widescreen Camera - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
+    if(missingWindscreenCamera.size > 0){
+      for (const camera of windscreenCameras.value) {
+        const missingWindscreenCameraList = [...missingWindscreenCamera];
+        const missingForCamera = new Set(missingWindscreenCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = windscreenCameraCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
+        baseDialog =  baseDialog + '<b>Windscreen Camera - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
       }
     }
 
     if(missingLiDar.size > 0){
-      for (const camera of widescreenCameras.value) {
+      for (const camera of windscreenCameras.value) {
         const missingLiDarList = [...missingLiDar];
         const missingForCamera = new Set(missingLiDarList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
         const labelsForCamera = liDarCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
@@ -582,12 +582,12 @@ maintenance tasks whose last due date is >= 6 months.
       }
     }
 
-    if(missingWidescreenActuators.size > 0){
-      for (const camera of widescreenCameras.value) {
-        const missingWidescreenActuatorsList = [...missingWidescreenActuators];
-        const missingForCamera = new Set(missingWidescreenActuatorsList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = widescreenActuatorsCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
-        baseDialog =  baseDialog + '<b>Widescreen Actuators - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
+    if(missingWindscreenActuators.size > 0){
+      for (const camera of windscreenCameras.value) {
+        const missingWindscreenActuatorsList = [...missingWindscreenActuators];
+        const missingForCamera = new Set(missingWindscreenActuatorsList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = windscreenActuatorsCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
+        baseDialog =  baseDialog + '<b>Windscreen Actuators - ' + camera + '</b>:' + labelsForCamera.join(', ') + '\n';
       }
     }
     console.log("OUT SystemTestChecklist.generateDialogText. baseDialog=" + baseDialog);
@@ -632,29 +632,29 @@ maintenance tasks whose last due date is >= 6 months.
     const missingLicensePlateCamera = expectedLicensePlateCamera.difference(new Set(licensePlateCameraItems.value));
 
 
-    let expectedWidescreenCameraVals = [];
-    for (const camera of widescreenCameras.value) {
-      const cameraVals = widescreenCameraCheckbox.value.map(item => item.value + '_' + camera);
-      expectedWidescreenCameraVals = [...expectedWidescreenCameraVals, ...cameraVals];
+    let expectedWindscreenCameraVals = [];
+    for (const camera of windscreenCameras.value) {
+      const cameraVals = windscreenCameraCheckbox.value.map(item => item.value + '_' + camera);
+      expectedWindscreenCameraVals = [...expectedWindscreenCameraVals, ...cameraVals];
     }
-    const expectedWidescreenCamera = new Set(expectedWidescreenCameraVals);
-    const missingWidescreenCamera = expectedWidescreenCamera.difference(new Set(widescreenCameraItems.value));
+    const expectedWindscreenCamera = new Set(expectedWindscreenCameraVals);
+    const missingWindscreenCamera = expectedWindscreenCamera.difference(new Set(windscreenCameraItems.value));
 
     let expectedLiDarVals = [];
-    for (const camera of widescreenCameras.value) {
+    for (const camera of windscreenCameras.value) {
       const cameraVals = liDarCheckbox.value.map(item => item.value + '_' + camera);
       expectedLiDarVals = [...expectedLiDarVals, ...cameraVals];
     }
     const expectedLiDar = new Set(expectedLiDarVals);
     const missingLiDar = expectedLiDar.difference(new Set(liDarItems.value));
 
-    let expectedWidescreenActuatorsVals = [];
-    for (const camera of widescreenCameras.value) {
-      const cameraVals = widescreenActuatorsCheckbox.value.map(item => item.value + '_' + camera);
-      expectedWidescreenActuatorsVals = [...expectedWidescreenActuatorsVals, ...cameraVals];
+    let expectedWindscreenActuatorsVals = [];
+    for (const camera of windscreenCameras.value) {
+      const cameraVals = windscreenActuatorsCheckbox.value.map(item => item.value + '_' + camera);
+      expectedWindscreenActuatorsVals = [...expectedWindscreenActuatorsVals, ...cameraVals];
     }
-    const expectedWidescreenActuators = new Set(expectedWidescreenActuatorsVals);
-    const missingWidescreenActuators = expectedWidescreenActuators.difference(new Set(widescreenActuatorsItems.value));
+    const expectedWindscreenActuators = new Set(expectedWindscreenActuatorsVals);
+    const missingWindscreenActuators = expectedWindscreenActuators.difference(new Set(windscreenActuatorsItems.value));
 
     const expectedBoom = new Set(boomCheckbox.value.map(item => item.value));
     const missingBoom = expectedBoom.difference(new Set(boomItems.value));
@@ -682,12 +682,12 @@ maintenance tasks whose last due date is >= 6 months.
     const labelsMastPass = mastCheckbox.value.filter(item => passMast.has(item.value)).map(item => item.label);
 
     const totalExpected = expectedMast.size + expectedWindMeter.size + expectedRadar.size +
-      expectedBoom.size + expectedWidescreenActuators.size + expectedLiDar.size +
-      expectedWidescreenCamera.size + expectedLicensePlateCamera.size + expectedFaceCamera.size +
+      expectedBoom.size + expectedWindscreenActuators.size + expectedLiDar.size +
+      expectedWindscreenCamera.size + expectedLicensePlateCamera.size + expectedFaceCamera.size +
       expectedGeneral.size;
     const totalUnchecked = missingMast.size + missingWindMeter.size + missingRadar.size +
-      missingBoom.size + missingWidescreenActuators.size + missingLiDar.size +
-      missingWidescreenCamera.size + missingLicensePlateCamera.size + missingFaceCamera.size +
+      missingBoom.size + missingWindscreenActuators.size + missingLiDar.size +
+      missingWindscreenCamera.size + missingLicensePlateCamera.size + missingFaceCamera.size +
       missingGeneral.size;
     const totalChecked = totalExpected - totalUnchecked;
 
@@ -785,32 +785,32 @@ maintenance tasks whose last due date is >= 6 months.
       }
     }
 
-    if(missingWidescreenCamera.size > 0){
-      for (const camera of widescreenCameras.value) {
-        const missingWidescreenCameraList = [...missingWidescreenCamera];
-        const missingForCamera = new Set(missingWidescreenCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = widescreenCameraCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
+    if(missingWindscreenCamera.size > 0){
+      for (const camera of windscreenCameras.value) {
+        const missingWindscreenCameraList = [...missingWindscreenCamera];
+        const missingForCamera = new Set(missingWindscreenCameraList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = windscreenCameraCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
         for (const camera_item of labelsForCamera) {
           activity_log('Camera', 
                       camera, 
-                      "Widescreen Camera Test: " + camera_item + " has failed",
+                      "Windscreen Camera Test: " + camera_item + " has failed",
                       technicianName.value);
         }
-        const passForCamera = new Set(widescreenCameraItems.value.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCameraPass = widescreenCameraCheckbox.value.filter(item => passForCamera.has(item.value)).map(item => item.label);
+        const passForCamera = new Set(windscreenCameraItems.value.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCameraPass = windscreenCameraCheckbox.value.filter(item => passForCamera.has(item.value)).map(item => item.label);
         for (const camera_item of labelsForCameraPass) {
           activity_log('Camera', 
                       camera, 
-                      "Widescreen Camera Test: " + camera_item + " has passed",
+                      "Windscreen Camera Test: " + camera_item + " has passed",
                       technicianName.value);
         }
-        generateIssues(labelsForCamera, 'CAMERA',camera, 'Widescreen Camera');
-        reportStr =  reportStr + 'Widescreen Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
+        generateIssues(labelsForCamera, 'CAMERA',camera, 'Windscreen Camera');
+        reportStr =  reportStr + 'Windscreen Camera - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
     }
 
     if(missingLiDar.size > 0){
-      for (const camera of widescreenCameras.value) {
+      for (const camera of windscreenCameras.value) {
         const missingLiDarList = [...missingLiDar];
         const missingForCamera = new Set(missingLiDarList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
         const labelsForCamera = liDarCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
@@ -833,27 +833,27 @@ maintenance tasks whose last due date is >= 6 months.
       }
     }
 
-    if(missingWidescreenActuators.size > 0){
-      for (const camera of widescreenCameras.value) {
-        const missingWidescreenActuatorsList = [...missingWidescreenActuators];
-        const missingForCamera = new Set(missingWidescreenActuatorsList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCamera = widescreenActuatorsCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
+    if(missingWindscreenActuators.size > 0){
+      for (const camera of windscreenCameras.value) {
+        const missingWindscreenActuatorsList = [...missingWindscreenActuators];
+        const missingForCamera = new Set(missingWindscreenActuatorsList.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCamera = windscreenActuatorsCheckbox.value.filter(item => missingForCamera.has(item.value)).map(item => item.label);
         for (const camera_item of labelsForCamera) {
           activity_log('Camera', 
                       camera, 
-                      "Widescreen Actuators Test: " + camera_item + " has failed",
+                      "Windscreen Actuators Test: " + camera_item + " has failed",
                       technicianName.value);
         }
-        const passForCamera = new Set(widescreenActuatorsItems.value.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
-        const labelsForCameraPass = widescreenActuatorsCheckbox.value.filter(item => passForCamera.has(item.value)).map(item => item.label);
+        const passForCamera = new Set(windscreenActuatorsItems.value.filter(item => item.includes('_' + camera)).map(item => item.replace('_' + camera, '')));
+        const labelsForCameraPass = windscreenActuatorsCheckbox.value.filter(item => passForCamera.has(item.value)).map(item => item.label);
         for (const camera_item of labelsForCameraPass) {
           activity_log('Camera', 
                       camera, 
-                      "Widescreen Actuators Test: " + camera_item + " has passed",
+                      "Windscreen Actuators Test: " + camera_item + " has passed",
                       technicianName.value);
         }
-        generateIssues(labelsForCamera, 'CAMERA',camera, 'Widescreen Actuators');
-        reportStr =  reportStr + 'Widescreen Actuators - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
+        generateIssues(labelsForCamera, 'CAMERA',camera, 'Windscreen Actuators');
+        reportStr =  reportStr + 'Windscreen Actuators - ' + camera + ':' + labelsForCamera.join(', ') + '\n';
       }
     }
     for (const item of labelsGeneral) {
@@ -922,7 +922,7 @@ maintenance tasks whose last due date is >= 6 months.
 
   // Go back to previous page
   const handleSubmit = async () => {
-    console.log("IN SystemTestChecklist.handleSubmit. widescreenCameraItems=" + widescreenCameraItems.value);
+    console.log("IN SystemTestChecklist.handleSubmit. windscreenCameraItems=" + windscreenCameraItems.value);
     
     const dialogText = generateDialogText();
     const result = await confirmDialog.value.open(

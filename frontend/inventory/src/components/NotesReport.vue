@@ -1,6 +1,5 @@
 <!--
-This file is the vue component implementation for a report that lists all 
-maintenance tasks whose last due date is >= 6 months.
+This file is the vue component implementation for the issue report.
  -->
 <template>
   <div class="my-division">
@@ -11,19 +10,26 @@ maintenance tasks whose last due date is >= 6 months.
       <v-row>
         <div style="color: green; font-size: 24px;">
           <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-          Has Expired Maintenace Tasks
+          Notes Report
         </div>
       </v-row>
       <v-row style="border: 1px solid green;">
         <!-- Data Table -->
         <v-data-table
           :headers="headers"
-          :items="maintItemsTable"
-          :search="maintItemsSearch"
-          item-value="name"
+          :items="notesReportTable"
+          :search="notesReportSearch"
+          item-value="match_string"
           class="elevation-1"
-          :key="maintItemsKey"
+          :key="notesReportKey"
+          :sort-by="defaultSort"
+          @dblclick:row="navigateToDetails"
         >
+          <template v-slot:item.match_string="{ item }">
+            <div class="pre-wrap-cell">
+              {{ item.match_string }}
+            </div>
+          </template>
         </v-data-table>
       </v-row>
       <v-row>
@@ -56,48 +62,83 @@ maintenance tasks whose last due date is >= 6 months.
   const loading = ref(true);
   const router = useRouter();
   const route = useRoute();
-  const maintItemsSearch = ref('');
-  const maintItemsTable = ref([]);
-  const maintItemsKey = ref(0);
+  const notesReportSearch = ref('');
+  const notesReportTable = ref([]);
+  const notesReportKey = ref(0);
+  const itemType = ref(null);
+  const queryString = ref(null);
+  const startDate = ref(null);
+  const endDate = ref(null);
 
   // Table headers
   const headers = ref([
-    {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
-    {title: 'Last Done', value: 'last_done_date' , sortable: true},
-    {title: 'Type', value: 'item_type' , sortable: true},
-    {title: 'Name', value: 'item_name' , sortable: true},
+    {title: 'Name', align: 'start', sortable: true, value: 'item_name', class: 'blue lighten-5'},
+    {title: 'Type', value: 'item_type', sortable: true },
+    {title: 'Description', value: 'match_string' , sortable: true},
+    {title: 'Similarity Score', value: 'sim_score', sortable: true}
   ]);
-  
+
+  const defaultSort = [
+    { key: 'sim_score', order: 'desc' },
+  ];
+
+  // Properties passed in to component
+  const props = defineProps({
+    item_type: {
+      type: String,
+      default: "",
+    },
+    query_string: {
+      type: String,
+      default: "",
+    },
+    start_date: {
+      type: Date,
+      default: null
+    },
+    end_date: {
+      type: Date,
+      default: null
+    },
+  });
+
   // fetch the user information when params change
   watch(
-    () => route.params.id,
+    () => [route.params.item_type, route.params.query_string, route.params.start_date, route.params.end_date],
     async refresh => {
-      console.log("IN MastBearingReport.watch.refresh");
-      await fetchMaintItems();
-      maintItemsKey.value += 1;
-      console.log("OUT MastBearingReport.watch.refresh");
+      console.log("IN NotesReport.watch.refresh");
+      itemType.value = props.item_type;
+      queryString.value = props.query_string;
+      startDate.value = props.start_date;
+      endDate.value = props.end_date;
+      await fetchNotesReport();
+      notesReportKey.value += 1;
+      console.log("OUT NotesReport.watch.refresh");
     }
   );
 
-  // Initialize data on component mount
+  // Initialize data when component is mounted
   onMounted(async () => {
-    console.log('IN MastBearingReport.onMounted');
-    await fetchMaintItems();
-    maintItemsKey.value += 1;
-    console.log('OUT MastBearingReport.onMounted');
+    console.log('IN NotesReport.onMounted');
+    itemType.value = props.item_type;
+    queryString.value = props.query_string;
+    startDate.value = props.start_date;
+    endDate.value = props.end_date;
+    await fetchNotesReport();
+    console.log('OUT NotesReport.onMounted');
   });
 
   // Go back to previous page
   const goBack = () => {
-    console.log("IN MastBearingReport.goBack");
+    console.log("IN NotesReport.goBack");
     router.back();
-    console.log("OUT MastBearingReport.goBack");
+    console.log("OUT NotesReport.goBack");
   };
 
-  // Export the generated table to a csv 
+  // Export the generated table to a csv file and download it
   const exportToCSV = () => {
     // 1. Get your data source
-    const jsonData = maintItemsTable.value;
+    const jsonData = baseUnitsTable.value;
 
     // 2. Convert the JSON data to CSV format using PapaParse
     const csv = Papa.unparse(jsonData);
@@ -108,11 +149,11 @@ maintenance tasks whose last due date is >= 6 months.
     const link = document.createElement('a');
 
     link.setAttribute('href', url);
-    link.setAttribute('download', 'expired_maint_tasks.csv'); // Set the download file name
+    link.setAttribute('download', 'new_feet_report.csv'); // Set the download file name
     link.click();
   };
 
-  // Navigate to base units detail on a double-click
+  // Navigate to the base units detail page on double-click.
   const navigateToDetails = (event, { item }) => {
     // Prevent the default browser double-click behavior (e.g., text selection)
     console.log("IN navigateToDetails: " + JSON.stringify(item));
@@ -127,7 +168,7 @@ maintenance tasks whose last due date is >= 6 months.
     if ('license_plate_cameras' in item && item.license_plate_cameras != null) {
       license_plate_cameras = item.license_plate_cameras;
     }
-    let windscreen_cameras = [];
+    let windscreen_cameras = "NONE";
     if ('windscreen_cameras' in item && item.windscreen_cameras != null) {
       windscreen_cameras = item.windscreen_cameras;
     }
@@ -141,18 +182,23 @@ maintenance tasks whose last due date is >= 6 months.
     console.log("OUT navigateToDetails");
   };
 
-  // Handles retrieving the maintenance items from the database using a REST 
-  // call.
-  const fetchMaintItems = async () => {
+  // Retrieve base units from database with a REST call.
+  const fetchNotesReport = async () => {
+    console.log("IN NotesReport.fetchNotesReport");
     const config = {
         headers: {
             'Content-Type': 'application/json'
         }
     };
-
+    const requestBody = {
+      item_type: itemType.value,
+      query_string: queryString.value,
+      start_date: startDate.value,
+      end_date: endDate.value
+    };
     try {
-        const response = await api.get('/get-expired-maintenance-tasks', config);
-        maintItemsTable.value = response.data;
+        const response = await api.post('/get-notes-report', requestBody, config);
+        notesReportTable.value = response.data;
         loading.value = false;
     } catch (e) {
         loading.value = false;
@@ -162,6 +208,7 @@ maintenance tasks whose last due date is >= 6 months.
             { color: 'red lighten-3' }
           );
     }
+    console.log("OUT NotesReport.fetchNotesReport");
   };
 </script>
 

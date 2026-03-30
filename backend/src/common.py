@@ -22,6 +22,7 @@ def get_secret(key: str) -> Union[str, None]:
     """
     # Check for _FILE suffix first
     file_env = f"{key}_FILE"
+    print(file_env, os.environ)
     if file_env in os.environ:
         with open(os.environ[file_env], "r") as f:
             return f.read().strip()

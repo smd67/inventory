@@ -11,7 +11,7 @@ prior to performing an issue report.
       <v-row>
         <div style="color: green; font-size: 24px">
           <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-          Information for an Issue Report
+          Information for an Notes Report
         </div>
       </v-row>
       <v-row style="border: 1px solid green;">
@@ -62,7 +62,7 @@ prior to performing an issue report.
   watch(
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
-      console.log("IN IssueReportInfo.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
+      console.log("IN NotesReportInfo.watch.refresh. newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
       if(oldFullPath.includes("/prototype")){
         queryString.value = null;
         itemType.value = null;
@@ -70,30 +70,30 @@ prior to performing an issue report.
         endDate.value = new Date().toISOString().slice(0, 10);
       }
       await fetchItemTypes();
-      console.log('OUT IssueReportInfo.watch.refresh');
+      console.log('OUT NotesReportInfo.watch.refresh');
     }
   );
 
   // Initialize data on mount of component
   onMounted(async () => {
-    console.log('IN IssueReportInfo.onMounted');
+    console.log('IN NotesReportInfo.onMounted');
     queryString.value = null;
     itemType.value = null;
     startDate.value = null;
     endDate.value = new Date().toISOString().slice(0, 10);
     await fetchItemTypes();
-    console.log("OUT IssueReportInfo.onMounted");
+    console.log("OUT NotesReportInfo.onMounted");
   });
 
   // Method to return to the previous page.
   const goBack = () => {
-    console.log("IN IssueReportInfo.goBack");
+    console.log("IN NotesReportInfo.goBack");
     router.back()
-    console.log("OUT IssueReportInfo.goBack");
+    console.log("OUT NotesReportInfo.goBack");
   }
 
   const goNext = async () => {
-    console.log("IN IssueReportInfo.goNext");
+    console.log("IN NotesReportInfo.goNext startDate=" + startDate.value + "; endDate=" + endDate.value);
 
     let start_date = null;
     if(startDate.value !== null){
@@ -106,12 +106,12 @@ prior to performing an issue report.
       end_date = endDate.value.toISOString().slice(0, 10);
     }
     console.log("end_date=" + end_date);
-
+    
     router.push({
-      name: "issue-report", 
+      name: "notes-report", 
       params: {item_type: itemType.value, query_string: queryString.value, start_date: start_date, end_date: end_date },
     });
-    console.log("OUT IssueReportInfo.goNext");
+    console.log("OUT NotesReportInfo.goNext");
   }
 
   // Retrieve item type values.

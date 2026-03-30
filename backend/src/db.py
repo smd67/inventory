@@ -108,10 +108,10 @@ class Database:
                         bu_results.license_plate_cameras = []
                     bu_results.license_plate_cameras.append(camera_name)
                 
-                elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
-                    if not bu_results.widescreen_cameras:
-                        bu_results.widescreen_cameras = []
-                    bu_results.widescreen_cameras.append(camera_name)
+                elif camera_type == model.CameraType.WIND_SCREEN_CAMERA:
+                    if not bu_results.windscreen_cameras:
+                        bu_results.windscreen_cameras = []
+                    bu_results.windscreen_cameras.append(camera_name)
 
         print(f"OUT Database.get_base_units: {list(bu_dict.values())}")
         return list(bu_dict.values())
@@ -162,10 +162,10 @@ class Database:
                     if not bu_results.license_plate_cameras:
                         bu_results.license_plate_cameras = []
                     bu_results.license_plate_cameras.append(camera_name)
-                elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
-                    if not bu_results.widescreen_cameras:
-                        bu_results.widescreen_cameras = []
-                    bu_results.widescreen_cameras.append(camera_name)
+                elif camera_type == model.CameraType.WIND_SCREEN_CAMERA:
+                    if not bu_results.windscreen_cameras:
+                        bu_results.windscreen_cameras = []
+                    bu_results.windscreen_cameras.append(camera_name)
 
         print(f"OUT Database.get_base_unit_by_name: {bu_results}")
         return bu_results
@@ -215,10 +215,10 @@ class Database:
                     if not bu_results.license_plate_cameras:
                         bu_results.license_plate_cameras = []
                     bu_results.license_plate_cameras.append(camera_name)
-                elif camera_type == model.CameraType.WIDE_SCREEN_CAMERA:
-                    if not bu_results.widescreen_cameras:
-                        bu_results.widescreen_cameras = []
-                    bu_results.widescreen_cameras.append(camera_name)
+                elif camera_type == model.CameraType.WIND_SCREEN_CAMERA:
+                    if not bu_results.windscreen_cameras:
+                        bu_results.windscreen_cameras = []
+                    bu_results.windscreen_cameras.append(camera_name)
 
         print(f"OUT Database.get_base_unit_by_id: {bu_results}")
         return bu_results
@@ -663,7 +663,7 @@ class Database:
         lane: str
             The lane the camera is for
         camera_type : str
-            The type of the camera (ie; face, license plate, widescreen.)
+            The type of the camera (ie; face, license plate, windscreen.)
         base_unit : Optional[str], optional
             An integer reference to the base unit where the camera is installed.
 
@@ -914,7 +914,7 @@ class Database:
         camera_id : int
             Integer identifier of the object.
         type : str
-            The type of camera (face, widescreen, license plate, etc)
+            The type of camera (face, windscreen, license plate, etc)
         base_unit : Optional[str], optional
             The base unit where the camera is installed
         """
@@ -949,7 +949,7 @@ class Database:
         camera_id : int
             Integer identifier of the object.
         type : str
-            The type of camera (face, widescreen, license plate, etc)
+            The type of camera (face, windscreen, license plate, etc)
         base_unit : Optional[str], optional
             The base unit where the camera is installed
         """
@@ -1125,7 +1125,7 @@ class Database:
                     name=bu.name,
                     location=bu.location,
                     face_cameras=bu.face_cameras,
-                    widescreen_cameras=bu.widescreen_cameras,
+                    windscreen_cameras=bu.windscreen_cameras,
                     license_plate_cameras=bu.license_plate_cameras
                 )
                 result_list.append(query_result)
@@ -1167,7 +1167,7 @@ class Database:
                     name=bu.name,
                     location=bu.location,
                     face_cameras=bu.face_cameras,
-                    widescreen_cameras=bu.widescreen_cameras,
+                    windscreen_cameras=bu.windscreen_cameras,
                     license_plate_cameras=bu.license_plate_cameras
                 )
                 result_list.append(query_result)
@@ -1357,6 +1357,61 @@ class Database:
                 )
                 note_list.append(note)
         print(f"OUT Database.get_notes. note_list={note_list}")
+        return note_list
+    
+    def get_all_notes(self, start_date: datetime.date = None, end_date: datetime.date = None) -> List[model.Notes]:
+        """
+        This method returns all of the notes associated with a single item.
+
+
+        Returns
+        -------
+        List[model.Notes]
+            A list of all of the notes associated with an item.
+        """
+        print("IN Database.get_all_notes.")
+        note_list = []
+    
+        query_string = "SELECT * from notes"
+        if start_date and not end_date:
+            query_string = f"SELECT * from notes WHERE date >= '{start_date}'"
+        elif not start_date and end_date:
+            query_string = f"SELECT * from notes WHERE date < '{end_date}'"
+        elif start_date and end_date:
+            query_string = f"SELECT * from notes WHERE date >= '{start_date}' AND date < '{end_date}'"
+
+        # Open a cursor to perform database operations
+        with self.connection.cursor() as cur: # pylint: disable=no-member
+            # Execute a command
+            cur.execute(query_string)
+            # Fetch the results
+            for row in cur:
+                note = model.Notes(
+                    id=row[0],
+                    description=row[1],
+                    date=row[2],
+                    item_type=model.ItemType.from_str(row[3]),
+                    item_ref=row[4],
+                )
+                note_list.append(note)
+            for note in note_list:
+                if note.item_type == model.ItemType.BASE_UNIT:
+                    cur.execute("select name from base_units WHERE " 
+                                + f"id='{note.item_ref}' LIMIT 1")
+                elif note.item_type == model.ItemType.CAMERA:
+                    cur.execute("select name, lane from cameras WHERE " 
+                                + f"id='{note.item_ref}' LIMIT 1")
+                elif note.item_type == model.ItemType.OTHER:
+                    cur.execute("select name from other_items WHERE " 
+                                + f"id='{note.item_ref}' LIMIT 1")
+                else:
+                    break
+                record = cur.fetchone()
+                item_name = record[0]
+                if note.item_type == model.ItemType.CAMERA:
+                    item_name = record[0] if record[1] == "NONE" else f"{record[0]}[{record[1]}]"
+                note.item_name = item_name
+        print(f"OUT Database.get_all_notes. note_list={note_list}")
         return note_list
     
     def get_notes_by_type(self, 
@@ -1616,7 +1671,7 @@ class Database:
         print(f"OUT Database.get_issues. issue_list={issue_list}")
         return issue_list
     
-    def get_all_issues(self) -> List[model.Issues]:
+    def get_all_issues(self, start_date: datetime.date = None, end_date: datetime.date = None) -> List[model.Issues]:
         """
         Get all of the issues.
 
@@ -1626,11 +1681,19 @@ class Database:
             A list of all maintenance tasks.
         """
         print("IN Database.get_all_issues")
+        query_string = "SELECT * from issues"
+        if start_date and not end_date:
+            query_string = f"SELECT * from issues WHERE date >= '{start_date}'"
+        elif not start_date and end_date:
+            query_string = f"SELECT * from issues WHERE date < '{end_date}'"
+        elif start_date and end_date:
+            query_string = f"SELECT * from issues WHERE date >= '{start_date}' AND date < '{end_date}'"
+
         issue_list = []
         # Open a cursor to perform database operations
         with self.connection.cursor() as cur: # pylint: disable=no-member
             # Execute a command
-            cur.execute("SELECT * from issues")
+            cur.execute(query_string)
             # Fetch the results
             for row in cur:
                 issue = model.Issues(
@@ -1768,7 +1831,7 @@ class Database:
             item_type_enum = model.ItemType.from_str_value(item_type)
             issue_list = self.get_issues_by_type(item_type_enum, start_date, end_date)
         else:
-            issue_list = self.get_all_issues()
+            issue_list = self.get_all_issues(start_date, end_date)
         
         for idx, issue in enumerate(issue_list):
             print(f"{idx}:{issue}")
@@ -1779,6 +1842,30 @@ class Database:
         print("OUT Database.get_issue_report")
         return result_list
 
+    def get_notes_report(self,
+                         query_string:str,
+                         item_type:str,
+                         start_date: datetime.date,
+                         end_date: datetime.date) -> List[model.NotesReportQueryResult]:
+        
+        print("IN Database.get_notes_report")
+        result_list = []
+
+        if item_type != 'ALL':
+            item_type_enum = model.ItemType.from_str_value(item_type)
+            notes_list = self.get_notes_by_type(item_type_enum, start_date, end_date)
+        else:
+            notes_list = self.get_all_notes(start_date, end_date)
+        
+        for idx, note in enumerate(notes_list):
+            print(f"{idx}:{note}")
+            score = self.fuzzy_similarity(query_string, note.description)
+            if score > 70.0:
+                query_result = model.NotesReportQueryResult(item_name=note.item_name, item_type=note.item_type, match_string=note.description,sim_score=score)
+                result_list.append(query_result)
+        print("OUT Database.get_notes_report")
+        return result_list
+    
     def fuzzy_similarity(self, str1: str, str2: str) -> float:
         """
         Find the similarity between str1 and a match in str2 using a fuzzy

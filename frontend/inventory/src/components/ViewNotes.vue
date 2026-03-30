@@ -61,24 +61,25 @@ This file is the vue component implementation for an other items detail screen.
       <v-row>
         <div style="color: green; font-size: 24px">
           <img width="75" height="75" alt="Asset Tracker" src="../assets/asset_tracker.jpg">
-          Maintenance Tasks View
+          Notes View
         </div>
       </v-row>  
     </v-container>
     <v-container  class="table-container">
       <v-row>
         <v-data-table
-          :headers="maintHeaders"
+          :headers="notesHeaders"
           :items="getFilteredItems"
-          :search="maintSearch"
+          :search="notesSearch"
           item-value="description"
           class="elevation-1"
-          :key="maintKey"
+          :key="notesKey"
+          @dblclick:row="navigateToDetails"
         >
           <!-- If you still want the default pagination controls alongside the search -->
           <template v-slot:footer.prepend>
             <v-text-field
-              v-model="maintSearch"
+              v-model="notesSearch"
               label="Search"
               prepend-inner-icon="mdi-magnify"
               density="compact"
@@ -104,14 +105,16 @@ This file is the vue component implementation for an other items detail screen.
                 </v-btn>
               </template>
               <v-list>
-                <v-list-item @click="deleteMaintTask(item)">
+                <v-list-item @click="deleteNote(item)">
                   <v-list-item-title>Delete</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="updateMaintTask(item)">
-                  <v-list-item-title>Update</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
+          </template>
+          <template v-slot:item.description="{ item }">
+            <div class="pre-wrap-cell">
+              {{ item.description }}
+            </div>
           </template>
         </v-data-table>
       </v-row>
@@ -131,7 +134,7 @@ This file is the vue component implementation for an other items detail screen.
   import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import ConfirmDialog from './ConfirmDialog.vue';
-  import api, {activity_log} from "../api";
+  import api, {activity_log, fetchBaseUnitById, fetchCameraById, fetchOtherItemById} from "../api";
   import ErrorDialog from './ErrorDialog.vue';
 
   // Data
@@ -142,20 +145,19 @@ This file is the vue component implementation for an other items detail screen.
   const loading = ref(true);
   const router = useRouter();
   const route = useRoute();
-  const maintTable = ref([]);
-  const maintSearch = ref('');
-  const maintKey = ref(0);
+  const notesTable = ref([]);
+  const notesSearch = ref('');
+  const notesKey = ref(0);
   const confirmDialog = ref(null);
   const itemType = ref('ALL');
   const itemTypes = ref([]);
   
   // Table headers
-  const maintHeaders = ref([
+  const notesHeaders = ref([
     {title: 'Description', align: 'start', value: 'description', sortable: true, value: 'description', class: 'blue lighten-5'},
     {title: 'Item Type', value: 'item_type' , sortable: true},
     {title: 'Item Name', value: 'item_name' , sortable: true},
-    {title: 'Last Done', value: 'last_done_date' , sortable: true},
-    {title: 'Due Date', value: 'due_date' , sortable: true},
+    {title: 'Date', value: 'date' , sortable: true},
     // ... other headers
     { text: 'Actions', value: 'actions', sortable: false }, // New actions column
   ]);
@@ -165,23 +167,87 @@ This file is the vue component implementation for an other items detail screen.
     // fetch the user information when params change
     () => route.fullPath,
     async (newFullPath, oldFullPath) => {
-      console.log("IN ViewMaintenanceTasks.watch.refresh newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
-      await fetchMaintTasks();
+      console.log("IN ViewNotes.watch.refresh newFullPath=" + newFullPath + "; oldFullPath=" + oldFullPath);
+      await fetchNotes();
       await fetchItemTypes();
-      maintKey.value += 1;
-      console.log("OUT ViewMaintenanceTasks.watch.refresh");
+      notesKey.value += 1;
+      console.log("OUT ViewNotes.watch.refresh");
     }
   );
 
   // Initialize data on mount of component
   onMounted(async () => {
-    console.log('IN ViewMaintenanceTasks.onMounted');
-    await fetchMaintTasks();
+    console.log('IN ViewNotes.onMounted');
+    await fetchNotes();
     await fetchItemTypes();
-    maintKey.value += 1;
+    notesKey.value += 1;
     document.addEventListener('click', handleClickOutside);
-    console.log('OUT ViewMaintenanceTasks.onMounted');
+    console.log('OUT ViewNotes.onMounted');
   });
+
+  // Navigate to base units detail screen on double-click.
+  const navigateToDetails = async (event, { item }) => {
+    // Prevent the default browser double-click behavior (e.g., text selection)
+    console.log("IN navigateToDetails: " + JSON.stringify(item));
+
+    event.preventDefault();
+
+    if(item.item_type === "Base Unit"){
+      let baseUnit = await fetchBaseUnitById(item.item_ref);
+      console.log("baseUnit=" + JSON.stringify(baseUnit))
+      let face_cameras = [];
+      let license_plate_cameras = [];
+      let windscreen_cameras = [];
+      if ('face_cameras' in baseUnit && baseUnit.face_cameras != null) {
+        face_cameras = baseUnit.face_cameras;
+      }
+      let license_plate_camera = [];
+      if ('license_plate_cameras' in baseUnit && baseUnit.license_plate_cameras != null) {
+        license_plate_cameras = baseUnit.license_plate_cameras;
+      }
+      let windscreen_camera = [];
+      if ('windscreen_cameras' in baseUnit && baseUnit.windscreen_cameras != null) {
+        windscreen_cameras = baseUnit.windscreen_cameras;
+      }
+
+      router.push(
+        {
+          name: 'base-unit',
+          query: { face_cameras: face_cameras, license_plate_cameras: license_plate_cameras, windscreen_cameras: windscreen_cameras },
+          params: {id: baseUnit.id, name: baseUnit.name, location: baseUnit.location}
+        });
+    } else if(item.item_type === "Camera") {
+      let camera = await fetchCameraById(item.item_ref)
+      let camera_location = -1;
+      if ('location' in camera && camera.location != null) {
+        camera_location = camera.location;
+      }
+      let camera_bu = "NONE";
+      if ('base_unit' in camera && camera.base_unit != null) {
+        camera_bu = camera.base_unit;
+      }
+
+      console.log("camera_location=" + camera_location + "; camera_bu=" + camera_bu);
+      router.push({name: 'camera', params: {id: camera.id, name: camera.name, lane: camera.lane, location: camera_location, base_unit: camera_bu, camera_type: camera.type}}).catch(failure => {
+        console.log('An unexpected navigation failure occurred:', failure);
+      });
+    } else if(item.item_type === "Other Item") {
+      let otherItem = await fetchOtherItemById(item.item_ref)
+      let other_location = -1;
+      if ('location' in otherItem && otherItem.location != null) {
+        other_location = otherItem.location;
+      }
+      let other_bu = "NONE";
+      if ('base_unit' in otherItem && otherItem.base_unit != null) {
+        other_bu = otherItem.base_unit;
+      }
+
+      router.push({name: 'other-items', params: {id: otherItem.id, name: otherItem.name, location: other_location, base_unit: other_bu}}).catch(failure => {
+        console.log('An unexpected navigation failure occurred:', failure);
+      });
+    }
+    console.log("OUT navigateToDetails");
+  }
 
   // Remove document listener when component is unmounted.
   onUnmounted(() => {
@@ -189,17 +255,17 @@ This file is the vue component implementation for an other items detail screen.
   });
 
   const getFilteredItems = computed(() => {
-    if (!itemType.value || itemType.value === 'ALL') return maintTable.value;
-    return maintTable.value.filter(row => {
+    if (!itemType.value || itemType.value === 'ALL') return notesTable.value;
+    return notesTable.value.filter(row => {
       return row.item_type === itemType.value;
     });
   });
 
   // Go back to previous page
   const goBack = () => {
-    console.log("IN ViewMaintenanceTasks.goBack");
+    console.log("IN ViewNotes.goBack");
     router.back();
-    console.log("OUT ViewMaintenanceTasks.goBack");
+    console.log("OUT ViewNotes.goBack");
   };
 
   // Toggle the reports menu.
@@ -256,7 +322,7 @@ This file is the vue component implementation for an other items detail screen.
       router.push({name: "view-issues-all"});
     } else if(option == 'MaintTasks') {
       router.push({name: "view-maint-tasks-all"});
-    } else if(option == 'Notes') {
+    } else if(option == 'Notess') {
       router.push({name: "view-notes-all"});
     }
 
@@ -271,22 +337,14 @@ This file is the vue component implementation for an other items detail screen.
     }
   };
 
-  // Add a note to the database
-  const addMaintTask = () => {
-    console.log("IN  ViewMaintenanceTasks.addMaintTask");
-    router.push({name: 'add-maintenance-task', params: {item_type: itemType.value, item_ref: itemRef.value, item_name: itemName.value}}).catch(failure => {
-      console.log('An unexpected navigation failure occurred:', failure);
-    });
-    console.log("OUT  ViewMaintenanceTasks.addMaintTask");
-  }
 
-  // Delete a maintenance task from the database
-  const deleteMaintTask = async (item) => {
-    console.log("IN  ViewMaintenanceTasks.deleteMaintTask item=" + JSON.stringify(item));
+  // Delete an note from the database
+  const deleteNote = async (item) => {
+    console.log("IN  ViewNotes.deleteNote item=" + JSON.stringify(item));
     // Call the dialog's open function using the template ref
     const result = await confirmDialog.value.open(
       'Confirm Deletion',
-      'Are you sure you want to delete this task?',
+      'Are you sure you want to delete this note?',
       { color: 'red lighten-3' }
     );
 
@@ -300,37 +358,28 @@ This file is the vue component implementation for an other items detail screen.
         id: item.id,
       };
       try {
-          const response = await api.post('/delete-maintenance-task', requestBody, config);
+          const response = await api.post('/delete-note', requestBody, config);
           loading.value = false;
       } catch (e) {
           loading.value = false;
           console.log("error=" + e)
           const result = await errorDialog.value.open(
             'Confirm Error',
-            'Error deleting task:' + e,
+            'Error deleting note:' + e,
             { color: 'red lighten-3' }
           );
       }
-      console.log('Task deleted!');
-      await fetchMaintTasks();
+      console.log('Note deleted!');
+      await fetchNotes();
     } else {
       console.log('Deletion cancelled.');
     }
-    console.log("OUT  ViewMaintenanceTasks.deleteMaintTask");
+    console.log("OUT  ViewNotes.deleteNote");
   };
 
-  // Update a maintenance task
-  const updateMaintTask = (item) => {
-    console.log("IN ViewMaintenanceTasks.updateMaintTask. item=" + JSON.stringify(item));
-    router.push({name: 'update-maintenance-task', params: {id: item.id, description: item.description, item_type: item.item_type, item_name: item.item_name}}).catch(failure => {
-      console.log('An unexpected navigation failure occurred:', failure);
-    });
-    console.log("OUT ViewMaintenanceTasks.updateMaintTask");
-  };
-
-  // Retrieve maintenance tasks from the database through a REST call.
-  const fetchMaintTasks = async () => {
-    console.log("IN ViewMaintenanceTasks.fetchMaintTasks");
+  // Retrieve notes from the database through a REST call.
+  const fetchNotes = async () => {
+    console.log("IN ViewNotes.fetchNotes");
 
     const config = {
       headers: {
@@ -338,8 +387,8 @@ This file is the vue component implementation for an other items detail screen.
       }
     };
     try {
-        const response = await api.get('/get-all-maint-tasks', config);
-        maintTable.value = response.data;
+        const response = await api.get('/get-all-notes', config);
+        notesTable.value = response.data;
         loading.value = false;
     } catch (e) {
         loading.value = false;
@@ -350,7 +399,7 @@ This file is the vue component implementation for an other items detail screen.
           { color: 'red lighten-3' }
         );
     }
-    console.log("OUT ViewMaintenanceTasks.fetchMaintTasks");
+    console.log("OUT ViewNotes.fetchNotes");
   };
 
   // Retrieve item type values.
