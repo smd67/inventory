@@ -69,7 +69,7 @@ class CameraType(str, Enum):
 
     FACE_CAMERA = "Face Camera"
     LICENSE_PLATE_CAMERA = "License Plate Camera"
-    WIND_SCREEN_CAMERA = "Wind Screen Camera"
+    WIND_SCREEN_CAMERA = "Windscreen Camera"
     OTHER = "Other"
     ALL = "All"
 

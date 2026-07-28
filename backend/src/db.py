@@ -30,13 +30,14 @@ class Database:
 
         db_user = os.getenv("DB_USER")
         db_name = os.getenv("DB_NAME")
-        deploy_type = os.getenv("DEPLOY_TYPE")
+        orig_deploy_type = os.getenv("DEPLOY_TYPE")
+        deploy_type = "dev"
         self.connection: Optional[psycopg.Connection] = None
         try:
             if deploy_type == "dev":
                 db_host = os.getenv("DB_HOST")
                 db_port = os.getenv("DB_PORT")
-                db_password = get_secret(os.getenv("DB_PWD"))
+                db_password = get_secret(os.getenv("DB_PWD")) if orig_deploy_type == "dev" else os.getenv("DB_PWD")
                 self.connection  = psycopg.connect(
                     dbname=db_name,
                     user=db_user,

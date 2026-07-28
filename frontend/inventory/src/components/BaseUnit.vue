@@ -990,7 +990,7 @@ cameras, notes, other items, or maintenance tasks.
             faceCameras.value.push(cameraName);
           } else if(camera.type === "License Plate Camera") {
             licensePlateCameras.value.push(cameraName);
-          } else if(camera.type === "Wind Screen Camera") {
+          } else if(camera.type === "Windscreen Camera") {
             windscreenCameras.value.push(cameraName); 
           }
         }
